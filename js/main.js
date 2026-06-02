@@ -41,7 +41,12 @@ if (_saved) {
 }
 isRestoringState = false;
 
+// FIX: 'change' alone can fire late or not at all on some iOS Safari date
+// pickers — the picker closes before 'change' fires, and if the user then
+// reloads without touching another field the new date is lost.
+// Adding 'input' as a belt-and-suspenders fallback saves on every selection.
 $('tipDate').addEventListener('change', saveState);
+$('tipDate').addEventListener('input',  saveState);
 
 reindexTabOrder();
 updateStockCards();
