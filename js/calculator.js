@@ -18,16 +18,17 @@ function renderBlockedPlaceholders(reason) {
   if (dist) dist.innerHTML = `<div class="warn-box">⚠ ${safe}</div>`;
 }
 
+// FIX: blockCalculation used to only set a stale banner when lastStaff was
+// populated, leaving the old (now-wrong) Summary and Dist results visible
+// underneath. Users could trust stale payouts after changing hours to invalid
+// values. Now we always clear the stale banners and replace the old content
+// with a warn-box so no prior results remain on screen while inputs are broken.
 function blockCalculation(reason, options = {}) {
   currentInputError = options.inputError ? reason : '';
   updateHomeLive(null);
-  if (lastStaff.length) {
-    setStaleBanners(reason);
-  } else if (options.showPlaceholder) {
-    clearStaleBanners();
+  clearStaleBanners();
+  if (lastStaff.length || options.showPlaceholder) {
     renderBlockedPlaceholders(reason);
-  } else {
-    clearStaleBanners();
   }
 }
 
@@ -75,13 +76,17 @@ function autoCalculate() {
   const { rawData } = collectNamedStaffRows();
   const hasName = rawData.length > 0;
   const total = cashValidation.total;
+
+  // FIX: the old code left Summary/Dist showing stale results and only set
+  // a small stale banner at the top. Now we clear the content and replace it
+  // with a plain warning so there's no possibility of trusting old payouts.
+  // updateTabIndicators() is also called here so the tab dots stay consistent.
   if (!hasName || total === 0) {
     currentInputError = '';
-    updateStockCards(); updateHomeLive(null);
+    updateStockCards(); updateTabIndicators(); updateHomeLive(null);
+    clearStaleBanners();
     if (lastStaff.length) {
-      setStaleBanners(total === 0 ? 'Cash is zero.' : 'No named staff rows remain.');
-    } else {
-      clearStaleBanners();
+      renderBlockedPlaceholders(total === 0 ? 'Cash is zero.' : 'No named staff rows remain.');
     }
     saveState();
     return;
