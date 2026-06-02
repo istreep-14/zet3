@@ -13,8 +13,7 @@ function normalizePool(pool) {
   return out;
 }
 
-function calculateV19Pipeline(staffArr, poolIn, leftoverAmount) {
-  const pool = normalizePool(poolIn);
+function buildDistributionSlots(staffArr, leftoverAmount) {
   const slots = staffArr.map(p => ({
     ref: p,
     orig: p.final,
@@ -32,6 +31,163 @@ function calculateV19Pipeline(staffArr, poolIn, leftoverAmount) {
       isRemainder: true
     });
   }
+
+  return slots;
+}
+
+function getSmallBillRequirementsForSlots(slots, poolIn) {
+  const pool = normalizePool(poolIn);
+  const targets = slots.map(s => s.orig);
+  const oddTenSlots = slots.filter(s => Math.floor(s.orig / 10) % 2 !== 0);
+  const fiftyEligibleOddTenSlots = oddTenSlots.filter(s => s.orig >= 50).length;
+  const fiftyCoverage = Math.min(pool[50] || 0, fiftyEligibleOddTenSlots);
+  const minOnes = targets.reduce((sum, target) => sum + (target % 5), 0);
+  const minOneFiveValue = targets.reduce((sum, target) => sum + (target % 10), 0);
+  const minOneFiveTenRaw = targets.reduce((sum, target) => sum + (target % 20), 0);
+  const minOneFiveTenValue = Math.max(minOneFiveValue, minOneFiveTenRaw - fiftyCoverage * 10);
+  const availableOnes = pool[1] || 0;
+  const availableOneFiveValue = availableOnes + (pool[5] || 0) * 5;
+  const availableOneFiveTenValue = availableOneFiveValue + (pool[10] || 0) * 10;
+
+  return {
+    minOnes,
+    availableOnes,
+    onesShort: Math.max(0, minOnes - availableOnes),
+    minOneFiveValue,
+    availableOneFiveValue,
+    oneFiveShort: Math.max(0, minOneFiveValue - availableOneFiveValue),
+    minOneFiveTenValue,
+    availableOneFiveTenValue,
+    oneFiveTenShort: Math.max(0, minOneFiveTenValue - availableOneFiveTenValue),
+    oddTenCount: oddTenSlots.length,
+    fiftyEligibleOddTenCount: fiftyEligibleOddTenSlots,
+    fiftyCoverage,
+    fiftyCoverageValue: fiftyCoverage * 10
+  };
+}
+
+function getSmallBillRequirements(staffArr, poolIn, leftoverAmount) {
+  return getSmallBillRequirementsForSlots(buildDistributionSlots(staffArr, leftoverAmount || 0), poolIn);
+}
+
+function previewSmallBillTrades(staffArr, poolIn, leftoverAmount) {
+  const sourcePool = normalizePool(poolIn);
+  const targetTotal = staffArr.reduce((sum, p) => sum + (p.final || 0), 0) + (leftoverAmount || 0);
+  if (poolValue(sourcePool) !== targetTotal) return null;
+
+  const adjustedPool = normalizePool(sourcePool);
+  const deltas = blankBills();
+  const trades = [];
+  const slots = buildDistributionSlots(staffArr, leftoverAmount || 0);
+
+  function describeBundle(bundle) {
+    return DENOMS
+      .filter(d => (bundle[d] || 0) > 0)
+      .map(d => (bundle[d] || 0) + ' x $' + d)
+      .join(' + ');
+  }
+
+  function applyBreak(from, bundle) {
+    if ((adjustedPool[from] || 0) <= 0) return false;
+    adjustedPool[from]--;
+    deltas[from]--;
+    DENOMS.forEach(d => {
+      const count = bundle[d] || 0;
+      if (count <= 0) return;
+      adjustedPool[d] += count;
+      deltas[d] += count;
+    });
+    trades.push('Break 1 x $' + from + ' into ' + describeBundle(bundle) + '.');
+    return true;
+  }
+
+  function breakForOnes(from) {
+    const bundle = blankBills();
+    if (from === 5) bundle[1] = 5;
+    if (from === 10) { bundle[5] = 1; bundle[1] = 5; }
+    if (from === 20) { bundle[10] = 1; bundle[5] = 1; bundle[1] = 5; }
+    if (from === 50) { bundle[20] = 2; bundle[5] = 1; bundle[1] = 5; }
+    if (from === 100) { bundle[50] = 1; bundle[20] = 2; bundle[5] = 1; bundle[1] = 5; }
+    return applyBreak(from, bundle);
+  }
+
+  function breakForFives(from) {
+    const bundle = blankBills();
+    if (from === 10) bundle[5] = 2;
+    if (from === 20) { bundle[10] = 1; bundle[5] = 2; }
+    if (from === 50) { bundle[20] = 2; bundle[5] = 2; }
+    if (from === 100) { bundle[50] = 1; bundle[20] = 2; bundle[5] = 2; }
+    return applyBreak(from, bundle);
+  }
+
+  function breakForTens(from) {
+    const bundle = blankBills();
+    if (from === 20) bundle[10] = 2;
+    if (from === 50) bundle[10] = 5;
+    if (from === 100) { bundle[50] = 1; bundle[10] = 5; }
+    return applyBreak(from, bundle);
+  }
+
+  function chooseDonor(candidates) {
+    return candidates.find(d => (adjustedPool[d] || 0) > 0) || null;
+  }
+
+  function trySolve() {
+    const previewStaff = staffArr.map(p => ({ ...p, bills: blankBills(), rem: p.final }));
+    const result = calculateV19Pipeline(previewStaff, adjustedPool, leftoverAmount || 0);
+    if (!result.success) return null;
+    return {
+      staff: previewStaff,
+      pool: { ...adjustedPool },
+      poolAfter: result.poolAfter,
+      remainderBills: result.remainderBills || blankBills(),
+      deltas: { ...deltas },
+      trades: [...trades],
+      requirementsBefore: getSmallBillRequirementsForSlots(slots, sourcePool),
+      requirementsAfter: getSmallBillRequirementsForSlots(slots, adjustedPool)
+    };
+  }
+
+  let guard = 0;
+  while (getSmallBillRequirementsForSlots(slots, adjustedPool).onesShort > 0 && guard++ < 40) {
+    const donor = chooseDonor([5, 10, 20, 50, 100]);
+    if (!donor || !breakForOnes(donor)) return null;
+  }
+
+  while (getSmallBillRequirementsForSlots(slots, adjustedPool).oneFiveShort > 0 && guard++ < 80) {
+    const donor = chooseDonor([10, 20, 50, 100]);
+    if (!donor || !breakForFives(donor)) return null;
+  }
+
+  while (getSmallBillRequirementsForSlots(slots, adjustedPool).oneFiveTenShort > 0 && guard++ < 120) {
+    const donor = chooseDonor([20, 50, 100]);
+    if (!donor || !breakForTens(donor)) return null;
+  }
+
+  const solved = trySolve();
+  if (solved) return solved;
+
+  const fallbackBreaks = [
+    { from: 5, bundle: { 1: 5 } },
+    { from: 10, bundle: { 5: 2 } },
+    { from: 20, bundle: { 10: 2 } },
+    { from: 50, bundle: { 10: 5 } },
+    { from: 100, bundle: { 20: 5 } }
+  ];
+
+  for (let i = 0; i < 30; i++) {
+    const next = fallbackBreaks.find(item => (adjustedPool[item.from] || 0) > 0);
+    if (!next || !applyBreak(next.from, { ...blankBills(), ...next.bundle })) break;
+    const retry = trySolve();
+    if (retry) return retry;
+  }
+
+  return null;
+}
+
+function calculateV19Pipeline(staffArr, poolIn, leftoverAmount) {
+  const pool = normalizePool(poolIn);
+  const slots = buildDistributionSlots(staffArr, leftoverAmount || 0);
 
   const preflight = runPreflight(slots, pool);
   if (!preflight.ok) return { success: false, msg: preflight.msg, poolAfter: pool, remainderBills: blankBills() };
@@ -66,23 +222,24 @@ function runPreflight(slots, pool) {
     return { ok: false, msg: 'Cash on hand is short $' + (targetTotal - cashTotal) + '.' };
   }
 
-  const minOnes = slots.reduce((sum, s) => sum + (s.target % 5), 0);
-  const minMod10Val = slots.reduce((sum, s) => sum + (s.target % 10), 0);
-  const availableSmallVal = (pool[1] || 0) + (pool[5] || 0) * 5;
+  const needs = getSmallBillRequirementsForSlots(slots, pool);
 
-  if ((pool[1] || 0) < minOnes) {
-    return { ok: false, msg: 'Need ' + (minOnes - (pool[1] || 0)) + ' more $1s.' };
+  if (needs.onesShort > 0) {
+    return { ok: false, msg: 'Need ' + needs.onesShort + ' more $1s.' };
   }
-  if (availableSmallVal < minMod10Val) {
-    return { ok: false, msg: 'Need $' + (minMod10Val - availableSmallVal) + ' more in $1s/$5s.' };
+  if (needs.oneFiveShort > 0) {
+    return { ok: false, msg: 'Need $' + needs.oneFiveShort + ' more in $1s/$5s.' };
+  }
+  if (needs.oneFiveTenShort > 0) {
+    return { ok: false, msg: 'Need $' + needs.oneFiveTenShort + ' more in $1s/$5s/$10s after $50s.' };
   }
 
   return {
     ok: true,
     ideals: {
-      1: minOnes,
-      5: Math.max(0, (minMod10Val - minOnes) / 5),
-      10: Math.max(0, slots.filter(s => Math.floor(s.target / 10) % 2 !== 0).length - (pool[50] || 0))
+      1: needs.minOnes,
+      5: Math.max(0, (needs.minOneFiveValue - needs.minOnes) / 5),
+      10: Math.max(0, (needs.minOneFiveTenValue - needs.minOneFiveValue) / 10)
     }
   };
 }
