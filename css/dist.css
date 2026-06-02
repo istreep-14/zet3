@@ -109,3 +109,103 @@
 }
 
 .dist-cash-data-row td { background: var(--surface2); border-bottom: none; color: var(--text2); }
+
+.dist-req-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dist-req-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 10px;
+}
+
+.dist-req-card.ok { border-color: var(--green-border); }
+.dist-req-card.short { border-color: var(--gold-dim); }
+
+.dist-req-title {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .5rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  line-height: 1.25;
+  min-height: 1.25rem;
+  text-transform: uppercase;
+}
+
+.dist-req-value {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: .92rem;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.dist-req-card.ok .dist-req-value { color: var(--green); }
+.dist-req-card.short .dist-req-value { color: var(--gold); }
+
+.dist-req-sub {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  margin-top: 4px;
+}
+
+.dist-trade-card {
+  background: var(--surface);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.dist-trade-label {
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dist-trade-sub {
+  color: var(--muted);
+  font-size: .72rem;
+  margin-top: 3px;
+}
+
+.dist-trade-list ul {
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  line-height: 1.45;
+  margin: 8px 0 9px;
+  padding-left: 17px;
+}
+
+.dist-trade-table {
+  border-radius: var(--radius-sm);
+  margin-bottom: 0;
+}
+
+.dist-tbl td.delta-pos { color: var(--green); font-weight: 700; }
+.dist-tbl td.delta-neg { color: var(--accent2); font-weight: 700; }
+
+.dist-preview-label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .55rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 12px 0 6px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 390px) {
+  .dist-req-grid { grid-template-columns: 1fr; }
+}
