@@ -60,7 +60,14 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
   const remainderPaid = poolValue(lastRemainderBills || {});
   const remShort = leftover > 0 && remainderPaid !== leftover;
   const warnMsg  = lastDistributionError || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Remainder cannot be represented by available bills' : '');
-  const warnHTML = warnMsg ? `<div class="warn-box">⚠ ${warnMsg} Review Cash counts or adjust the bill mix.</div>` : '';
+
+  // FIX: the old warn-box said "Review Cash counts or adjust the bill mix"
+  // with no way to act. The engine already reports the exact shortage (e.g.
+  // "Need 3 more $1s.") via lastDistributionError, so we surface that and
+  // add a tappable "→ Go to Cash" button to resolve it in one tap.
+  const warnHTML = warnMsg
+    ? `<div class="warn-box">⚠ ${escapeHTML(warnMsg)} <button onclick="switchTab('cash',$('tb-cash'))" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-weight:700">→ Go to Cash</button></div>`
+    : '';
 
   $('summary-content').innerHTML = `
     <div class="summary-hero">
