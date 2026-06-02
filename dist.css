@@ -1,0 +1,111 @@
+/* ── Distribution table ──────────────────────────── */
+.dist-tbl-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.dist-tbl { width: 100%; border-collapse: collapse; font-size: .78rem; }
+
+.dist-tbl th {
+  padding: 8px 7px;
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: .56rem;
+  letter-spacing: .9px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.dist-tbl th:first-child { text-align: left; padding-left: 12px; }
+
+.dist-tbl td {
+  padding: 8px 7px;
+  border-bottom: 1px solid #15151f;
+  text-align: center;
+  font-family: var(--font-mono);
+  color: var(--text2);
+}
+
+.dist-tbl td:first-child {
+  text-align: left;
+  padding-left: 12px;
+  color: var(--text);
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.dist-tbl tr:last-child td { border-bottom: none; }
+.dist-tbl td.has-bills     { color: var(--gold); font-weight: 700; }
+.dist-tbl td.zero          { color: var(--border2); }
+
+.dist-tbl-denom { font-size: .56rem; color: var(--gold); font-weight: 700; font-family: var(--font-mono); }
+
+.dist-totals-row td {
+  border-top: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.dist-totals-row td:first-child {
+  color: var(--muted);
+  font-size: .62rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dist-tbl td.person-total  { color: var(--text2); font-weight: 700; border-left: 1px solid var(--border); }
+.dist-tbl th.total-col     { border-left: 1px solid var(--border2); }
+.dist-totals-row td.grand-total { color: var(--gold); font-size: .9rem; border-left: 1px solid var(--border); }
+
+.dist-rem-row td {
+  border-top: 1px dashed var(--border);
+  padding: 4px 7px;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  background: #12121c;
+  opacity: .75;
+}
+
+.dist-rem-row td:first-child { padding-left: 12px; }
+
+.dist-cash-section {
+  margin-top: 7px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px 7px;
+}
+
+.dist-cash-label {
+  font-size: .52rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-bottom: 5px;
+}
+
+.dist-cash-section .dist-tbl th { padding: 4px 7px; }
+.dist-cash-section .dist-tbl td { padding: 6px 7px; border-bottom: none; }
+
+.dist-cash-hdr-row td {
+  border-top: 2px solid var(--border2);
+  padding: 5px 12px 4px;
+  font-size: .5rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  background: var(--surface2);
+  border-bottom: none;
+}
+
+.dist-cash-data-row td { background: var(--surface2); border-bottom: none; color: var(--text2); }

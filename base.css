@@ -1,0 +1,62 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  height: 100vh;    /* fallback for iOS < 15.4 */
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+button { font-family: inherit; }
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Prevent iOS input zoom (Safari zooms on inputs < 16px) */
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
+.hidden { display: none !important; }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 12px 8px;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* 44pt minimum tap targets for small action buttons */
+.sri-del, .sri-closer {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Visual pulse hint for first staff row on load (replaces forced focus) */
+@keyframes pulseHint {
+  0%, 100% { border-color: var(--border); }
+  50%       { border-color: var(--accent); }
+}
+.staff-row-modal.pulse-hint {
+  animation: pulseHint 0.8s ease-in-out 2;
+}

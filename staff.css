@@ -1,0 +1,181 @@
+.staff-page { display: flex; flex-direction: column; }
+
+.staff-page-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 10px;
+  gap: 8px;
+}
+
+.staff-page-count {
+  font-size: .6rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.defaults-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 7px 11px;
+  cursor: pointer;
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  transition: all .15s;
+}
+
+.defaults-open-btn:active { border-color: var(--blue); color: var(--blue); }
+.defaults-open-btn svg { width: 12px; height: 12px; stroke: currentColor; }
+
+.staff-list-modal { display: flex; flex-direction: column; gap: 5px; }
+
+/* Inline single-row layout */
+.staff-row-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  transition: border-color .15s;
+}
+
+.staff-row-modal:focus-within { border-color: var(--border2); }
+
+.sri-name {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid var(--border);
+}
+
+.sri-name input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 10px 11px;
+  font-size: .9rem;
+  font-weight: 600;
+  outline: none;
+  font-family: var(--font-sans);
+}
+
+.sri-name input::placeholder { color: var(--border2); font-weight: 400; }
+
+.sri-time-field {
+  width: 44px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid var(--border);
+}
+
+.sri-tlbl {
+  font-size: .36rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  padding-top: 4px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.sri-time-field input {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  text-align: center;
+  padding: 2px 3px 6px;
+  font-size: .82rem;
+  font-weight: 700;
+  outline: none;
+  font-family: var(--font-mono);
+  transition: color .15s;
+}
+
+.sri-time-field input::placeholder { color: var(--border2); font-size: .7rem; font-weight: 400; }
+.sri-time-field input.using-default { color: var(--muted); font-style: italic; }
+
+.sri-hrs {
+  width: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .62rem;
+  font-weight: 700;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  border-right: 1px solid var(--border);
+}
+
+.sri-hrs.filled       { color: var(--gold2); }
+.sri-hrs.default-hrs  { color: var(--muted); font-style: italic; }
+.sri-hrs.err          { color: var(--accent); }
+
+.sri-closer {
+  width: 28px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .54rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0;
+  transition: all .15s;
+}
+
+.sri-closer .sc-lbl { font-size: .36rem; letter-spacing: .3px; text-transform: uppercase; }
+.sri-closer.on      { color: var(--accent); background: #1a0608; }
+
+.sri-del {
+  width: 28px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .15s;
+}
+
+.sri-del:active { color: var(--accent); }
+
+.add-btn {
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--border2);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  font-size: .8rem;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: all .15s;
+  font-family: var(--font-mono);
+}
+
+.add-btn:active { border-color: var(--green); color: var(--green); }
