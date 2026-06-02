@@ -211,17 +211,32 @@
 
 .person-tip.muted { color: var(--muted); }
 
+/* Remainder card — compact, no cursor, not interactive */
 .remainder-card {
   border-style: dashed;
   background: var(--surface2);
+  cursor: default;
+  margin-bottom: 8px;
+}
+
+.remainder-card .person-card-top {
+  padding: 5px 10px;
+}
+
+.remainder-card:active {
+  background: var(--surface2);
+  border-color: var(--border);
 }
 
 .remainder-avatar {
   color: var(--muted);
   border-style: dashed;
+  width: 22px;
+  height: 22px;
+  font-size: .52rem;
 }
 
-/* Totals strip */
+/* Totals strip — hours and tip value aligned consistently */
 .summary-totals-strip {
   display: flex;
   align-items: center;
@@ -241,11 +256,11 @@
   text-transform: uppercase;
 }
 
-.summary-totals-val {
-  font-size: .98rem;
-  font-weight: 800;
-  color: var(--gold);
-  font-family: var(--font-mono);
+/* Right side of totals — hrs and $ aligned like the card columns */
+.summary-totals-right {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
 }
 
 .summary-totals-hrs {
@@ -253,4 +268,18 @@
   font-weight: 700;
   color: var(--text2);
   font-family: var(--font-mono);
+  /* Match .person-hrs-block width so columns align */
+  width: 74px;
+  text-align: right;
+  margin-right: 9px; /* mirrors the gap between hrs-block and tip-col in cards */
+}
+
+.summary-totals-val {
+  font-size: .98rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  /* Match .person-tip-col width so the $ column aligns with cards above */
+  width: 54px;
+  text-align: right;
 }
