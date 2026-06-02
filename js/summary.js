@@ -4,6 +4,8 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
   const [yr, mo, dy] = dateVal ? dateVal.split('-') : ['', '', ''];
   const dateStr = (mo && dy && yr) ? `${parseInt(mo)}/${parseInt(dy)}/${yr}` : '';
   const sumFinal = staffWithBills.reduce((s, p) => s + p.final, 0);
+  // Grand total includes remainder — shown as one clean number
+  const grandTotal = sumFinal + leftover;
   const chipHTML = bills => {
     const nonZero = DENOMS.filter(d => (bills?.[d] || 0) > 0);
     return nonZero.length
@@ -39,24 +41,25 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     </div>`;
   }).join('');
 
+  // Remainder card — compact inline row, no badge, just a small indicator
   const remainderCard = leftover > 0
     ? `<div class="person-card remainder-card">
       <div class="person-card-top">
         <div class="person-avatar remainder-avatar">R</div>
         <div class="person-main">
-          <div class="person-name-row"><span class="person-name">Remainder</span><span class="closer-badge">drawer</span></div>
+          <div class="person-name-row"><span class="person-name" style="color:var(--muted)">Remainder</span></div>
           ${chipHTML(lastRemainderBills)}
         </div>
         <div class="person-hrs-block">
-          <div class="person-hrs-val muted">—</div>
-          <div class="person-hrs-times">carry</div>
+          <div class="person-hrs-val muted" style="font-size:.72rem">stays</div>
+          <div class="person-hrs-times">in drawer</div>
         </div>
-        <div class="person-tip-col"><div class="person-tip muted">${leftover}</div></div>
+        <div class="person-tip-col"><div class="person-tip muted">$${leftover}</div></div>
       </div>
     </div>`
     : '';
 
-  const leftoverRow = leftover > 0
+  const leftoverMeta = leftover > 0
     ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Remainder</div><div class="summary-meta-val" style="color:var(--muted)">$${leftover}</div></div>`
     : '';
 
@@ -66,10 +69,6 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
   const warnMsg     = lastDistributionError
     || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Remainder cannot be represented by available bills' : '');
 
-  // When there is a distribution problem, show:
-  //   1. The warn box with the exact error + Go to Cash shortcut
-  //   2. The requirement cards (available vs needed for $1s / $1+$5 / $1+$5+$10)
-  //      so the user can see exactly what is missing without switching to Dist
   let warnHTML = '';
   if (warnMsg) {
     const req = getSmallBillRequirements(staffWithBills, livePool, lastLeftover);
@@ -88,7 +87,7 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
         <div class="summary-meta-item"><div class="summary-meta-lbl">Total Hrs</div><div class="summary-meta-val">${fmtHrs(totH)}</div></div>
         <div class="summary-meta-item"><div class="summary-meta-lbl">Rate</div><div class="summary-meta-val">$${rate.toFixed(2)}/hr</div></div>
         <div class="summary-meta-item"><div class="summary-meta-lbl">Paid Out</div><div class="summary-meta-val">$${sumFinal}</div></div>
-        ${leftoverRow}
+        ${leftoverMeta}
       </div>
     </div>
     <div class="section-hdr">Breakdown</div>
@@ -97,9 +96,9 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     ${remainderCard}
     <div class="summary-totals-strip">
       <span class="summary-totals-lbl">Total</span>
-      <div style="display:flex;align-items:baseline;gap:10px">
+      <div class="summary-totals-right">
         <span class="summary-totals-hrs">${fmtHrs(totH)}</span>
-        <span class="summary-totals-val">${sumFinal}${leftover > 0 ? ' + ' + leftover : ''}</span>
+        <span class="summary-totals-val">$${grandTotal}</span>
       </div>
     </div>
     ${warnHTML}
