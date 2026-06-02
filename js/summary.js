@@ -7,7 +7,9 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
   const chipHTML = bills => {
     const nonZero = DENOMS.filter(d => (bills?.[d] || 0) > 0);
     return nonZero.length
-      ? '<div class="pbi-row">' + nonZero.map(d => `<span class="pbi-chip"><span class="pbi-d">$${d}</span><span class="pbi-n">×${bills[d]}</span></span>`).join('') + '</div>'
+      ? '<div class="pbi-row">' + nonZero.map(d =>
+          `<span class="pbi-chip"><span class="pbi-d">$${d}</span><span class="pbi-n">×${bills[d]}</span></span>`
+        ).join('') + '</div>'
       : '';
   };
 
@@ -53,21 +55,30 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
       </div>
     </div>`
     : '';
+
   const leftoverRow = leftover > 0
     ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Remainder</div><div class="summary-meta-val" style="color:var(--muted)">$${leftover}</div></div>`
     : '';
-  const unpaid   = staffWithBills.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
-  const remainderPaid = poolValue(lastRemainderBills || {});
-  const remShort = leftover > 0 && remainderPaid !== leftover;
-  const warnMsg  = lastDistributionError || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Remainder cannot be represented by available bills' : '');
 
-  // FIX: the old warn-box said "Review Cash counts or adjust the bill mix"
-  // with no way to act. The engine already reports the exact shortage (e.g.
-  // "Need 3 more $1s.") via lastDistributionError, so we surface that and
-  // add a tappable "→ Go to Cash" button to resolve it in one tap.
-  const warnHTML = warnMsg
-    ? `<div class="warn-box">⚠ ${escapeHTML(warnMsg)} <button onclick="switchTab('cash',$('tb-cash'))" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-weight:700">→ Go to Cash</button></div>`
-    : '';
+  const unpaid      = staffWithBills.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
+  const remainderPaid = poolValue(lastRemainderBills || {});
+  const remShort    = leftover > 0 && remainderPaid !== leftover;
+  const warnMsg     = lastDistributionError
+    || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Remainder cannot be represented by available bills' : '');
+
+  // When there is a distribution problem, show:
+  //   1. The warn box with the exact error + Go to Cash shortcut
+  //   2. The requirement cards (available vs needed for $1s / $1+$5 / $1+$5+$10)
+  //      so the user can see exactly what is missing without switching to Dist
+  let warnHTML = '';
+  if (warnMsg) {
+    const req = getSmallBillRequirements(staffWithBills, livePool, lastLeftover);
+    const reqCards = renderSmallBillRequirementCards(req);
+    warnHTML =
+      `<div class="warn-box">⚠ ${escapeHTML(warnMsg)} `
+      + `<button onclick="switchTab('cash',$('tb-cash'))" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-weight:700">→ Go to Cash</button></div>`
+      + reqCards;
+  }
 
   $('summary-content').innerHTML = `
     <div class="summary-hero">
@@ -94,3 +105,6 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     ${warnHTML}
   `;
 }
+
+// renderSmallBillRequirementCards is defined in dist.js and called here.
+// Both Summary and Dist share the same rendering helper.
