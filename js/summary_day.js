@@ -1,161 +1,193 @@
-// Day shift summary renderer
+// Day shift summary renderer — table layout matching design spec
 
 function renderDaySummary(result) {
   const sb = $('stale-summary'); if (sb) sb.classList.remove('visible');
+
   const dateVal = $('tipDate').value;
   const [yr, mo, dy] = dateVal ? dateVal.split('-') : ['', '', ''];
   const dateStr = (mo && dy && yr) ? `${parseInt(mo)}/${parseInt(dy)}/${yr}` : '';
 
-  const chipHTML = bills => {
-    const nonZero = DENOMS.filter(d => (bills?.[d] || 0) > 0);
-    return nonZero.length
-      ? '<div class="pbi-row">' + nonZero.map(d =>
-          `<span class="pbi-chip"><span class="pbi-d">$${d}</span><span class="pbi-n">×${bills[d]}</span></span>`
-        ).join('') + '</div>'
-      : '';
-  };
+  // ── Helpers ──────────────────────────────────────────────────────────────
 
   const fmtAbs = t => {
-    // Convert absolute hour back to display string: 10–12 = am, 13+ = pm
-    const h = t >= 13 ? t - 12 : t;
+    // Absolute hour → "H:MMam/pm". 10–11.99 = AM, 12+ = PM, 0–9.99 = AM
     const isAm = t < 12;
-    const mn = Math.round((h - Math.floor(h)) * 60);
-    const hr = Math.floor(h);
+    const hr   = Math.floor(t);
+    const mn   = Math.round((t - hr) * 60);
     let h12 = hr % 12; if (h12 === 0) h12 = 12;
-    return h12 + (mn > 0 ? ':' + (mn < 10 ? '0' : '') + mn : '') + (isAm ? 'a' : 'p');
+    const minStr = mn > 0 ? ':' + (mn < 10 ? '0' : '') + mn : ':00';
+    return h12 + minStr + ' ' + (isAm ? 'AM' : 'PM');
   };
 
-  // ── Pool breakdown section ──
-  const poolSections = result.pools.map(pool => {
-    if (pool.total === 0 && !pool.participants.length) return '';
-    const rateStr = pool.totalHours > 0 ? '$' + (pool.total / pool.totalHours).toFixed(2) + '/hr' : '—';
-    const startStr = fmtAbs(pool.start);
-    const endStr   = fmtAbs(pool.end);
+  const fmtHrsLocal = h => parseFloat(h.toFixed(2)).toString();
 
-    const participantRows = pool.participants.map(px => {
-      const roleBadge = `<span class="role-badge role-${px.role}">${px.role === 'bartender' ? 'bar' : 'srv'}</span>`;
-      return `<div class="pool-participant-row">
-        <span class="pool-participant-name">${escapeHTML(px.name)}${roleBadge}</span>
-        <span class="pool-participant-hrs">${fmtHrs(px.hours)}h</span>
-        <span class="pool-participant-raw">$${px.raw.toFixed(2)}</span>
-      </div>`;
-    }).join('');
+  // Active pools (morning always first, then middle, then any parties)
+  const pools = result.pools.filter(p => p.total > 0 || p.participants.length > 0);
 
-    return `<div class="pool-section">
-      <div class="pool-section-hdr">
-        <div class="pool-section-left">
-          <span class="pool-section-name">${escapeHTML(pool.label)}</span>
-          <span class="pool-section-window">${startStr}–${endStr}</span>
-        </div>
-        <div class="pool-section-right">
-          <span class="pool-section-total">$${pool.total}</span>
-          <span class="pool-section-rate">${rateStr}</span>
-        </div>
-      </div>
-      <div class="pool-participants">${participantRows}</div>
-    </div>`;
+  // ── Pool metadata table ───────────────────────────────────────────────────
+
+  // Compute combined totals for a "Total" column
+  const totalCash       = result.totalCash;
+  const totalHoursAll   = result.people.reduce((s, p) => s + p.totalHours, 0);
+
+  // Header row: Cut | pool labels | Total
+  const thCols = pools.map(p => `<th>${escapeHTML(p.label)}</th>`).join('') + '<th>Total</th>';
+
+  // Metadata rows
+  const metaRows = [
+    {
+      label: 'Start',
+      vals:  pools.map(p => fmtAbs(p.start)),
+      total: '',
+    },
+    {
+      label: 'End',
+      vals:  pools.map(p => fmtAbs(p.end)),
+      total: '',
+    },
+    {
+      label: 'Hours',
+      vals:  pools.map(p => fmtHrsLocal(p.end - p.start)),
+      total: '',
+    },
+    {
+      label: 'Tips',
+      vals:  pools.map(p => p.total > 0 ? p.total : '—'),
+      total: totalCash,
+      boldTotal: true,
+    },
+    {
+      label: 'Hours',
+      vals:  pools.map(p => p.totalHours > 0 ? fmtHrsLocal(p.totalHours) : '—'),
+      total: fmtHrsLocal(totalHoursAll),
+    },
+    {
+      label: 'Hourly',
+      vals:  pools.map(p => p.totalHours > 0 ? (p.total / p.totalHours).toFixed(2) : '—'),
+      total: totalHoursAll > 0 ? (totalCash / totalHoursAll).toFixed(2) : '—',
+    },
+  ];
+
+  const metaTbody = metaRows.map(row => {
+    const tdVals = row.vals.map(v => `<td>${escapeHTML(String(v))}</td>`).join('');
+    const totalCell = row.total !== ''
+      ? `<td class="ds-total-col${row.boldTotal ? ' ds-bold' : ''}">${escapeHTML(String(row.total))}</td>`
+      : '<td class="ds-total-col ds-muted">—</td>';
+    return `<tr><td class="ds-row-label">${escapeHTML(row.label)}</td>${tdVals}${totalCell}</tr>`;
   }).join('');
 
-  // ── Per-person cards ──
-  const personCards = result.people.map(p => {
-    const safe     = escapeHTML(p.n);
-    const initials = escapeHTML(p.n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
-    const roleBadge = `<span class="role-badge role-${p.role}">${p.role === 'bartender' ? 'bar' : 'srv'}</span>`;
-    const closerBadge = p.closer ? '<span class="closer-badge">closer</span>' : '';
+  // ── Per-person rows ───────────────────────────────────────────────────────
 
-    // Per-pool breakdown chips
-    const poolChips = Object.entries(p.rawShares)
-      .filter(([, v]) => v > 0)
-      .map(([pid, v]) => {
-        const poolLabel = result.pools.find(pl => pl.id === pid)?.label || pid;
-        return `<span class="pool-chip"><span class="pool-chip-lbl">${escapeHTML(poolLabel)}</span><span class="pool-chip-val">$${v.toFixed(2)}</span></span>`;
-      }).join('');
+  // For each person, compute their payout per pool
+  // result.people[i].rawShares is a map of poolId → raw dollar share (pre-floor)
+  // We want the floored contribution per pool, then total = person.final
 
-    const bonusLine = p.bonus > 0
-      ? `<div class="person-bonus-row"><span class="person-bonus-base">${p.final - p.bonus}</span><span class="person-bonus-pill">+${p.bonus}</span></div>`
+  // Recompute per-pool floored amounts for display.
+  // Strategy: show Math.floor(rawShare) per pool, with the closer bonus folded into
+  // whichever pool the person participated in most (or just the total column).
+  const personRows = result.people.map(p => {
+    const name     = escapeHTML(p.n);
+    const roleDot  = p.closer
+      ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:4px;vertical-align:middle"></span>'
       : '';
 
-    const billsLine = chipHTML(p.bills);
+    const tdVals = pools.map(pool => {
+      const raw = p.rawShares[pool.id] || 0;
+      if (raw <= 0) return '<td class="ds-person-cell ds-empty">—</td>';
+      const hrs = pool.participants.find(px => px.name === p.n)?.hours || 0;
+      return `<td class="ds-person-cell">
+        <span class="ds-hrs">${fmtHrsLocal(hrs)}</span>
+        <span class="ds-pay">${Math.floor(raw)}</span>
+      </td>`;
+    }).join('');
 
-    // Hours display: total shift hours
-    const inStr  = fmtAbs(p.inAbs);
-    const outStr = fmtAbs(p.outAbs);
-
-    return `<div class="person-card">
-      <div class="person-card-top">
-        <div class="person-avatar">${initials}</div>
-        <div class="person-main">
-          <div class="person-name-row"><span class="person-name">${safe}</span>${roleBadge}${closerBadge}</div>
-          <div class="pool-chips-row">${poolChips}</div>
-          ${billsLine}
-        </div>
-        <div class="person-hrs-block">
-          <div class="person-hrs-val">${fmtHrs(p.totalHours)}</div>
-          <div class="person-hrs-times">${inStr}–${outStr}</div>
-        </div>
-        <div class="person-tip-col">
-          <div class="person-tip">$${p.final}</div>
-          ${bonusLine}
-        </div>
-      </div>
-    </div>`;
+    return `<tr class="ds-person-row">
+      <td class="ds-name-cell">${name}${roleDot}</td>
+      ${tdVals}
+      <td class="ds-total-col ds-bold">$${p.final}</td>
+    </tr>`;
   }).join('');
 
-  const remainderCard = result.leftover > 0
-    ? `<div class="person-card remainder-card">
-      <div class="person-card-top">
-        <div class="person-avatar remainder-avatar">R</div>
-        <div class="person-main">
-          <div class="person-name-row"><span class="person-name" style="color:var(--muted)">Remainder</span></div>
-          ${chipHTML(lastRemainderBills)}
-        </div>
-        <div class="person-hrs-block">
-          <div class="person-hrs-val muted" style="font-size:.72rem">stays</div>
-          <div class="person-hrs-times">in drawer</div>
-        </div>
-        <div class="person-tip-col"><div class="person-tip muted">$${result.leftover}</div></div>
-      </div>
-    </div>`
+  // Totals row
+  const poolTotals = pools.map(pool => {
+    const paid = pool.participants.reduce((s, px) => s + Math.floor(px.raw), 0);
+    return `<td class="ds-total-col ds-bold">${paid > 0 ? paid : '—'}</td>`;
+  }).join('');
+  const grandPaid = result.totalPaid + result.leftover;
+
+  // Hours totals row
+  const poolHrTotals = pools.map(pool =>
+    `<td class="ds-total-col">${pool.totalHours > 0 ? fmtHrsLocal(pool.totalHours) : '—'}</td>`
+  ).join('');
+
+  // Total paid per person sums
+  const totalPaidSum = result.people.reduce((s, p) => s + p.final, 0);
+
+  const totalsRow = `<tr class="ds-totals-row">
+    <td class="ds-row-label">Total</td>
+    ${pools.map(pool => {
+      const paid = pool.participants.reduce((s, px) => s + Math.floor(px.raw), 0);
+      const hrs  = fmtHrsLocal(pool.totalHours);
+      return `<td class="ds-person-cell">
+        <span class="ds-hrs">${hrs}</span>
+        <span class="ds-pay">${paid > 0 ? paid : '—'}</span>
+      </td>`;
+    }).join('')}
+    <td class="ds-total-col ds-bold">$${totalPaidSum}</td>
+  </tr>`;
+
+  // Remainder row (if any)
+  const remRow = result.leftover > 0
+    ? `<tr class="ds-rem-row">
+        <td class="ds-row-label" style="color:var(--muted)">Remainder</td>
+        ${pools.map(() => '<td></td>').join('')}
+        <td class="ds-total-col" style="color:var(--muted)">$${result.leftover}</td>
+      </tr>`
     : '';
 
-  const grandTotal  = result.totalPaid;
-  const totalHoursAll = result.people.reduce((s, p) => s + p.totalHours, 0);
+  // ── Warn box ─────────────────────────────────────────────────────────────
 
   const warnHTML = lastDistributionError
-    ? `<div class="warn-box">⚠ ${escapeHTML(lastDistributionError)} <button onclick="switchTab('cash',$('tb-cash'))" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-weight:700">→ Go to Cash</button></div>`
+    ? `<div class="warn-box" style="margin-top:8px">⚠ ${escapeHTML(lastDistributionError)}
+        <button onclick="switchTab('cash',$('tb-cash'))" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-weight:700">→ Go to Cash</button>
+       </div>`
     : '';
 
+  // ── Assemble ─────────────────────────────────────────────────────────────
+
   $('summary-content').innerHTML = `
-    <div class="summary-hero">
-      <div class="summary-hero-label">Day Shift Total Pool${dateStr ? ' · ' + dateStr : ''}</div>
-      <div class="summary-hero-val">$${result.totalCash}</div>
-      <div class="summary-meta">
-        <div class="summary-meta-item"><div class="summary-meta-lbl">Paid Out</div><div class="summary-meta-val">$${result.totalPaid}</div></div>
-        ${result.leftover > 0 ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Remainder</div><div class="summary-meta-val" style="color:var(--muted)">$${result.leftover}</div></div>` : ''}
-        <div class="summary-meta-item"><div class="summary-meta-lbl">Staff</div><div class="summary-meta-val">${result.people.length}</div></div>
-      </div>
+    <div class="ds-hero">
+      <div class="ds-hero-label">Day Shift${dateStr ? ' · ' + dateStr : ''}</div>
+      <div class="ds-hero-val">$${result.totalCash}</div>
     </div>
 
-    <div class="section-hdr" style="margin-top:8px">Pool Breakdown</div>
-    <div class="pool-sections">${poolSections}</div>
-
-    <div class="section-hdr" style="margin-top:12px">Per Person</div>
-    <div class="summary-breakdown-head"><span></span><span></span><span>Hrs</span><span>Tip</span></div>
-    ${personCards}
-    ${remainderCard}
-
-    <div class="summary-totals-strip">
-      <span class="summary-totals-lbl">Total</span>
-      <div class="summary-totals-right">
-        <span class="summary-totals-hrs">${fmtHrs(totalHoursAll)}</span>
-        <span class="summary-totals-val">$${grandTotal}</span>
-      </div>
+    <div class="ds-table-wrap">
+      <table class="ds-table">
+        <thead>
+          <tr>
+            <th class="ds-cut-col">Cut</th>
+            ${thCols}
+          </tr>
+        </thead>
+        <tbody>
+          ${metaTbody}
+          <tr class="ds-section-divider"><td colspan="${pools.length + 2}"></td></tr>
+          <tr class="ds-thead-row">
+            <th class="ds-cut-col">Name</th>
+            ${pools.map(p => `<th>${escapeHTML(p.label)}</th>`).join('')}
+            <th class="ds-total-col">Total</th>
+          </tr>
+          ${personRows}
+          ${totalsRow}
+          ${remRow}
+        </tbody>
+      </table>
     </div>
     ${warnHTML}
   `;
 }
 
-// ── Day shift dist renderer ───────────────────────────────────────────────────
+// ── Day shift dist renderer (unchanged from before) ───────────────────────────
 
 function renderDayDist(result) {
   const sb = $('stale-dist'); if (sb) sb.classList.remove('visible');
@@ -181,7 +213,6 @@ function renderDayDist(result) {
     return `<tr><td>${safe}${roleBadge}${dot}</td>${cols}<td class="person-total">$${pt}</td></tr>`;
   }).join('');
 
-  // Remainder row
   let remRow = '';
   if (result.leftover > 0) {
     const remBills = lastRemainderBills || {};
@@ -216,7 +247,7 @@ function renderDayDist(result) {
   $('dist-content').innerHTML = errHTML + tableHTML;
 }
 
-// ── Day shift home live update ────────────────────────────────────────────────
+// ── Day shift home live update (unchanged) ────────────────────────────────────
 
 function updateHomeLiveDay(result) {
   const sec = $('home-live-section'); if (!sec) return;
