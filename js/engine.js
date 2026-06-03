@@ -234,14 +234,7 @@ function runPreflight(slots, pool) {
     return { ok: false, msg: 'Need $' + needs.oneFiveTenShort + ' more in $1s/$5s/$10s after $50s.' };
   }
 
-  return {
-    ok: true,
-    ideals: {
-      1: needs.minOnes,
-      5: Math.max(0, (needs.minOneFiveValue - needs.minOnes) / 5),
-      10: Math.max(0, (needs.minOneFiveTenValue - needs.minOneFiveValue) / 10)
-    }
-  };
+  return { ok: true };
 }
 
 function runCascadingSieve(slots, poolIn) {
@@ -461,88 +454,6 @@ function applyBestFiftyPlan(slots, pool) {
     slots[i].target -= n * 50;
   });
   pool[50] = 0;
-  return true;
-}
-
-function applyBestFlipperPlan(slots, pool) {
-  const plan = [];
-  const best = { score: Infinity, plan: null };
-  let explored = 0;
-  const maxPaths = 100000;
-
-  const choicesBySlot = slots.map(s => {
-    const choices = [];
-    const max50 = Math.min(pool[50] || 0, Math.floor(s.target / 50));
-    for (let n50 = 0; n50 <= max50; n50++) {
-      const max10 = Math.min(pool[10] || 0, Math.floor((s.target - n50 * 50) / 10));
-      for (let n10 = 0; n10 <= max10; n10++) {
-        const rem = s.target - n50 * 50 - n10 * 10;
-        if (rem >= 0 && rem % 20 === 0) choices.push({ n50, n10, rem });
-      }
-    }
-    return choices.sort((a, b) => (b.n50 * 50 + b.n10 * 10) - (a.n50 * 50 + a.n10 * 10));
-  });
-
-  function scorePlan(candidate) {
-    const used50 = candidate.reduce((sum, choice) => sum + choice.n50, 0);
-    const used10 = candidate.reduce((sum, choice) => sum + choice.n10, 0);
-    const needed20 = candidate.reduce((sum, choice) => sum + choice.rem / 20, 0);
-    const unusedValue = (pool[50] - used50) * 50 + (pool[10] - used10) * 10 + (pool[20] - needed20) * 20;
-    const staffSlots = slots.filter(s => !s.isRemainder);
-    const totalOrig = staffSlots.reduce((sum, s) => sum + (s.orig || 0), 0) || 1;
-    const high50 = staffSlots.map(s => {
-      const i = slots.indexOf(s);
-      return (s.bills[100] || 0) * 100 + ((candidate[i]?.n50 || 0) * 50);
-    });
-    const totalHigh50 = high50.reduce((sum, value) => sum + value, 0);
-    let proportionalPenalty = 0;
-
-    staffSlots.forEach((s, i) => {
-      const ideal = (s.orig || 0) / totalOrig * totalHigh50;
-      proportionalPenalty += Math.abs(high50[i] - ideal);
-    });
-
-    return Math.max(0, unusedValue) * 1000 + proportionalPenalty;
-  }
-
-  function search(idx, used50, used10) {
-    if (explored > maxPaths) return;
-    if (idx === slots.length) {
-      explored++;
-      const needed20 = plan.reduce((sum, choice) => sum + choice.rem / 20, 0);
-      if (needed20 > (pool[20] || 0)) return;
-      const score = scorePlan(plan);
-      if (score < best.score) {
-        best.score = score;
-        best.plan = plan.map(choice => ({ ...choice }));
-      }
-      return;
-    }
-
-    for (const choice of choicesBySlot[idx]) {
-      if (used50 + choice.n50 > (pool[50] || 0)) continue;
-      if (used10 + choice.n10 > (pool[10] || 0)) continue;
-      plan[idx] = choice;
-      search(idx + 1, used50 + choice.n50, used10 + choice.n10);
-    }
-  }
-
-  search(0, 0, 0);
-  if (!best.plan) return false;
-
-  best.plan.forEach((choice, i) => {
-    if (choice.n50 > 0) {
-      slots[i].bills[50] += choice.n50;
-      slots[i].target -= choice.n50 * 50;
-      pool[50] -= choice.n50;
-    }
-    if (choice.n10 > 0) {
-      slots[i].bills[10] += choice.n10;
-      slots[i].target -= choice.n10 * 10;
-      pool[10] -= choice.n10;
-    }
-  });
-
   return true;
 }
 

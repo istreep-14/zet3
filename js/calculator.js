@@ -172,6 +172,15 @@ function renderNightShift(computeResult, distResult) {
 
 // ── Night shift: orchestration ────────────────────────────────────────────────
 
+// scheduleCalculate debounces rapid-fire cash-input keystrokes (called from
+// cash.js and cash_day.js oninput handlers) to avoid per-keystroke recalculation
+// and localStorage writes.
+let _autoCalcTimer = null;
+function scheduleCalculate() {
+  clearTimeout(_autoCalcTimer);
+  _autoCalcTimer = setTimeout(autoCalculate, 150);
+}
+
 function autoCalculate() {
   if (shiftMode === 'day') {
     autoCalculateDay();
