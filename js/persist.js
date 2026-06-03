@@ -4,25 +4,27 @@ function saveState() {
   if (isRestoringState) return;
   if (typeof snapshotCurrentCashMode === 'function') snapshotCurrentCashMode();
 
-  // In day mode, bartenders live in #bartenderList; in night mode they're in #staffList.
+  // Serialize staff from the model, not from DOM class inspection.
+  // staffModel is the authoritative source for closer state.
+  const serializeList = selector =>
+    [...document.querySelectorAll(selector)].map(r => {
+      const rowId  = Number(r.id.replace('staff', ''));
+      const entry  = staffModel.get(rowId) || {};
+      return {
+        name:   r.querySelector('[data-field="name"]').value,
+        in:     r.querySelector('[data-field="in"]').value,
+        out:    r.querySelector('[data-field="out"]').value,
+        // closer comes from the model — never from DOM classList
+        closer: entry.closer ?? false,
+      };
+    });
+
   const bartenderSelector = shiftMode === 'day'
     ? '#bartenderList .staff-row-modal'
     : '#staffList .staff-row-modal';
 
-  const staff = [...document.querySelectorAll(bartenderSelector)].map(r => ({
-    name:   r.querySelector('[data-field="name"]').value,
-    in:     r.querySelector('[data-field="in"]').value,
-    out:    r.querySelector('[data-field="out"]').value,
-    closer: r.querySelector('.sri-closer')?.classList.contains('on') ?? false,
-  }));
-
-  // Collect server rows (day shift only)
-  const servers = [...document.querySelectorAll('#serverList .staff-row-modal')].map(r => ({
-    name:   r.querySelector('[data-field="name"]').value,
-    in:     r.querySelector('[data-field="in"]').value,
-    out:    r.querySelector('[data-field="out"]').value,
-    closer: r.querySelector('.sri-closer')?.classList.contains('on') ?? false,
-  }));
+  const staff   = serializeList(bartenderSelector);
+  const servers = serializeList('#serverList .staff-row-modal');
 
   // Snapshot current day pool cash states
   const dayPoolSnap = {};
@@ -30,17 +32,16 @@ function saveState() {
     const p = dayPools[pid];
     if (!p) return;
     const snap = {
-      cashMode:        p.cashMode,
+      cashMode:         p.cashMode,
       netTotalSnapshot: p.netTotalSnapshot || '',
-      perBillSnapshot: { ...p.perBillSnapshot },
-      netBillSnapshot: { ...p.netBillSnapshot },
+      perBillSnapshot:  { ...p.perBillSnapshot },
+      netBillSnapshot:  { ...p.netBillSnapshot },
     };
     if (pid === 'party1' || pid === 'party2') {
       snap.enabled     = p.enabled;
       snap.windowStart = p.windowStart || '';
       snap.windowEnd   = p.windowEnd   || '';
     }
-    // Read live values from DOM if available
     if (p.cashMode === 'nettotal') {
       const el = $('dp-net-' + pid);
       if (el) snap.netTotalSnapshot = el.value || '';
@@ -60,16 +61,13 @@ function saveState() {
     gcIn:     $('gc-in')?.value         ?? '',
     gcOut:    $('gc-out')?.value        ?? '',
     shiftMode,
-    // Night shift cash
     cashMode,
-    bills: (typeof readBillInputSnapshot === 'function') ? readBillInputSnapshot() : {},
+    bills:        (typeof readBillInputSnapshot === 'function') ? readBillInputSnapshot() : {},
     perBillBills: perBillSnapshot,
     netBillBills: netBillSnapshot,
-    netTotal: $('net-total-input')?.value ?? '',
-    // Staff (bartenders for both modes; servers for day only)
+    netTotal:     $('net-total-input')?.value ?? '',
     staff,
     servers,
-    // Day shift pools
     dayPools: dayPoolSnap,
   };
 
