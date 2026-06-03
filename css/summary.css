@@ -127,19 +127,6 @@
   padding: 1px 3px;
 }
 
-.person-meta {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: .6rem;
-  font-family: var(--font-mono);
-  margin-bottom: 3px;
-}
-
-.person-hrs   { color: var(--text2); font-weight: 700; }
-.person-times { color: var(--muted); }
-.person-sep   { color: var(--border2); }
-
 /* Inline bill chips */
 .pbi-row { display: flex; gap: 3px; flex-wrap: wrap; }
 

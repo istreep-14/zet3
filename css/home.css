@@ -73,24 +73,6 @@
 
 .home-live-section { margin-top: 2px; }
 
-.home-live-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  margin-bottom: 5px;
-  cursor: pointer;
-  transition: border-color .15s;
-}
-
-.home-live-row:active {
-  border-color: var(--border2);
-  background: var(--surface2);
-}
-
 .home-live-avatar {
   width: 28px;
   height: 28px;

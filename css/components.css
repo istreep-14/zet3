@@ -77,13 +77,3 @@
   display: block;
 }
 
-.info-box {
-  background: #0e1a2e;
-  border: 1px solid #1e3050;
-  border-radius: var(--radius-sm);
-  padding: 8px 12px;
-  font-size: .72rem;
-  color: #7aabdf;
-  line-height: 1.5;
-  font-family: var(--font-mono);
-}
