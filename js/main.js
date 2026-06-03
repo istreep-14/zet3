@@ -166,12 +166,14 @@ if (_firstEmpty && !_firstEmpty.value.trim()) {
   }
 }
 
-// Keep tab bar above keyboard on iOS
+// Hide tab bar when software keyboard is open so it doesn't block inputs.
+// Uses a body class; CSS handles both the bar and content padding.
 if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => {
-    const bar = document.querySelector('.tab-bar');
-    if (!bar) return;
-    const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
-    bar.style.transform = offset > 0 ? 'translateY(-' + offset + 'px)' : '';
-  });
+  const KEYBOARD_THRESHOLD = 120; // px shrinkage below which we ignore (URL bar etc)
+  const updateKeyboardState = () => {
+    const shrink = window.screen.height - window.visualViewport.height;
+    document.body.classList.toggle('keyboard-open', shrink > KEYBOARD_THRESHOLD);
+  };
+  window.visualViewport.addEventListener('resize', updateKeyboardState);
+  window.visualViewport.addEventListener('scroll', updateKeyboardState);
 }
