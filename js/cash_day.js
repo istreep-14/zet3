@@ -13,7 +13,6 @@ function onDayPoolBillsChange(poolId) {
   const pool = dayPools[poolId];
   if (!pool || pool.cashMode === 'nettotal') return;
 
-  // Update subtotals
   DENOMS.forEach(d => {
     const el    = $('dp-b' + d + '-' + poolId);
     const subEl = $('dp-sub' + d + '-' + poolId);
@@ -26,7 +25,6 @@ function onDayPoolBillsChange(poolId) {
     setInputInvalid(el, !parsed.valid);
   });
 
-  // Update pool total display
   refreshDayPoolTotal(poolId);
   autoCalculate();
 }
@@ -42,9 +40,8 @@ function onDayPoolNetTotalChange(poolId) {
   setInputInvalid(el, !parsed.valid);
   pool.netTotalSnapshot = el?.value || '';
 
-  // Compute ideal breakdown and write to hidden bill inputs
   if (parsed.valid && total > 0) {
-    const ideal = computeIdealFromTotal(total);  // from cash.js
+    const ideal = computeIdealFromTotal(total);
     DENOMS.forEach(d => {
       const hiddenEl = $('dp-b' + d + '-' + poolId);
       if (hiddenEl) hiddenEl.value = (ideal.pool[d] || 0) > 0 ? ideal.pool[d] : '';
@@ -92,7 +89,6 @@ function setDayPoolCashMode(poolId, mode) {
     if (netInput) netInput.value = pool.netTotalSnapshot || '';
     onDayPoolNetTotalChange(poolId);
   } else {
-    // Restore per-bill snapshot
     DENOMS.forEach(d => {
       const el = $('dp-b' + d + '-' + poolId);
       if (el) el.value = pool.perBillSnapshot?.[d] ?? '';
@@ -158,11 +154,6 @@ function renderDayPoolCashPanels() {
 
     const isNet = pool.cashMode === 'nettotal';
 
-    // Hidden bill inputs always rendered (net-total mode writes to them for calculation)
-    const hiddenBillInputs = DENOMS.map(d =>
-      `<input type="hidden" id="dp-b${d}-${def.id}" value="${escapeHTML(pool.perBillSnapshot?.[d] ?? '')}">`
-    ).join('');
-
     const perBillRows = DENOMS.map(d =>
       `<div class="dp-denom-row">
         <div class="dp-denom-label">$${d}</div>
@@ -207,7 +198,6 @@ function renderDayPoolCashPanels() {
     </div>`;
   }).join('');
 
-  // Refresh all totals
   getDayPoolActiveIds().forEach(id => refreshDayPoolTotal(id));
 }
 
@@ -220,12 +210,13 @@ function updateDayStockCards() {
   const scSub = $('sc-billcount');
   if (scSub) scSub.textContent = total > 0 ? 'combined' : '—';
 
-  const bartRows = document.querySelectorAll('#staffList .staff-row-modal');
+  // Use bartenderList for day-shift bartenders (not staffList, which is night-shift only)
+  const bartRows = document.querySelectorAll('#bartenderList .staff-row-modal');
   const servRows = document.querySelectorAll('#serverList .staff-row-modal');
   let named = 0;
   [...bartRows, ...servRows].forEach(r => {
     if (r.querySelector('[data-field="name"]').value.trim()) named++;
   });
   const sc2 = $('sc-staffcount'); if (sc2) sc2.textContent = named;
-  const spc = $('staffPageCount'); if (spc) spc.textContent = named + (named === 1 ? ' person' : ' people');
+  const spc = $('staffPageCount2'); if (spc) spc.textContent = named + (named === 1 ? ' person' : ' people');
 }

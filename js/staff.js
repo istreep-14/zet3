@@ -19,8 +19,9 @@ function reindexTabOrder() {
     });
   };
 
-  reindex('staffList', 0);
-  reindex('serverList', 100);
+  reindex('staffList', 0);       // night shift
+  reindex('bartenderList', 0);   // day shift bartenders
+  reindex('serverList', 100);    // day shift servers
 }
 
 // ── Add staff row ─────────────────────────────────────────────────────────────
@@ -29,7 +30,7 @@ function addStaff(focusNew, listId) {
   const targetList = listId || 'staffList';
   const isServer   = targetList === 'serverList';
 
-  // Use separate id ranges: bartenders 1-999, servers 1000+
+  // id ranges: night staff / day bartenders share 1-999, servers 1000+
   if (isServer) {
     serverStaffId++;
   } else {
@@ -89,7 +90,12 @@ function toggleCloser(id) {
 }
 
 function updateSectionCounts() {
-  const bartCount = [...document.querySelectorAll('#staffList .staff-row-modal')]
+  // In day mode bartenders live in #bartenderList; in night mode they're in #staffList.
+  const bartSelector = shiftMode === 'day'
+    ? '#bartenderList .staff-row-modal'
+    : '#staffList .staff-row-modal';
+
+  const bartCount = [...document.querySelectorAll(bartSelector)]
     .filter(r => r.querySelector('[data-field="name"]').value.trim()).length;
   const servCount = [...document.querySelectorAll('#serverList .staff-row-modal')]
     .filter(r => r.querySelector('[data-field="name"]').value.trim()).length;
@@ -99,17 +105,24 @@ function updateSectionCounts() {
   if (bartCountEl) bartCountEl.textContent = bartCount + (bartCount === 1 ? ' person' : ' people');
   if (servCountEl) servCountEl.textContent = servCount + (servCount === 1 ? ' person' : ' people');
 
-  // Night shift page count
+  // Night shift page count (staffPageCount lives in night section)
   const spc = $('staffPageCount');
   if (spc) {
     const n = shiftMode === 'day' ? bartCount + servCount : bartCount;
     spc.textContent = n + (n === 1 ? ' person' : ' people');
   }
+
+  // Day shift page count (staffPageCount2 lives in day section)
+  const spc2 = $('staffPageCount2');
+  if (spc2) {
+    const n = bartCount + servCount;
+    spc2.textContent = n + (n === 1 ? ' person' : ' people');
+  }
 }
 
 function onDefaultTimesChange() {
   reindexTabOrder();
-  document.querySelectorAll('#staffList .staff-row-modal, #serverList .staff-row-modal')
+  document.querySelectorAll('#staffList .staff-row-modal, #bartenderList .staff-row-modal, #serverList .staff-row-modal')
     .forEach(r => calcHours(r.id.replace('staff', '')));
   autoCalculate();
 }

@@ -4,8 +4,12 @@ function saveState() {
   if (isRestoringState) return;
   if (typeof snapshotCurrentCashMode === 'function') snapshotCurrentCashMode();
 
-  // Collect bartender rows
-  const staff = [...document.querySelectorAll('#staffList .staff-row-modal')].map(r => ({
+  // In day mode, bartenders live in #bartenderList; in night mode they're in #staffList.
+  const bartenderSelector = shiftMode === 'day'
+    ? '#bartenderList .staff-row-modal'
+    : '#staffList .staff-row-modal';
+
+  const staff = [...document.querySelectorAll(bartenderSelector)].map(r => ({
     name:   r.querySelector('[data-field="name"]').value,
     in:     r.querySelector('[data-field="in"]').value,
     out:    r.querySelector('[data-field="out"]').value,
@@ -62,7 +66,7 @@ function saveState() {
     perBillBills: perBillSnapshot,
     netBillBills: netBillSnapshot,
     netTotal: $('net-total-input')?.value ?? '',
-    // Staff
+    // Staff (bartenders for both modes; servers for day only)
     staff,
     servers,
     // Day shift pools

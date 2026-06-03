@@ -185,6 +185,7 @@ function renderAll(staff, total, totH, rate, leftover) {
 // ── Day shift orchestration ───────────────────────────────────────────────────
 
 function collectDayStaffRows(listId, role) {
+  // listId is 'bartenderList' for bartenders, 'serverList' for servers.
   const rows = document.querySelectorAll('#' + listId + ' .staff-row-modal');
   const gcIn  = ($('gc-in').value  || '').trim();
   const gcOut = ($('gc-out').value || '').trim();
@@ -223,7 +224,6 @@ function getDayPoolCash() {
 }
 
 function getDayPoolTotal(poolId) {
-  // Read from the pool's bill inputs (prefixed with poolId)
   const pool = dayPools[poolId];
   if (!pool) return 0;
   if (pool.cashMode === 'nettotal') {
@@ -242,7 +242,6 @@ function getDayPoolBills(poolId) {
   const pool = dayPools[poolId];
   if (!pool) return { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 };
   if (pool.cashMode === 'nettotal') {
-    // Use the ideal breakdown stored in netBillSnapshot
     const snap = pool.netBillSnapshot || {};
     const out = {};
     DENOMS.forEach(d => {
@@ -270,8 +269,9 @@ function mergeBillPools(poolIds) {
 }
 
 function autoCalculateDay() {
-  const bartenderRows = collectDayStaffRows('staffList',   'bartender');
-  const serverRows    = collectDayStaffRows('serverList',  'server');
+  // Use 'bartenderList' for day-shift bartenders (distinct from night-shift 'staffList')
+  const bartenderRows = collectDayStaffRows('bartenderList', 'bartender');
+  const serverRows    = collectDayStaffRows('serverList',    'server');
 
   const partyConfig = {
     party1: { enabled: dayPools.party1.enabled, start: dayPools.party1.windowStart, end: dayPools.party1.windowEnd },
@@ -297,17 +297,14 @@ function autoCalculateDay() {
     return;
   }
 
-  // Merge all active pool bills for distribution
   const activePoolIds = ['morning', 'middle'];
   if (dayPools.party1.enabled) activePoolIds.push('party1');
   if (dayPools.party2.enabled) activePoolIds.push('party2');
   const mergedBills = mergeBillPools(activePoolIds);
 
-  // Run bill distribution on combined cash
   const sc = result.people.map(p => ({ ...p, bills: { 100:0,50:0,20:0,10:0,5:0,1:0 }, rem: p.final }));
   distributeBills(sc, mergedBills, result.leftover);
 
-  // Copy bills back to result.people
   result.people.forEach((p, i) => { p.bills = { ...sc[i].bills }; });
 
   lastDayResult = result;
