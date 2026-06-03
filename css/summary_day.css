@@ -1,0 +1,206 @@
+/* ── Day shift summary table (ds-) ──────────────────────────────────────────── */
+
+.ds-hero {
+  padding: 10px 2px 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ds-hero-label {
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.ds-hero-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.ds-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: .78rem;
+}
+
+/* ── Header ── */
+.ds-table thead th {
+  padding: 9px 10px 8px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border2);
+  font-size: .56rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ds-table thead th.ds-cut-col {
+  text-align: left;
+  padding-left: 12px;
+  min-width: 60px;
+}
+
+.ds-table thead th:last-child,
+.ds-table th.ds-total-col {
+  text-align: right;
+  padding-right: 12px;
+  border-left: 1px solid var(--border);
+  color: var(--text2);
+}
+
+/* ── Metadata rows ── */
+.ds-table tbody tr td {
+  padding: 5px 10px;
+  border-bottom: 1px solid #15151f;
+  text-align: center;
+  color: var(--text2);
+  white-space: nowrap;
+}
+
+.ds-row-label {
+  text-align: left !important;
+  padding-left: 12px !important;
+  color: var(--muted) !important;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.ds-total-col {
+  text-align: right !important;
+  padding-right: 12px !important;
+  border-left: 1px solid var(--border) !important;
+  color: var(--text2);
+}
+
+.ds-bold { color: var(--gold) !important; font-weight: 800 !important; }
+.ds-muted { color: var(--muted2) !important; }
+
+/* ── Section divider between metadata and person rows ── */
+.ds-section-divider td {
+  padding: 0 !important;
+  height: 1px;
+  background: var(--border2);
+  border-bottom: none !important;
+}
+
+/* ── Second thead row (Name / pool labels / Total) ── */
+.ds-thead-row th {
+  padding: 8px 10px 7px;
+  background: var(--surface2);
+  font-size: .56rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-top: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.ds-thead-row th.ds-cut-col {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.ds-thead-row th.ds-total-col,
+.ds-thead-row th:last-child {
+  text-align: right;
+  padding-right: 12px;
+  border-left: 1px solid var(--border);
+}
+
+/* ── Person rows ── */
+.ds-person-row td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #15151f;
+  vertical-align: middle;
+}
+
+.ds-name-cell {
+  text-align: left !important;
+  padding-left: 12px !important;
+  color: var(--text) !important;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: .84rem;
+  white-space: nowrap;
+}
+
+/* Each pool cell: hours (muted, italic, small) above payout (bold, gold) */
+.ds-person-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ds-person-cell.ds-empty {
+  color: var(--muted2);
+}
+
+.ds-hrs {
+  display: block;
+  font-size: .52rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.2;
+}
+
+.ds-pay {
+  display: block;
+  font-size: .88rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1.2;
+}
+
+/* ── Totals row ── */
+.ds-totals-row td {
+  border-top: 1px solid var(--border2);
+  border-bottom: none !important;
+  background: var(--surface2);
+  padding: 7px 10px;
+}
+
+.ds-totals-row .ds-row-label {
+  color: var(--muted) !important;
+}
+
+.ds-totals-row .ds-person-cell .ds-hrs {
+  color: var(--muted);
+}
+
+.ds-totals-row .ds-person-cell .ds-pay {
+  color: var(--text2);
+}
+
+/* ── Remainder row ── */
+.ds-rem-row td {
+  border-top: 1px dashed var(--border);
+  border-bottom: none !important;
+  background: #12121c;
+  padding: 4px 10px;
+  font-size: .72rem;
+  color: var(--muted);
+  opacity: .8;
+}
