@@ -33,7 +33,7 @@ function onDayPoolBillsChange(poolId) {
   });
 
   refreshDayPoolTotal(poolId);
-  autoCalculate();
+  scheduleCalculate();
 }
 
 function onDayPoolNetTotalChange(poolId) {
@@ -64,7 +64,7 @@ function onDayPoolNetTotalChange(poolId) {
   }
 
   refreshDayPoolTotal(poolId);
-  autoCalculate();
+  scheduleCalculate();
 }
 
 function refreshDayPoolTotal(poolId) {
