@@ -55,7 +55,10 @@ function collectNamedStaffRows() {
     if (!name) return;
     if (inStr  && !inParsed.valid)  errors.push(name + ' has an invalid In time.');
     if (outStr && !outParsed.valid) errors.push(name + ' has an invalid Out time.');
-    rawData.push({ name, inStr, outStr, hasIn: !!inStr, hasOut: !!outStr, rowId: r.id.replace('staff', '') });
+    const rowId = r.id.replace('staff', '');
+    rawData.push({ name, inStr, outStr, hasIn: !!inStr, hasOut: !!outStr, rowId,
+      // closer flag comes from the model, not from DOM class state
+      manualCloser: modelGet(rowId)?.closer ?? false });
   });
 
   return { rawData, gcIn, gcOut, errors };
@@ -101,8 +104,8 @@ function computeNightShift() {
     let h = outVal - inVal; if (h < 0) h += 12;
     const eo          = outVal < inVal ? outVal + 12 : outVal;
     const autoCloser  = !r.hasOut;
-    const ctEl        = document.getElementById('ct' + r.rowId);
-    const closer      = (ctEl ? ctEl.classList.contains('on') : false) || autoCloser;
+    // closer flag was already read from staffModel in collectNamedStaffRows.
+    const closer      = r.manualCloser || autoCloser;
     return {
       n: r.name, i: inVal, o: outVal, h, eo,
       _rowId: r.rowId, _autoCloser: autoCloser, closer,
@@ -253,10 +256,11 @@ function collectDayStaffRows(listId, role) {
     const outEl  = r.querySelector('[data-field="out"]');
     const inStr  = inEl.value.trim()  || gcIn;
     const outStr = outEl.value.trim() || gcOut;
-    const ctEl   = r.querySelector('.sri-closer');
+    const rowId = r.id.replace('staff', '').replace('server', '');
+    // Read closer flag from the data model, not from a DOM class.
+    const closer = modelGet(rowId)?.closer ?? false;
     if (!name) return;
-    result.push({ name, inStr, outStr, rowId: r.id.replace('staff', '').replace('server', ''),
-      closer: ctEl ? ctEl.classList.contains('on') : false, role });
+    result.push({ name, inStr, outStr, rowId, closer, role });
   });
 
   return result;
