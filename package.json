@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "test": "node js/engine.test.js && node js/utils.test.js"
+    "test": "node js/engine.test.js && node js/utils.test.js && node js/engine_day.test.js"
   }
 }
