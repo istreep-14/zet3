@@ -3,6 +3,8 @@ const STORAGE_KEY = 'tippool_v1';
 function saveState() {
   if (isRestoringState) return;
   if (typeof snapshotCurrentCashMode === 'function') snapshotCurrentCashMode();
+
+  // Collect bartender rows
   const staff = [...document.querySelectorAll('#staffList .staff-row-modal')].map(r => ({
     name:   r.querySelector('[data-field="name"]').value,
     in:     r.querySelector('[data-field="in"]').value,
@@ -10,31 +12,66 @@ function saveState() {
     closer: r.querySelector('.sri-closer')?.classList.contains('on') ?? false,
   }));
 
+  // Collect server rows (day shift only)
+  const servers = [...document.querySelectorAll('#serverList .staff-row-modal')].map(r => ({
+    name:   r.querySelector('[data-field="name"]').value,
+    in:     r.querySelector('[data-field="in"]').value,
+    out:    r.querySelector('[data-field="out"]').value,
+    closer: r.querySelector('.sri-closer')?.classList.contains('on') ?? false,
+  }));
+
+  // Snapshot current day pool cash states
+  const dayPoolSnap = {};
+  ['morning', 'middle', 'party1', 'party2'].forEach(pid => {
+    const p = dayPools[pid];
+    if (!p) return;
+    const snap = {
+      cashMode:        p.cashMode,
+      netTotalSnapshot: p.netTotalSnapshot || '',
+      perBillSnapshot: { ...p.perBillSnapshot },
+      netBillSnapshot: { ...p.netBillSnapshot },
+    };
+    if (pid === 'party1' || pid === 'party2') {
+      snap.enabled     = p.enabled;
+      snap.windowStart = p.windowStart || '';
+      snap.windowEnd   = p.windowEnd   || '';
+    }
+    // Read live values from DOM if available
+    if (p.cashMode === 'nettotal') {
+      const el = $('dp-net-' + pid);
+      if (el) snap.netTotalSnapshot = el.value || '';
+    } else {
+      DENOMS.forEach(d => {
+        const el = $('dp-b' + d + '-' + pid);
+        if (el) snap.perBillSnapshot[d] = el.value || '';
+      });
+    }
+    dayPoolSnap[pid] = snap;
+  });
+
   const snap = {
     v:        2,
     saved:    Date.now(),
     date:     $('tipDate')?.value       ?? '',
     gcIn:     $('gc-in')?.value         ?? '',
     gcOut:    $('gc-out')?.value        ?? '',
+    shiftMode,
+    // Night shift cash
     cashMode,
-    bills: (typeof readBillInputSnapshot === 'function') ? readBillInputSnapshot() : {
-      100: $('b100')?.value ?? '',
-       50: $('b50')?.value  ?? '',
-       20: $('b20')?.value  ?? '',
-       10: $('b10')?.value  ?? '',
-        5: $('b5')?.value   ?? '',
-        1: $('b1')?.value   ?? '',
-    },
+    bills: (typeof readBillInputSnapshot === 'function') ? readBillInputSnapshot() : {},
     perBillBills: perBillSnapshot,
     netBillBills: netBillSnapshot,
     netTotal: $('net-total-input')?.value ?? '',
+    // Staff
     staff,
+    servers,
+    // Day shift pools
+    dayPools: dayPoolSnap,
   };
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
   } catch (e) {
-    // Safari private mode throws — silently absorb
     console.warn('TipPool: localStorage unavailable', e);
   }
 }
@@ -79,6 +116,9 @@ function validateSessionSnapshot(snap) {
   if (snap.cashMode && snap.cashMode !== 'perbill' && snap.cashMode !== 'nettotal') {
     throw new Error('cashMode is invalid');
   }
+  if (snap.shiftMode && snap.shiftMode !== 'night' && snap.shiftMode !== 'day') {
+    throw new Error('shiftMode is invalid');
+  }
   validateBillSnapshot(snap.bills, 'bills');
   validateBillSnapshot(snap.perBillBills, 'perBillBills');
   validateBillSnapshot(snap.netBillBills, 'netBillBills');
@@ -90,6 +130,12 @@ function validateSessionSnapshot(snap) {
         if (person[key] != null && typeof person[key] !== 'string') throw new Error('staff ' + key + ' must be a string');
       });
       if (person.closer != null && typeof person.closer !== 'boolean') throw new Error('staff closer must be a boolean');
+    });
+  }
+  if (snap.servers != null) {
+    if (!Array.isArray(snap.servers)) throw new Error('servers must be an array');
+    snap.servers.forEach(person => {
+      if (!isPlainObject(person)) throw new Error('server entries must be objects');
     });
   }
 }
@@ -111,7 +157,7 @@ function exportSession() {
 function importSession(file) {
   if (!file) return;
   const reader = new FileReader();
-  const input = $('importFileInput');
+  const input  = $('importFileInput');
   const resetInput = () => { if (input) input.value = ''; };
   reader.onload = e => {
     try {
@@ -125,10 +171,7 @@ function importSession(file) {
       resetInput();
     }
   };
-  reader.onerror = () => {
-    alert('Could not read file.');
-    resetInput();
-  };
+  reader.onerror = () => { alert('Could not read file.'); resetInput(); };
   reader.readAsText(file);
 }
 
@@ -149,7 +192,6 @@ function toggleSessionMenu() {
   if (menu) menu.classList.toggle('hidden');
 }
 
-// Close session menu on outside tap
 document.addEventListener('click', e => {
   const menu = $('sessionMenu');
   if (!menu || menu.classList.contains('hidden')) return;
