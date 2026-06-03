@@ -61,6 +61,9 @@ let dayPools = {
   },
 };
 
+// Which day-shift pool card is currently expanded (accordion — one at a time)
+let selectedDayPool = 'morning';
+
 // Last computed day shift results (for rendering)
 let lastDayResult = null;
 /*
