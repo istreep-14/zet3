@@ -25,7 +25,6 @@ if (_saved) {
   const savedShift = _saved.shiftMode || 'night';
   shiftMode = savedShift;
 
-  // Restore shift toggle UI state immediately (before rendering panels)
   const btnNight = $('shift-btn-night');
   const btnDay   = $('shift-btn-day');
   if (btnNight) btnNight.classList.toggle('active', savedShift === 'night');
@@ -34,7 +33,6 @@ if (_saved) {
   const shiftLabel = $('shift-mode-label');
   if (shiftLabel) shiftLabel.textContent = savedShift === 'night' ? 'Night Shift' : 'Day Shift';
 
-  // Show/hide appropriate sections
   const nightCash  = $('night-cash-section');
   const dayCash    = $('day-cash-section');
   const nightStaff = $('night-staff-section');
@@ -50,11 +48,16 @@ if (_saved) {
   perBillSnapshot  = _savedBillSnap(_saved.perBillBills ?? (_saved.cashMode === 'perbill'  ? _saved.bills : {}));
   netBillSnapshot  = _savedBillSnap(_saved.netBillBills ?? (_saved.cashMode === 'nettotal' ? _saved.bills : {}));
 
-  // ── Bartenders (also used for night shift) ──
-  const bartRows = (_saved.staff?.length >= 1) ? _saved.staff : (savedShift === 'night' ? [{}, {}, {}] : [{}]);
+  // ── Bartenders ──
+  // Night shift: staffList. Day shift: bartenderList. Both use the same saved 'staff' array.
+  const bartListId = savedShift === 'day' ? 'bartenderList' : 'staffList';
+  const bartRows = (_saved.staff?.length >= 1)
+    ? _saved.staff
+    : (savedShift === 'night' ? [{}, {}, {}] : [{}]);
+
   bartRows.forEach((s, i) => {
-    addStaff(false, 'staffList');
-    const row = document.querySelectorAll('#staffList .staff-row-modal')[i];
+    addStaff(false, bartListId);
+    const row = document.querySelectorAll('#' + bartListId + ' .staff-row-modal')[i];
     if (!row) return;
     row.querySelector('[data-field="name"]').value = s.name ?? '';
     row.querySelector('[data-field="in"]').value   = s.in   ?? '';
@@ -104,7 +107,6 @@ if (_saved) {
   // Render day cash panels after state is set
   if (savedShift === 'day') {
     renderDayPoolCashPanels();
-    // Restore per-bill values into rendered inputs
     ['morning', 'middle', 'party1', 'party2'].forEach(pid => {
       const pool = dayPools[pid];
       if (!pool.enabled && (pid === 'party1' || pid === 'party2')) return;
@@ -151,8 +153,11 @@ if (shiftMode === 'day') {
 updateTabIndicators();
 autoCalculate();
 
-// Pulse-hint first empty staff name field
-const _firstEmpty = document.querySelector('#staffList [data-field="name"]');
+// Pulse-hint first empty staff name field (night mode only — day mode has bartenderList)
+const _firstEmptySelector = shiftMode === 'day'
+  ? '#bartenderList [data-field="name"]'
+  : '#staffList [data-field="name"]';
+const _firstEmpty = document.querySelector(_firstEmptySelector);
 if (_firstEmpty && !_firstEmpty.value.trim()) {
   const _row = _firstEmpty.closest('.staff-row-modal');
   if (_row) {

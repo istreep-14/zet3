@@ -63,7 +63,7 @@
   <!-- TAB: CASH -->
   <div class="tab-panel" id="tab-cash">
 
-    <!-- Shift toggle — shown on every tab via Cash as the primary entry point -->
+    <!-- Shift toggle -->
     <div class="shift-toggle">
       <button class="shift-btn night-btn active" id="shift-btn-night" onclick="setShiftMode('night')">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -169,12 +169,13 @@
         </div>
 
         <!-- Bartenders section -->
+        <!-- NOTE: id="bartenderList" — distinct from night-shift id="staffList" -->
         <div class="staff-section-hdr" style="margin-top:12px">
           <span class="staff-section-title bartender-title">Bartenders</span>
           <span class="staff-section-count" id="bartender-count">0 people</span>
         </div>
-        <div class="staff-list-modal" id="staffList"></div>
-        <button class="add-btn" onclick="addStaff(true,'staffList')" style="margin-bottom:4px">+ Add Bartender</button>
+        <div class="staff-list-modal" id="bartenderList"></div>
+        <button class="add-btn" onclick="addStaff(true,'bartenderList')" style="margin-bottom:4px">+ Add Bartender</button>
 
         <!-- Servers section -->
         <div class="staff-section-hdr" style="margin-top:14px">
@@ -278,10 +279,6 @@
   </div>
 </div>
 
-<!-- ─────────────────────────────────────────────────────────────────────────────
-     Scripts — load order matters: state first, engine before calculator,
-     day modules after their dependencies, main last.
-     ───────────────────────────────────────────────────────────────────────── -->
 <script src="js/state.js"></script>
 <script src="js/persist.js"></script>
 <script src="js/utils.js"></script>
