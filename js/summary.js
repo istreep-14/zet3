@@ -1,8 +1,29 @@
-function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, poolAfter) {
+// renderSummary — night shift summary tab
+//
+// Parameters:
+//   staffWithBills  — staff array post-distribution (has .bills assigned)
+//   staffOrig       — original staff array from computation (same objects here, kept for API compat)
+//   total           — total cash pool
+//   totH            — total hours worked
+//   rate            — $/hr rate
+//   leftover        — dollars remaining in drawer
+//   poolAfter       — bill counts remaining after distribution (unused in markup, kept for compat)
+//   distCtx         — { remainderBills, distributionError, pool }
+//
+// No computation globals are read here. All data arrives via parameters.
+
+function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, poolAfter, distCtx) {
   const sb = $('stale-summary'); if (sb) sb.classList.remove('visible');
-  const dateVal = $('tipDate').value;
+
+  // Unpack distribution context, fall back to globals only as a safety net
+  // so existing callers that don't pass distCtx still work during migration.
+  const remainderBills    = distCtx?.remainderBills    ?? lastRemainderBills  ?? {};
+  const distributionError = distCtx?.distributionError ?? lastDistributionError ?? '';
+  const pool              = distCtx?.pool              ?? livePool             ?? {};
+
+  const dateVal  = $('tipDate').value;
   const [yr, mo, dy] = dateVal ? dateVal.split('-') : ['', '', ''];
-  const dateStr = (mo && dy && yr) ? `${parseInt(mo)}/${parseInt(dy)}/${yr}` : '';
+  const dateStr  = (mo && dy && yr) ? `${parseInt(mo)}/${parseInt(dy)}/${yr}` : '';
   const sumFinal = staffWithBills.reduce((s, p) => s + p.final, 0);
   const grandTotal = sumFinal + leftover;
 
@@ -13,9 +34,6 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     const outStr      = fmtTime(p.o, p.i, p.o < p.i);
     const closerBadge = p.closer ? '<span class="closer-badge">closer</span>' : '';
 
-    // Tip column: always render both the total and the base+bonus line so
-    // every card has the same height regardless of closer status.
-    // Non-closers show base in muted; closers show base + green pill.
     const bonusLine = p.bonus > 0
       ? `<div class="person-bonus-row">
            <span class="person-bonus-base">${p.base}</span>
@@ -43,7 +61,6 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     </div>`;
   }).join('');
 
-  // Remainder card
   const remainderCard = leftover > 0
     ? `<div class="person-card remainder-card">
         <div class="person-card-top">
@@ -64,15 +81,15 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Remainder</div><div class="summary-meta-val" style="color:var(--muted)">$${leftover}</div></div>`
     : '';
 
-  const unpaid      = staffWithBills.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
-  const remainderPaid = poolValue(lastRemainderBills || {});
-  const remShort    = leftover > 0 && remainderPaid !== leftover;
-  const warnMsg     = lastDistributionError
+  const unpaid       = staffWithBills.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
+  const remainderPaid = poolValue(remainderBills);
+  const remShort     = leftover > 0 && remainderPaid !== leftover;
+  const warnMsg      = distributionError
     || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Remainder cannot be represented by available bills' : '');
 
   let warnHTML = '';
   if (warnMsg) {
-    const req = getSmallBillRequirements(staffWithBills, livePool, lastLeftover);
+    const req      = getSmallBillRequirements(staffWithBills, pool, leftover);
     const reqCards = renderSmallBillRequirementCards(req);
     warnHTML =
       `<div class="warn-box">⚠ ${escapeHTML(warnMsg)} `

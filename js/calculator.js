@@ -1,4 +1,4 @@
-// ── Shared helpers ────────────────────────────────────────────────────────────
+// ── Shared UI helpers ─────────────────────────────────────────────────────────
 
 function setStaleBanners(reason) {
   const message = '⚠ ' + reason + ' Results below are outdated.';
@@ -24,31 +24,31 @@ function blockCalculation(reason, options = {}) {
   currentInputError = options.inputError ? reason : '';
   updateHomeLive(null);
   clearStaleBanners();
-  if (lastStaff.length || (lastDayResult) || options.showPlaceholder) {
+  if (lastStaff.length || lastDayResult || options.showPlaceholder) {
     renderBlockedPlaceholders(reason);
   }
 }
 
-// ── Night shift (existing logic, unchanged) ───────────────────────────────────
+// ── Input collection ──────────────────────────────────────────────────────────
 
 function collectNamedStaffRows() {
   const rows = document.querySelectorAll('#staffList .staff-row-modal');
   const gcIn = $('gc-in').value.trim(), gcOut = $('gc-out').value.trim();
   const errors = [];
   const gcInParsed = parseTimeString(gcIn), gcOutParsed = parseTimeString(gcOut);
-  setInputInvalid($('gc-in'), !!gcIn && !gcInParsed.valid);
+  setInputInvalid($('gc-in'),  !!gcIn  && !gcInParsed.valid);
   setInputInvalid($('gc-out'), !!gcOut && !gcOutParsed.valid);
-  if (gcIn && !gcInParsed.valid) errors.push('Default In must be a valid 0–12 time.');
+  if (gcIn  && !gcInParsed.valid)  errors.push('Default In must be a valid 0–12 time.');
   if (gcOut && !gcOutParsed.valid) errors.push('Default Out must be a valid 0–12 time.');
 
   const rawData = [];
   rows.forEach(r => {
-    const name   = r.querySelector('[data-field="name"]').value.trim();
-    const inEl   = r.querySelector('[data-field="in"]');
-    const outEl  = r.querySelector('[data-field="out"]');
-    const inStr  = inEl.value.trim();
-    const outStr = outEl.value.trim();
-    const inParsed = parseTimeString(inStr);
+    const name    = r.querySelector('[data-field="name"]').value.trim();
+    const inEl    = r.querySelector('[data-field="in"]');
+    const outEl   = r.querySelector('[data-field="out"]');
+    const inStr   = inEl.value.trim();
+    const outStr  = outEl.value.trim();
+    const inParsed  = parseTimeString(inStr);
     const outParsed = parseTimeString(outStr);
     setInputInvalid(inEl,  !!inStr  && !inParsed.valid);
     setInputInvalid(outEl, !!outStr && !outParsed.valid);
@@ -61,6 +61,117 @@ function collectNamedStaffRows() {
   return { rawData, gcIn, gcOut, errors };
 }
 
+// ── Night shift: pure computation ─────────────────────────────────────────────
+//
+// Returns one of:
+//   { ok: false, reason: string, inputError?: true }
+//   { ok: true, staff, total, totH, rate, leftover, pool }
+//
+// No globals written. No DOM written. No renders triggered.
+
+function computeNightShift() {
+  const { rawData, gcIn, gcOut, errors } = collectNamedStaffRows();
+
+  if (errors.length) {
+    return { ok: false, reason: errors[0], inputError: true };
+  }
+  if (!rawData.length) {
+    return { ok: false, reason: 'Add staff with names.' };
+  }
+
+  rawData.forEach(r => { r.effIn = r.inStr || gcIn; r.effOut = r.outStr || gcOut; });
+
+  let maxEo = 0;
+  rawData.forEach(r => {
+    if (r.effIn && r.effOut) {
+      const i  = parseTimeString(r.effIn).value;
+      const o  = parseTimeString(r.effOut).value;
+      const eo = o < i ? o + 12 : o;
+      if (eo > maxEo) maxEo = eo;
+    }
+  });
+  const defaultIn  = 5;
+  const defaultOut = maxEo > 0 ? (maxEo > 12 ? maxEo - 12 : maxEo) : 2;
+
+  const staff = rawData.map(r => {
+    const inParsed  = parseTimeString(r.effIn);
+    const outParsed = parseTimeString(r.effOut);
+    const inVal     = inParsed.empty  ? defaultIn  : inParsed.value;
+    const outVal    = outParsed.empty ? defaultOut : outParsed.value;
+    let h = outVal - inVal; if (h < 0) h += 12;
+    const eo          = outVal < inVal ? outVal + 12 : outVal;
+    const autoCloser  = !r.hasOut;
+    const ctEl        = document.getElementById('ct' + r.rowId);
+    const closer      = (ctEl ? ctEl.classList.contains('on') : false) || autoCloser;
+    return {
+      n: r.name, i: inVal, o: outVal, h, eo,
+      _rowId: r.rowId, _autoCloser: autoCloser, closer,
+      bills: { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 },
+    };
+  });
+
+  const invalidStaff = staff.find(p => p.h <= 0 || p.h > 12);
+  if (invalidStaff) {
+    return { ok: false, reason: invalidStaff.n + ' has invalid shift hours.', inputError: true };
+  }
+
+  const total = getTotal();
+  const totH  = staff.reduce((s, p) => s + p.h, 0);
+  if (totH <= 0) {
+    return { ok: false, reason: 'Add valid staff hours.', inputError: true };
+  }
+
+  const rate = total / totH;
+  staff.forEach(p => { p.exact = p.h * rate; p.base = Math.floor(p.exact); p.bonus = 0; });
+
+  const floored   = staff.reduce((s, p) => s + p.base, 0);
+  const remainder = total - floored;
+  const closers   = staff.filter(p => p.closer);
+  const perCloser = closers.length ? Math.floor(remainder / closers.length) : 0;
+  const leftover  = remainder - perCloser * closers.length;
+  closers.forEach(p => { p.bonus = perCloser; });
+  staff.forEach(p => { p.final = p.base + p.bonus; p.rem = p.final; });
+
+  return { ok: true, staff, total, totH, rate, leftover, pool: getInputPool() };
+}
+
+// ── Night shift: distribution ─────────────────────────────────────────────────
+//
+// Runs distributeBills (which has side effects on globals) and captures its
+// outputs into an explicit object returned to the caller.
+
+function runDistribution(staff, pool, leftover) {
+  const sc     = staff.map(p => ({ ...p, bills: {}, rem: p.final }));
+  const poolAfter = distributeBills(sc, { ...pool }, leftover);
+  return {
+    staffWithBills:       sc,
+    poolAfter,
+    remainderBills:       { ...lastRemainderBills },
+    distributionError:    lastDistributionError,
+  };
+}
+
+// ── Night shift: render ───────────────────────────────────────────────────────
+//
+// Receives all data explicitly — does not read globals for computation results.
+
+function renderNightShift(computeResult, distResult) {
+  const { staff, total, totH, rate, leftover, pool } = computeResult;
+  const { staffWithBills, poolAfter, remainderBills, distributionError } = distResult;
+
+  currentInputError = '';
+
+  renderSummary(staffWithBills, staff, total, totH, rate, leftover, poolAfter,
+    { remainderBills, distributionError, pool });
+
+  renderDist(staffWithBills, poolAfter,
+    { remainderBills, distributionError, leftover, pool });
+
+  updateHomeLive(staff, { rate, totH, leftover, distributionError });
+}
+
+// ── Night shift: orchestration ────────────────────────────────────────────────
+
 function autoCalculate() {
   if (shiftMode === 'day') {
     autoCalculateDay();
@@ -68,6 +179,7 @@ function autoCalculate() {
   }
 
   if (cashMode === 'nettotal' && !isUpdatingNetTotal) refreshNetTotalBreakdown();
+
   const cashValidation = validateCashInputs();
   if (!cashValidation.valid) {
     updateStockCards(); updateTabIndicators();
@@ -90,103 +202,47 @@ function autoCalculate() {
     saveState();
     return;
   }
+
   calculate(true);
   saveState();
 }
 
 function calculate(silent) {
-  const { rawData, gcIn, gcOut, errors } = collectNamedStaffRows();
-  if (!rawData.length) {
-    blockCalculation('Add staff with names.');
-    if (!silent) alert('Add staff with names');
-    return;
-  }
-  if (errors.length) {
-    blockCalculation(errors[0], { inputError: true, showPlaceholder: true });
-    if (!silent) alert(errors[0]);
-    return;
-  }
-  rawData.forEach(r => { r.effIn = r.inStr || gcIn; r.effOut = r.outStr || gcOut; });
+  const result = computeNightShift();
 
-  let maxEo = 0;
-  rawData.forEach(r => {
-    if (r.effIn && r.effOut) {
-      const i = parseTimeString(r.effIn).value, o = parseTimeString(r.effOut).value;
-      const eo = o < i ? o + 12 : o;
-      if (eo > maxEo) maxEo = eo;
-    }
-  });
-  const defaultIn  = 5;
-  const defaultOut = maxEo > 0 ? (maxEo > 12 ? maxEo - 12 : maxEo) : 2;
-
-  const staff = rawData.map(r => {
-    const inParsed  = parseTimeString(r.effIn);
-    const outParsed = parseTimeString(r.effOut);
-    const inVal  = inParsed.empty  ? defaultIn  : inParsed.value;
-    const outVal = outParsed.empty ? defaultOut : outParsed.value;
-    let h = outVal - inVal; if (h < 0) h += 12;
-    const eo         = outVal < inVal ? outVal + 12 : outVal;
-    const autoCloser = !r.hasOut;
-    return { n: r.name, i: inVal, o: outVal, h, eo, _rowId: r.rowId, _autoCloser: autoCloser,
-             bills: { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 } };
-  });
-
-  const invalidStaff = staff.find(p => p.h <= 0 || p.h > 12);
-  if (invalidStaff) {
-    const message = invalidStaff.n + ' has invalid shift hours.';
-    blockCalculation(message, { inputError: true, showPlaceholder: true });
-    if (!silent) alert(message);
+  if (!result.ok) {
+    blockCalculation(result.reason, { inputError: !!result.inputError, showPlaceholder: true });
+    if (!silent) alert(result.reason);
     return;
   }
 
-  const total = getTotal();
-  const totH  = staff.reduce((s, p) => s + p.h, 0);
-  if (totH <= 0) {
-    blockCalculation('Add valid staff hours.', { inputError: true, showPlaceholder: true });
-    if (!silent) alert('Add valid staff hours');
-    return;
-  }
+  // Persist computation results to globals consumed by legacy callers
+  // (person modal, tab indicators, home cards). This is the single place
+  // globals are written for night shift.
+  livePool     = result.pool;
+  lastStaff    = result.staff;
+  lastTotal    = result.total;
+  lastTotH     = result.totH;
+  lastRate     = result.rate;
+  lastLeftover = result.leftover;
 
-  const rate = total / totH;
-  staff.forEach(p => {
-    p.exact = p.h * rate; p.base = Math.floor(p.exact); p.bonus = 0;
-    const ctEl = document.getElementById('ct' + p._rowId);
-    p.closer   = (ctEl ? ctEl.classList.contains('on') : false) || p._autoCloser;
-  });
+  const distResult = runDistribution(result.staff, result.pool, result.leftover);
 
-  const floored   = staff.reduce((s, p) => s + p.base, 0);
-  const remainder = total - floored;
-  const closers   = staff.filter(p => p.closer);
-  const perCloser = closers.length ? Math.floor(remainder / closers.length) : 0;
-  const leftover  = remainder - perCloser * closers.length;
-  closers.forEach(p => { p.bonus = perCloser; });
-  staff.forEach(p => { p.final = p.base + p.bonus; p.rem = p.final; });
+  // Persist distribution outputs to globals consumed by person modal + dist tab.
+  lastRemainderBills    = distResult.remainderBills;
+  lastDistributionError = distResult.distributionError;
+  lastPoolAfter         = distResult.poolAfter;
+  _lastDistStaff        = distResult.staffWithBills;
 
-  livePool     = getInputPool();
-  lastStaff    = staff;
-  lastTotal    = total;
-  lastTotH     = totH;
-  lastRate     = rate;
-  lastLeftover = leftover;
+  renderNightShift(result, distResult);
 
-  renderAll(staff, total, totH, rate, leftover);
   if (!silent) switchTab('summary', $('tb-summary'));
 }
 
-function renderAll(staff, total, totH, rate, leftover) {
-  currentInputError = '';
-  const sc = staff.map(p => ({ ...p, bills: {}, rem: p.final }));
-  const pa = distributeBills(sc, { ...livePool }, leftover);
-  renderSummary(sc, staff, total, totH, rate, leftover, pa);
-  renderDist(sc, pa);
-  updateHomeLive(staff);
-}
-
-// ── Day shift orchestration ───────────────────────────────────────────────────
+// ── Day shift: input collection ───────────────────────────────────────────────
 
 function collectDayStaffRows(listId, role) {
-  // listId is 'bartenderList' for bartenders, 'serverList' for servers.
-  const rows = document.querySelectorAll('#' + listId + ' .staff-row-modal');
+  const rows  = document.querySelectorAll('#' + listId + ' .staff-row-modal');
   const gcIn  = ($('gc-in').value  || '').trim();
   const gcOut = ($('gc-out').value || '').trim();
   const result = [];
@@ -195,20 +251,12 @@ function collectDayStaffRows(listId, role) {
     const name   = r.querySelector('[data-field="name"]').value.trim();
     const inEl   = r.querySelector('[data-field="in"]');
     const outEl  = r.querySelector('[data-field="out"]');
-    const inStr  = inEl.value.trim() || gcIn;
+    const inStr  = inEl.value.trim()  || gcIn;
     const outStr = outEl.value.trim() || gcOut;
     const ctEl   = r.querySelector('.sri-closer');
-
     if (!name) return;
-
-    result.push({
-      name,
-      inStr,
-      outStr,
-      rowId:  r.id.replace('staff', '').replace('server', ''),
-      closer: ctEl ? ctEl.classList.contains('on') : false,
-      role,
-    });
+    result.push({ name, inStr, outStr, rowId: r.id.replace('staff', '').replace('server', ''),
+      closer: ctEl ? ctEl.classList.contains('on') : false, role });
   });
 
   return result;
@@ -227,12 +275,12 @@ function getDayPoolTotal(poolId) {
   const pool = dayPools[poolId];
   if (!pool) return 0;
   if (pool.cashMode === 'nettotal') {
-    const el = $('dp-net-' + poolId);
+    const el     = $('dp-net-' + poolId);
     const parsed = parseWholeNumberString(el?.value ?? '');
     return parsed.valid ? parsed.value : 0;
   }
   return ['100','50','20','10','5','1'].reduce((sum, d) => {
-    const el = $('dp-b' + d + '-' + poolId);
+    const el     = $('dp-b' + d + '-' + poolId);
     const parsed = parseWholeNumberString(el?.value ?? '');
     return sum + (parsed.valid ? parsed.value * Number(d) : 0);
   }, 0);
@@ -243,7 +291,7 @@ function getDayPoolBills(poolId) {
   if (!pool) return { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 };
   if (pool.cashMode === 'nettotal') {
     const snap = pool.netBillSnapshot || {};
-    const out = {};
+    const out  = {};
     DENOMS.forEach(d => {
       const parsed = parseWholeNumberString(snap[d] ?? '');
       out[d] = parsed.valid ? parsed.value : 0;
@@ -252,7 +300,7 @@ function getDayPoolBills(poolId) {
   }
   const out = {};
   DENOMS.forEach(d => {
-    const el = $('dp-b' + d + '-' + poolId);
+    const el     = $('dp-b' + d + '-' + poolId);
     const parsed = parseWholeNumberString(el?.value ?? '');
     out[d] = parsed.valid ? parsed.value : 0;
   });
@@ -268,8 +316,9 @@ function mergeBillPools(poolIds) {
   return merged;
 }
 
+// ── Day shift: orchestration ──────────────────────────────────────────────────
+
 function autoCalculateDay() {
-  // Use 'bartenderList' for day-shift bartenders (distinct from night-shift 'staffList')
   const bartenderRows = collectDayStaffRows('bartenderList', 'bartender');
   const serverRows    = collectDayStaffRows('serverList',    'server');
 
@@ -289,10 +338,11 @@ function autoCalculateDay() {
     return;
   }
 
-  const result = calculateDayShift(bartenderRows, serverRows, poolCash, partyConfig);
+  // Pure computation — no side effects
+  const engineResult = calculateDayShift(bartenderRows, serverRows, poolCash, partyConfig);
 
-  if (result.error) {
-    blockCalculation(result.error, { inputError: true, showPlaceholder: true });
+  if (engineResult.error) {
+    blockCalculation(engineResult.error, { inputError: true, showPlaceholder: true });
     saveState();
     return;
   }
@@ -302,17 +352,33 @@ function autoCalculateDay() {
   if (dayPools.party2.enabled) activePoolIds.push('party2');
   const mergedBills = mergeBillPools(activePoolIds);
 
-  const sc = result.people.map(p => ({ ...p, bills: { 100:0,50:0,20:0,10:0,5:0,1:0 }, rem: p.final }));
-  distributeBills(sc, mergedBills, result.leftover);
+  // Run distribution, capture all outputs into a local object
+  const sc = engineResult.people.map(p => ({ ...p, bills: { 100:0,50:0,20:0,10:0,5:0,1:0 }, rem: p.final }));
+  distributeBills(sc, mergedBills, engineResult.leftover);
 
-  result.people.forEach((p, i) => { p.bills = { ...sc[i].bills }; });
+  const distResult = {
+    staffWithBills:    sc,
+    remainderBills:    { ...lastRemainderBills },
+    distributionError: lastDistributionError,
+    poolAfter:         { ...lastPoolAfter },
+    mergedBills,
+  };
 
-  lastDayResult = result;
-  livePool      = mergedBills;
-  currentInputError = '';
+  // Copy bills back onto engineResult.people so renderers have them
+  engineResult.people.forEach((p, i) => { p.bills = { ...sc[i].bills }; });
 
-  renderDaySummary(result);
-  renderDayDist(result);
-  updateHomeLiveDay(result);
+  // Write globals — single location for day shift
+  lastDayResult         = engineResult;
+  livePool              = mergedBills;
+  currentInputError     = '';
+  lastRemainderBills    = distResult.remainderBills;
+  lastDistributionError = distResult.distributionError;
+  lastPoolAfter         = distResult.poolAfter;
+
+  // Render: pass data explicitly
+  renderDaySummary(engineResult, distResult);
+  renderDayDist(engineResult, distResult);
+  updateHomeLiveDay(engineResult, distResult);
+
   saveState();
 }

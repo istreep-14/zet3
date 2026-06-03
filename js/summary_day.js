@@ -1,7 +1,20 @@
 // Day shift summary renderer
+//
+// renderDaySummary(result, distCtx)
+//   result  — from calculateDayShift()
+//   distCtx — { remainderBills, distributionError, poolAfter, mergedBills }
+//
+// renderDayDist(result, distCtx)
+//   same shapes
+//
+// updateHomeLiveDay(result, distCtx)
+//   distCtx — { distributionError } (only field needed here)
 
-function renderDaySummary(result) {
+function renderDaySummary(result, distCtx) {
   const sb = $('stale-summary'); if (sb) sb.classList.remove('visible');
+
+  // Unpack; fall back to globals for callers that predate this parameter.
+  const distributionError = distCtx?.distributionError ?? lastDistributionError ?? '';
 
   const dateVal = $('tipDate').value;
   const [yr, mo, dy] = dateVal ? dateVal.split('-') : ['', '', ''];
@@ -11,9 +24,9 @@ function renderDaySummary(result) {
 
   const fmtAbs = t => {
     const isAm = t < 12;
-    const hr = Math.floor(t);
-    const mn = Math.round((t - hr) * 60);
-    let h12 = hr % 12; if (h12 === 0) h12 = 12;
+    const hr   = Math.floor(t);
+    const mn   = Math.round((t - hr) * 60);
+    let h12    = hr % 12; if (h12 === 0) h12 = 12;
     const minStr = mn > 0 ? ':' + (mn < 10 ? '0' : '') + mn : ':00';
     return h12 + minStr + ' ' + (isAm ? 'AM' : 'PM');
   };
@@ -23,38 +36,35 @@ function renderDaySummary(result) {
   // Active pools only
   const pools = result.pools.filter(p => p.total > 0 || p.participants.length > 0);
 
-  // Short column labels: "Day", "Mid", "Party", "Party 2" …
-  const poolLabel = (p, i) => {
+  const poolLabel = (p) => {
     if (p.id === 'morning') return 'Day';
     if (p.id === 'middle')  return 'Mid';
-    // party pools — count how many party pools exist
     const partyPools = pools.filter(x => x.id.startsWith('party'));
     if (partyPools.length === 1) return 'Party';
-    const idx = partyPools.indexOf(p) + 1;
-    return 'Party ' + idx;
+    return 'Party ' + (partyPools.indexOf(p) + 1);
   };
 
   const totalCash     = result.totalCash;
   const totalHoursAll = result.people.reduce((s, p) => s + p.totalHours, 0);
   const totalPaidSum  = result.people.reduce((s, p) => s + p.final, 0);
-  const colCount      = pools.length + 2; // name col + pool cols + total col
+  const colCount      = pools.length + 2;
 
   // ── Column header row ─────────────────────────────────────────────────────
 
-  const thCols = pools.map((p, i) =>
-    `<th class="ds-pool-col">${escapeHTML(poolLabel(p, i))}</th>`
+  const thCols = pools.map(p =>
+    `<th class="ds-pool-col">${escapeHTML(poolLabel(p))}</th>`
   ).join('') + '<th class="ds-total-col">Total</th>';
 
   // ── Metadata rows ─────────────────────────────────────────────────────────
 
   const metaRows = [
-    { label: 'Start',  vals: pools.map(p => fmtAbs(p.start)),                                                         total: null },
-    { label: 'End',    vals: pools.map(p => fmtAbs(p.end)),                                                           total: null },
-    { label: 'Hours',  vals: pools.map(p => fmtH(p.end - p.start)),                                                   total: null },
-    { label: 'Tips',   vals: pools.map(p => p.total > 0 ? p.total : '—'),   total: totalCash,     boldTotal: true  },
+    { label: 'Start',  vals: pools.map(p => fmtAbs(p.start)), total: null },
+    { label: 'End',    vals: pools.map(p => fmtAbs(p.end)),   total: null },
+    { label: 'Hours',  vals: pools.map(p => fmtH(p.end - p.start)), total: null },
+    { label: 'Tips',   vals: pools.map(p => p.total > 0 ? p.total : '—'), total: totalCash,     boldTotal: true },
     { label: 'Hours',  vals: pools.map(p => p.totalHours > 0 ? fmtH(p.totalHours) : '—'), total: fmtH(totalHoursAll) },
     { label: 'Hourly', vals: pools.map(p => p.totalHours > 0 ? (p.total / p.totalHours).toFixed(2) : '—'),
-                                                                             total: totalHoursAll > 0 ? (totalCash / totalHoursAll).toFixed(2) : '—' },
+                             total: totalHoursAll > 0 ? (totalCash / totalHoursAll).toFixed(2) : '—' },
   ];
 
   const metaTbody = metaRows.map(row => {
@@ -68,21 +78,14 @@ function renderDaySummary(result) {
   // ── Person rows ───────────────────────────────────────────────────────────
 
   const personRows = result.people.map(p => {
-    const name = escapeHTML(p.n);
-
-    // Role badge
-    const roleBadge = `<span class="ds-role-badge ds-role-${p.role}">${p.role === 'bartender' ? 'bar' : 'srv'}</span>`;
-
-    // Closer dot
-    const closerDot = p.closer
-      ? '<span class="ds-closer-dot"></span>'
-      : '';
+    const name       = escapeHTML(p.n);
+    const roleBadge  = `<span class="ds-role-badge ds-role-${p.role}">${p.role === 'bartender' ? 'bar' : 'srv'}</span>`;
+    const closerDot  = p.closer ? '<span class="ds-closer-dot"></span>' : '';
 
     const tds = pools.map(pool => {
       const raw = p.rawShares[pool.id] || 0;
       if (raw <= 0) return '<td class="ds-pool-col ds-empty">—</td>';
       const hrs = pool.participants.find(px => px.name === p.n)?.hours || 0;
-      // hrs inline after payout: "258 · 6h"
       return `<td class="ds-pool-col ds-person-cell">
         <span class="ds-pay">${Math.floor(raw)}</span><span class="ds-hrs">${fmtH(hrs)}h</span>
       </td>`;
@@ -123,8 +126,8 @@ function renderDaySummary(result) {
 
   // ── Warn box ──────────────────────────────────────────────────────────────
 
-  const warnHTML = lastDistributionError
-    ? `<div class="warn-box" style="margin-top:8px">⚠ ${escapeHTML(lastDistributionError)}
+  const warnHTML = distributionError
+    ? `<div class="warn-box" style="margin-top:8px">⚠ ${escapeHTML(distributionError)}
         <button onclick="switchTab('cash',$('tb-cash'))" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-weight:700">→ Go to Cash</button>
        </div>`
     : '';
@@ -149,7 +152,7 @@ function renderDaySummary(result) {
           <tr class="ds-divider"><td colspan="${colCount}"></td></tr>
           <tr class="ds-name-hdr">
             <th class="ds-label-col">Name</th>
-            ${pools.map((p, i) => `<th class="ds-pool-col">${escapeHTML(poolLabel(p, i))}</th>`).join('')}
+            ${pools.map(p => `<th class="ds-pool-col">${escapeHTML(poolLabel(p))}</th>`).join('')}
             <th class="ds-total-col">Total</th>
           </tr>
           ${personRows}
@@ -164,12 +167,16 @@ function renderDaySummary(result) {
 
 // ── Day shift dist renderer ───────────────────────────────────────────────────
 
-function renderDayDist(result) {
+function renderDayDist(result, distCtx) {
   const sb = $('stale-dist'); if (sb) sb.classList.remove('visible');
 
+  // Unpack; fall back to globals for backward compat.
+  const remainderBills    = distCtx?.remainderBills    ?? lastRemainderBills   ?? {};
+  const distributionError = distCtx?.distributionError ?? lastDistributionError ?? '';
+
   const unpaid = result.people.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
-  const hasErr = !!lastDistributionError || unpaid > 0;
-  const errMsg = lastDistributionError || (unpaid > 0 ? 'Distribution short $' + unpaid : '');
+  const hasErr = !!distributionError || unpaid > 0;
+  const errMsg = distributionError || (unpaid > 0 ? 'Distribution short $' + unpaid : '');
 
   const hCols = DENOMS.map(d => `<th><span class="dist-tbl-denom">$${d}</span></th>`).join('')
               + '<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th>';
@@ -190,9 +197,8 @@ function renderDayDist(result) {
 
   let remRow = '';
   if (result.leftover > 0) {
-    const remBills = lastRemainderBills || {};
     const rc = DENOMS.map(d => {
-      const n = remBills[d] || 0;
+      const n = remainderBills[d] || 0;
       return n > 0
         ? `<td style="color:var(--muted);font-weight:600;font-size:.74rem">${n}</td>`
         : `<td class="zero">—</td>`;
@@ -200,13 +206,12 @@ function renderDayDist(result) {
     remRow = `<tr class="dist-rem-row"><td>Rem</td>${rc}<td style="color:var(--muted);font-weight:600;border-left:1px solid var(--border);font-size:.74rem">$${result.leftover}</td></tr>`;
   }
 
-  const remBills = lastRemainderBills || {};
   const dtCols = DENOMS.map(d => {
-    const t = result.people.reduce((s, p) => s + (p.bills[d] || 0), 0) + (remBills[d] || 0);
+    const t = result.people.reduce((s, p) => s + (p.bills[d] || 0), 0) + (remainderBills[d] || 0);
     return t > 0 ? `<td style="color:var(--gold)">${t}</td>` : `<td class="zero">—</td>`;
   }).join('');
   const dGT = result.people.reduce((s, p) => s + DENOMS.reduce((ss, d) => ss + (p.bills[d] || 0) * d, 0), 0)
-            + poolValue(remBills);
+            + poolValue(remainderBills);
   const totalRow = `<tr class="dist-totals-row"><td>Total</td>${dtCols}<td class="grand-total">$${dGT}</td></tr>`;
 
   const tableHTML = `<div class="dist-tbl-wrap"><table class="dist-tbl">
@@ -224,7 +229,7 @@ function renderDayDist(result) {
 
 // ── Day shift home live update ────────────────────────────────────────────────
 
-function updateHomeLiveDay(result) {
+function updateHomeLiveDay(result, distCtx) {
   const sec = $('home-live-section'); if (!sec) return;
 
   if (!result) {
@@ -244,7 +249,10 @@ function updateHomeLiveDay(result) {
     return;
   }
 
-  const distOk      = !lastDistributionError;
+  // Unpack; fall back to global for backward compat.
+  const distributionError = distCtx?.distributionError ?? lastDistributionError ?? '';
+
+  const distOk      = !distributionError;
   const statusText  = currentInputError || (distOk ? 'Distribution ready' : 'Adjust bill counts in Cash');
   const statusClass = currentInputError ? 'warn' : distOk ? 'ok' : 'warn';
   const nBart = result.people.filter(p => p.role === 'bartender').length;

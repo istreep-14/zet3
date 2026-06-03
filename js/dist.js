@@ -1,27 +1,43 @@
-function renderDist(swb, pa) {
+// renderDist — night shift distribution tab
+//
+// Parameters:
+//   swb      — staff array post-distribution (has .bills assigned)
+//   pa       — poolAfter (bill counts remaining)
+//   distCtx  — { remainderBills, distributionError, leftover, pool }
+//
+// No computation globals are read here. All data arrives via parameters.
+
+function renderDist(swb, pa, distCtx) {
   _lastDistStaff = swb;
-  renderDistTable(swb, pa);
+  renderDistTable(swb, pa, distCtx);
 }
 
-function renderDistTable(swb, poolAfter) {
+function renderDistTable(swb, poolAfter, distCtx) {
   const sb = $('stale-dist'); if (sb) sb.classList.remove('visible');
-  const unpaid      = swb.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
-  const sumRem      = lastLeftover, remPV = poolValue(lastRemainderBills || {});
-  const hasRemShort = sumRem > 0 && remPV !== sumRem;
-  const hasErr      = !!lastDistributionError || unpaid > 0 || hasRemShort;
-  const errMsg      = lastDistributionError || (unpaid > 0 ? 'Distribution short $' + unpaid : 'Remainder not representable by available bills');
 
-  // Requirement cards always shown — they give live feedback even when ok
-  const req = getSmallBillRequirements(swb, livePool, lastLeftover);
+  // Unpack context; fall back to globals so existing callers still work.
+  const remainderBills    = distCtx?.remainderBills    ?? lastRemainderBills   ?? {};
+  const distributionError = distCtx?.distributionError ?? lastDistributionError ?? '';
+  const leftover          = distCtx?.leftover          ?? lastLeftover          ?? 0;
+  const pool              = distCtx?.pool              ?? livePool              ?? {};
+
+  const unpaid      = swb.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
+  const remPV       = poolValue(remainderBills);
+  const hasRemShort = leftover > 0 && remPV !== leftover;
+  const hasErr      = !!distributionError || unpaid > 0 || hasRemShort;
+  const errMsg      = distributionError
+    || (unpaid > 0 ? 'Distribution short $' + unpaid : 'Remainder not representable by available bills');
+
+  // Requirement cards always shown
+  const req      = getSmallBillRequirements(swb, pool, leftover);
   const reqCards = renderSmallBillRequirementCards(req);
 
   if (hasErr) {
-    // Try to suggest a simple set of bill breaks that would resolve the shortage
-    const preview = previewSmallBillTrades(swb, livePool, lastLeftover);
+    const preview    = previewSmallBillTrades(swb, pool, leftover);
     const previewHTML = preview
-      ? renderTradePreview(preview) + renderDistTableMarkup(preview.staff, {
+      ? renderTradePreview(preview, pool) + renderDistTableMarkup(preview.staff, {
           remainderBills: preview.remainderBills,
-          leftover: lastLeftover,
+          leftover,
           preview: true
         })
       : '';
@@ -38,8 +54,8 @@ function renderDistTable(swb, poolAfter) {
   }
 
   $('dist-content').innerHTML = reqCards + renderDistTableMarkup(swb, {
-    remainderBills: lastRemainderBills || {},
-    leftover: lastLeftover
+    remainderBills,
+    leftover
   });
 }
 
@@ -54,21 +70,21 @@ function renderSmallBillRequirementCards(req) {
 
   const cards = [
     {
-      title: 'Minimum $1s',
-      value: req.availableOnes + ' / ' + req.minOnes,
-      sub:   shortText(req.onesShort, 'count'),
+      title:  'Minimum $1s',
+      value:  req.availableOnes + ' / ' + req.minOnes,
+      sub:    shortText(req.onesShort, 'count'),
       status: statusClass(req.onesShort)
     },
     {
-      title: 'Min $1+$5 value',
-      value: '$' + req.availableOneFiveValue + ' / $' + req.minOneFiveValue,
-      sub:   shortText(req.oneFiveShort, '$'),
+      title:  'Min $1+$5 value',
+      value:  '$' + req.availableOneFiveValue + ' / $' + req.minOneFiveValue,
+      sub:    shortText(req.oneFiveShort, '$'),
       status: statusClass(req.oneFiveShort)
     },
     {
-      title: 'Min $1+$5+$10',
-      value: '$' + req.availableOneFiveTenValue + ' / $' + req.minOneFiveTenValue,
-      sub:   '$50s cover $' + req.fiftyCoverageValue + ' of odd tens',
+      title:  'Min $1+$5+$10',
+      value:  '$' + req.availableOneFiveTenValue + ' / $' + req.minOneFiveTenValue,
+      sub:    '$50s cover $' + req.fiftyCoverageValue + ' of odd tens',
       status: statusClass(req.oneFiveTenShort)
     }
   ];
@@ -88,8 +104,12 @@ function renderCountCell(count) {
   return count > 0 ? `<td class="has-bills">${count}</td>` : '<td class="zero">—</td>';
 }
 
-function renderTradePreview(preview) {
-  const nowCells = DENOMS.map(d => renderCountCell(livePool[d] || 0)).join('');
+// pool parameter is the live (pre-trade) bill counts shown in the "Now" row.
+function renderTradePreview(preview, pool) {
+  // Fall back to livePool global only if not passed — safety net for callers
+  // that predate this parameter.
+  const nowPool    = pool ?? livePool ?? {};
+  const nowCells   = DENOMS.map(d => renderCountCell(nowPool[d] || 0)).join('');
   const deltaCells = DENOMS.map(d => {
     const delta = preview.deltas[d] || 0;
     if (delta === 0) return '<td class="zero">—</td>';
@@ -126,7 +146,7 @@ function renderTradePreview(preview) {
 function renderDistTableMarkup(swb, options = {}) {
   const hCols  = DENOMS.map(d => `<th><span class="dist-tbl-denom">$${d}</span></th>`).join('')
                + '<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th>';
-  const sumRem = options.leftover || 0;
+  const sumRem      = options.leftover || 0;
   const previewLabel = options.preview
     ? '<div class="dist-preview-label">Distribution after simple trades</div>'
     : '';
