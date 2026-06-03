@@ -1,3 +1,4 @@
+/* Tab bar — fixed to viewport bottom, hides when keyboard opens */
 .tab-bar {
   height: calc(var(--tab-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
@@ -5,9 +6,20 @@
   background: var(--surface);
   border-top: 1px solid var(--border);
   flex-shrink: 0;
-  position: sticky;
+  /* fixed so keyboard doesn't push it up */
+  position: fixed;
   bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 480px;
+  margin: 0 auto;
   z-index: 20;
+  transition: transform 0.15s ease;
+}
+
+/* JS adds .keyboard-open to body — slides bar off screen */
+body.keyboard-open .tab-bar {
+  transform: translateY(calc(100% + var(--safe-bottom)));
 }
 
 .tab-btn {
@@ -38,8 +50,8 @@
   flex-shrink: 0;
 }
 
-.tab-btn.active          { color: var(--accent); }
-.tab-btn.active svg      { stroke: var(--accent); }
+.tab-btn.active     { color: var(--accent); }
+.tab-btn.active svg { stroke: var(--accent); }
 
 .tab-label {
   font-size: .48rem;
