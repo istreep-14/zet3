@@ -25,6 +25,13 @@ function onDayPoolBillsChange(poolId) {
     setInputInvalid(el, !parsed.valid);
   });
 
+  // Snapshot so re-renders restore the live values
+  pool.perBillSnapshot = {};
+  DENOMS.forEach(d => {
+    const el = $('dp-b' + d + '-' + poolId);
+    pool.perBillSnapshot[d] = el ? (el.value || '') : '';
+  });
+
   refreshDayPoolTotal(poolId);
   autoCalculate();
 }
@@ -101,6 +108,8 @@ function setDayPoolCashMode(poolId, mode) {
 
 function togglePartyPool(pid) {
   dayPools[pid].enabled = !dayPools[pid].enabled;
+  // Auto-open newly enabled party pools
+  if (dayPools[pid].enabled) selectedDayPool = pid;
   renderDayPoolCashPanels();
   autoCalculate();
 }
@@ -109,7 +118,30 @@ function onPartyWindowChange(pid, field) {
   const el = $('dp-pw-' + field + '-' + pid);
   if (!el) return;
   dayPools[pid]['window' + (field === 'start' ? 'Start' : 'End')] = el.value.trim();
+  // Keep the collapsed-state header subtitle in sync while typing
+  const card = $('dp-card-' + pid);
+  if (card) {
+    const sub = card.querySelector('.dp-window-auto');
+    if (sub) {
+      const pool = dayPools[pid];
+      sub.textContent = (pool.windowStart || '?') + ' \u2013 ' + (pool.windowEnd || '?');
+    }
+  }
   autoCalculate();
+}
+
+// ── Accordion: expand one pool at a time without re-rendering ─────────────────
+
+function selectDayPool(poolId) {
+  if (selectedDayPool === poolId) return;
+  selectedDayPool = poolId;
+  document.querySelectorAll('#day-cash-panels .dp-pool-card').forEach(card => {
+    const id   = card.id.replace('dp-card-', '');
+    const open = id === poolId;
+    card.classList.toggle('dp-pool-card--open', open);
+    const body = card.querySelector('.dp-pool-body');
+    if (body) body.style.display = open ? '' : 'none';
+  });
 }
 
 // ── Render the day shift cash tab ─────────────────────────────────────────────
@@ -119,21 +151,31 @@ function renderDayPoolCashPanels() {
   if (!container) return;
 
   const poolDefs = [
-    { id: 'morning', label: 'Morning Cut', windowLabel: 'Auto: earliest in → last server out', optional: false },
-    { id: 'middle',  label: 'Middle Cut',  windowLabel: 'Auto: morning end → latest bartender out', optional: false },
+    { id: 'morning', label: 'Morning Cut', windowLabel: 'Earliest in \u2192 last server out',      optional: false },
+    { id: 'middle',  label: 'Middle Cut',  windowLabel: 'Morning end \u2192 latest bartender out', optional: false },
     { id: 'party1',  label: 'Party 1',     windowLabel: null, optional: true },
     { id: 'party2',  label: 'Party 2',     windowLabel: null, optional: true },
   ];
 
   container.innerHTML = poolDefs.map(def => {
     const pool = dayPools[def.id];
+
+    // Disabled optional pool — render an add-button placeholder
     if (def.optional && !pool.enabled) {
-      return `<div class="dp-add-party-row">
-        <button class="dp-add-party-btn" onclick="togglePartyPool('${def.id}')">+ Add ${def.label}</button>
-      </div>`;
+      return `<button class="dp-add-party-btn" onclick="togglePartyPool('${def.id}')">+ Add ${def.label}</button>`;
     }
 
-    const windowRow = def.optional
+    const isOpen = selectedDayPool === def.id;
+    const total  = getDayPoolTotal(def.id);
+    const isNet  = pool.cashMode === 'nettotal';
+
+    // Header subtitle — auto label for fixed pools, live times for party pools
+    const headerSub = def.optional
+      ? escapeHTML((pool.windowStart || '?') + ' \u2013 ' + (pool.windowEnd || '?'))
+      : def.windowLabel;
+
+    // Window time inputs — only rendered inside the body of optional pools
+    const windowBodyHTML = def.optional
       ? `<div class="dp-window-row">
           <div class="dp-window-field">
             <span class="dp-window-lbl">Start</span>
@@ -141,19 +183,18 @@ function renderDayPoolCashPanels() {
               placeholder="e.g. 11" value="${escapeHTML(pool.windowStart || '')}"
               oninput="onPartyWindowChange('${def.id}','start')">
           </div>
-          <span class="dp-window-sep">–</span>
+          <span class="dp-window-sep">&ndash;</span>
           <div class="dp-window-field">
             <span class="dp-window-lbl">End</span>
             <input class="dp-window-input" id="dp-pw-end-${def.id}" type="text" inputmode="decimal"
               placeholder="e.g. 3" value="${escapeHTML(pool.windowEnd || '')}"
               oninput="onPartyWindowChange('${def.id}','end')">
           </div>
-          <button class="dp-remove-party-btn" onclick="togglePartyPool('${def.id}')" title="Remove">✕</button>
+          <button class="dp-remove-party-btn" onclick="togglePartyPool('${def.id}')" title="Remove">&#x2715;</button>
         </div>`
-      : `<div class="dp-window-auto">${def.windowLabel}</div>`;
+      : '';
 
-    const isNet = pool.cashMode === 'nettotal';
-
+    // Per-bill denomination rows
     const perBillRows = DENOMS.map(d =>
       `<div class="dp-denom-row">
         <div class="dp-denom-label">$${d}</div>
@@ -161,10 +202,11 @@ function renderDayPoolCashPanels() {
           placeholder="0" inputmode="numeric"
           value="${escapeHTML(pool.perBillSnapshot?.[d] ?? '')}"
           oninput="onDayPoolBillsChange('${def.id}')">
-        <div class="dp-subtotal zero" id="dp-sub${d}-${def.id}">—</div>
+        <div class="dp-subtotal zero" id="dp-sub${d}-${def.id}">&mdash;</div>
       </div>`
     ).join('');
 
+    // Net total input
     const netRow = `<div class="dp-net-row">
       <span class="dp-net-sign">$</span>
       <input type="number" id="dp-net-${def.id}" class="dp-net-input"
@@ -173,27 +215,27 @@ function renderDayPoolCashPanels() {
         oninput="onDayPoolNetTotalChange('${def.id}')">
     </div>`;
 
-    return `<div class="dp-pool-card" id="dp-card-${def.id}">
-      <div class="dp-pool-card-hdr">
+    return `<div class="dp-pool-card${isOpen ? ' dp-pool-card--open' : ''}" id="dp-card-${def.id}">
+      <button class="dp-pool-card-hdr" onclick="selectDayPool('${def.id}')">
         <div class="dp-pool-card-left">
           <span class="dp-pool-card-name">${escapeHTML(def.label)}</span>
-          ${windowRow}
+          <span class="dp-window-auto">${headerSub}</span>
         </div>
-        <div class="dp-pool-total-wrap">
-          <span class="dp-pool-total zero" id="dp-total-${def.id}">$0</span>
+        <div class="dp-pool-hdr-right">
+          <span class="dp-pool-total${total ? '' : ' zero'}" id="dp-total-${def.id}">$${total}</span>
+          <span class="dp-pool-chevron"></span>
         </div>
-      </div>
-      <div class="dp-cash-mode-toggle">
-        <button class="dp-cmt-btn ${!isNet ? 'active' : ''}" id="dp-cmb-per-${def.id}"
-          onclick="setDayPoolCashMode('${def.id}','perbill')">Per Bill</button>
-        <button class="dp-cmt-btn ${isNet ? 'active' : ''}" id="dp-cmb-net-${def.id}"
-          onclick="setDayPoolCashMode('${def.id}','nettotal')">Net Total</button>
-      </div>
-      <div id="dp-perbill-${def.id}" ${isNet ? 'style="display:none"' : ''}>
-        ${perBillRows}
-      </div>
-      <div id="dp-nettotal-${def.id}" ${!isNet ? 'style="display:none"' : ''}>
-        ${netRow}
+      </button>
+      <div class="dp-pool-body"${isOpen ? '' : ' style="display:none"'}>
+        ${windowBodyHTML}
+        <div class="cash-mode-toggle dp-mode-toggle">
+          <button class="cmt-btn${!isNet ? ' active' : ''}" id="dp-cmb-per-${def.id}"
+            onclick="setDayPoolCashMode('${def.id}','perbill')">Per Bill</button>
+          <button class="cmt-btn${isNet ? ' active' : ''}" id="dp-cmb-net-${def.id}"
+            onclick="setDayPoolCashMode('${def.id}','nettotal')">Net Total</button>
+        </div>
+        <div id="dp-perbill-${def.id}"${isNet ? ' style="display:none"' : ''}>${perBillRows}</div>
+        <div id="dp-nettotal-${def.id}"${!isNet ? ' style="display:none"' : ''}>${netRow}</div>
       </div>
     </div>`;
   }).join('');
