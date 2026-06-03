@@ -112,8 +112,8 @@ function getIdealTargetsForTotal(total) {
   rows.forEach(r => {
     const name = r.querySelector('[data-field="name"]')?.value.trim();
     if (!name) return;
-    const rowId = r.id.replace('staff', '');
-    const inStr = r.querySelector('[data-field="in"]')?.value.trim() || '';
+    const rowId  = r.id.replace('staff', '');
+    const inStr  = r.querySelector('[data-field="in"]')?.value.trim()  || '';
     const outStr = r.querySelector('[data-field="out"]')?.value.trim() || '';
     rawData.push({ inStr, outStr, hasOut: !!outStr, rowId });
   });
@@ -141,8 +141,9 @@ function getIdealTargetsForTotal(total) {
     let h = outVal - inVal;
     if (h < 0) h += 12;
     if (h <= 0 || h > 12) return null;
-    const ctEl = $('ct' + r.rowId);
-    return { h, closer: (ctEl ? ctEl.classList.contains('on') : false) || !r.hasOut };
+    // Read closer from staffModel — no DOM classList access.
+    const manualCloser = modelGet(r.rowId)?.closer ?? false;
+    return { h, closer: manualCloser || !r.hasOut };
   }).filter(Boolean);
 
   const totH = staff.reduce((s, p) => s + p.h, 0);
@@ -184,8 +185,8 @@ function computeIdealFromTotal(total) {
   let rem = total;
   pool[20] = Math.floor(rem / 20); rem -= pool[20] * 20;
   pool[10] = Math.floor(rem / 10); rem -= pool[10] * 10;
-  pool[5] = Math.floor(rem / 5); rem -= pool[5] * 5;
-  pool[1] = rem;
+  pool[5]  = Math.floor(rem / 5);  rem -= pool[5] * 5;
+  pool[1]  = rem;
   return { pool, targets, minimums: { ones: pool[1], fives: pool[5], tens: pool[10] } };
 }
 
@@ -199,8 +200,8 @@ function renderNetBreakdown(total, ideal) {
 
   const labels = {
     20: 'fill after minimums',
-    1: 'minimum $1s',
-    5: 'minimum $5s',
+    1:  'minimum $1s',
+    5:  'minimum $5s',
     10: 'minimum $10s'
   };
   const denomRows = [20, 1, 5, 10].map(d => {
