@@ -141,8 +141,8 @@ function getIdealTargetsForTotal(total) {
     let h = outVal - inVal;
     if (h < 0) h += 12;
     if (h <= 0 || h > 12) return null;
-    // Read closer from staffModel — no DOM classList access.
-    const manualCloser = modelGet(r.rowId)?.closer ?? false;
+    const ctEl = document.getElementById('ct' + r.rowId);
+    const manualCloser = ctEl ? ctEl.classList.contains('on') : false;
     return { h, closer: manualCloser || !r.hasOut };
   }).filter(Boolean);
 

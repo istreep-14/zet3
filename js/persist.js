@@ -4,18 +4,15 @@ function saveState() {
   if (isRestoringState) return;
   if (typeof snapshotCurrentCashMode === 'function') snapshotCurrentCashMode();
 
-  // Serialize staff from the model, not from DOM class inspection.
-  // staffModel is the authoritative source for closer state.
   const serializeList = selector =>
     [...document.querySelectorAll(selector)].map(r => {
-      const rowId  = Number(r.id.replace('staff', ''));
-      const entry  = staffModel.get(rowId) || {};
+      const rowId = r.id.replace('staff', '');
+      const ctEl  = document.getElementById('ct' + rowId);
       return {
         name:   r.querySelector('[data-field="name"]').value,
         in:     r.querySelector('[data-field="in"]').value,
         out:    r.querySelector('[data-field="out"]').value,
-        // closer comes from the model — never from DOM classList
-        closer: entry.closer ?? false,
+        closer: ctEl ? ctEl.classList.contains('on') : false,
       };
     });
 
