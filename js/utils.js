@@ -54,18 +54,3 @@ function fmtTime(t, inTime, wrapped) {
   if (h12 === 0) h12 = 12;
   return h12 + (mn > 0 ? ':' + (mn < 10 ? '0' : '') + mn : '') + (wrapped ? 'a' : 'p');
 }
-
-function fmtClock(t) {
-  let hr = Math.floor(t), mn = Math.round((t - hr) * 60);
-  if (mn === 60) { hr++; mn = 0; }
-  let h12 = hr % 12;
-  if (h12 === 0) h12 = 12;
-  return h12 + ':' + (mn < 10 ? '0' : '') + mn;
-}
-
-function addClockMinutes(t, minutes) {
-  const base = t % 12;
-  let next = (base + minutes / 60) % 12;
-  if (next < 0) next += 12;
-  return next === 0 ? 12 : next;
-}

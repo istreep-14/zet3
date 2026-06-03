@@ -21,15 +21,6 @@ function writeBillInputSnapshot(snap) {
   });
 }
 
-function poolFromSnapshot(snap) {
-  const pool = {};
-  DENOMS.forEach(d => {
-    const parsed = parseWholeNumberString(snap?.[d] ?? '');
-    pool[d] = parsed.valid ? parsed.value : 0;
-  });
-  return pool;
-}
-
 function snapshotCurrentCashMode() {
   if (cashMode === 'nettotal') {
     netTotalSnapshot = $('net-total-input')?.value ?? '';
@@ -94,18 +85,12 @@ function onBillsChange() {
     }
   });
   refreshCashTotals(total);
-  updateStockCards(); updateTabIndicators(); autoCalculate();
-}
-
-function syncPoolToInputs(pool) {
-  DENOMS.forEach(d => { const el = $('b' + d); if (el) el.value = (pool[d] || 0) > 0 ? pool[d] : ''; });
-  if (cashMode === 'perbill') onBillsChange();
+  updateStockCards(); updateTabIndicators(); scheduleCalculate();
 }
 
 function setCashMode(mode) {
   if (mode !== cashMode) snapshotCurrentCashMode();
   cashMode = mode;
-  isSwitchingCashMode = true;
   $('cash-per-bill').style.display  = mode === 'perbill'  ? '' : 'none';
   $('cash-net-total').style.display = mode === 'nettotal' ? '' : 'none';
   $('cmb-perbill').classList.toggle('active',  mode === 'perbill');
@@ -118,7 +103,6 @@ function setCashMode(mode) {
     writeBillInputSnapshot(perBillSnapshot);
     onBillsChange();
   }
-  isSwitchingCashMode = false;
 }
 
 function getIdealTargetsForTotal(total) {
@@ -246,7 +230,7 @@ function onNetTotalChange() {
     refreshCashTotals(0);
     updateStockCards(); updateTabIndicators();
     renderNetBreakdown(0, { pool: {}, targets: [] });
-    if (!isUpdatingNetTotal) autoCalculate();
+    if (!isUpdatingNetTotal) scheduleCalculate();
     return;
   }
   const ideal = computeIdealFromTotal(total);
@@ -256,5 +240,5 @@ function onNetTotalChange() {
   refreshCashTotals(total);
   updateStockCards(); updateTabIndicators();
   renderNetBreakdown(total, ideal);
-  if (!isUpdatingNetTotal) autoCalculate();
+  if (!isUpdatingNetTotal) scheduleCalculate();
 }

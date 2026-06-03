@@ -16,7 +16,6 @@ let perBillSnapshot = { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' };
 let netBillSnapshot = { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' };
 let netTotalSnapshot = '';
 let isRestoringState = false;
-let isSwitchingCashMode = false;
 let isUpdatingNetTotal = false;
 let currentInputError = '';
 
@@ -43,8 +42,8 @@ let dayPools = {
   },
   party1: {
     enabled: false,
-    windowStart: '',  // manual entry e.g. '11'  (decimal hour, am assumed for day shift)
-    windowEnd:   '',  // manual entry e.g. '2'
+    windowStart: '',
+    windowEnd:   '',
     cashMode: 'perbill',
     perBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
