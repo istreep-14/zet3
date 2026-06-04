@@ -234,7 +234,14 @@ function runPreflight(slots, pool) {
     return { ok: false, msg: 'Need $' + needs.oneFiveTenShort + ' more in $1s/$5s/$10s after $50s.' };
   }
 
-  return { ok: true };
+  return {
+    ok: true,
+    ideals: {
+      1: needs.minOnes,
+      5: Math.max(0, (needs.minOneFiveValue - needs.minOnes) / 5),
+      10: Math.max(0, (needs.minOneFiveTenValue - needs.minOneFiveValue) / 10)
+    }
+  };
 }
 
 function runCascadingSieve(slots, poolIn) {
@@ -756,16 +763,6 @@ function gradePaths(paths) {
   }
 
   return bestPath;
-}
-
-function solveDistribution(slots, poolIn) {
-  const fauxStaff = slots.map(s => ({ final: s.rem, bills: blankBills(), rem: s.rem }));
-  const result = calculateV19Pipeline(fauxStaff, poolIn, 0);
-  fauxStaff.forEach((p, i) => {
-    slots[i].bills = { ...p.bills };
-    slots[i].rem = result.success ? 0 : slots[i].rem;
-  });
-  return result.poolAfter;
 }
 
 function distributeBills(staff, available, leftover) {

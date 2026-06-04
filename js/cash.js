@@ -221,6 +221,57 @@ function refreshNetTotalBreakdown() {
   isUpdatingNetTotal = false;
 }
 
+// ── Bill trade helpers ────────────────────────────────────────────────────────
+
+// Computes a "trade-up" plan: convert excess $1s/$5s/$10s into $20s.
+// Returns { newPool, delta, new20s } or null if no $20s can be gained.
+function computeTradeUp(pool, req) {
+  const minFives = Math.max(0, (req.minOneFiveValue - req.minOnes) / 5);
+  const minTens  = Math.max(0, (req.minOneFiveTenValue - req.minOneFiveValue) / 10);
+
+  const excessOnes  = Math.max(0, (pool[1]  || 0) - req.minOnes);
+  const excessFives = Math.max(0, (pool[5]  || 0) - minFives);
+  const excessTens  = Math.max(0, (pool[10] || 0) - minTens);
+  const totalExcess = excessOnes + excessFives * 5 + excessTens * 10;
+
+  const new20s = Math.floor(totalExcess / 20);
+  if (new20s <= 0) return null;
+
+  // Distribute remaining excess (< $20) back into smallest denominations
+  let rem = totalExcess - new20s * 20;
+  const keepExtra10 = Math.min(excessTens,  Math.floor(rem / 10)); rem -= keepExtra10 * 10;
+  const keepExtra5  = Math.min(excessFives, Math.floor(rem / 5));  rem -= keepExtra5 * 5;
+
+  // Build new pool by removing only the excess that was traded, then adding back kept amounts.
+  // Using pool[d] - excess[d] + kept[d] instead of min[d] + kept[d] prevents phantom bills
+  // when pool[d] < min[d] (distribution still succeeded via other denominations).
+  const newPool = {
+    100: pool[100] || 0,
+    50:  pool[50]  || 0,
+    20:  (pool[20] || 0) + new20s,
+    10:  (pool[10] || 0) - excessTens  + keepExtra10,
+    5:   (pool[5]  || 0) - excessFives + keepExtra5,
+    1:   (pool[1]  || 0) - excessOnes  + rem,
+  };
+
+  const delta = {};
+  DENOMS.forEach(d => { delta[d] = (newPool[d] || 0) - (pool[d] || 0); });
+
+  return { newPool, delta, new20s };
+}
+
+// Writes a new bill count pool to the per-bill inputs and triggers recalculation.
+// Switches to per-bill mode if currently in net-total mode.
+function applyBillTradeToInputs(newPool) {
+  if (cashMode !== 'perbill') setCashMode('perbill');
+  DENOMS.forEach(d => {
+    const el = $('b' + d);
+    if (el) el.value = (newPool[d] || 0) > 0 ? String(newPool[d]) : '';
+  });
+  perBillSnapshot = readBillInputSnapshot();
+  onBillsChange();
+}
+
 function onNetTotalChange() {
   const validation = validateCashInputs();
   const total = validation.total;

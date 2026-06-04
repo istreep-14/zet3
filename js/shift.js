@@ -63,12 +63,3 @@ function updateShiftStockCards() {
   }
   updateTabIndicators();
 }
-
-// Called from night shift stock card update — delegate to day if needed
-function _updateStockCardsShiftAware() {
-  if (shiftMode === 'day') {
-    updateDayStockCards();
-  } else {
-    updateStockCards();
-  }
-}

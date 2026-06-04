@@ -89,12 +89,12 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
 
   let warnHTML = '';
   if (warnMsg) {
-    const req      = getSmallBillRequirements(staffWithBills, pool, leftover);
-    const reqCards = renderSmallBillRequirementCards(req);
+    const req     = getSmallBillRequirements(staffWithBills, pool, leftover);
+    const reqHTML = renderRequirementSummary(req, pool);
     warnHTML =
       `<div class="warn-box">⚠ ${escapeHTML(warnMsg)} `
       + `<button onclick="switchTab('cash',$('tb-cash'))" style="background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;padding:0;font:inherit;font-weight:700">→ Go to Cash</button></div>`
-      + reqCards;
+      + reqHTML;
   }
 
   $('summary-content').innerHTML = `

@@ -43,29 +43,19 @@ function addStaff(focusNew, listId) {
   div.id = 'staff' + id;
   div.innerHTML =
     '<div class="sri-name">'
-    + '<input data-field="name" autocomplete="off" autocorrect="off" autocapitalize="words">'
+    + '<input data-field="name" oninput="onStaffNameInput()" autocomplete="off" autocorrect="off" autocapitalize="words">'
     + '</div>'
     + '<div class="sri-time-field"><span class="sri-tlbl">in</span>'
-    + '<input data-field="in" inputmode="decimal">'
+    + '<input data-field="in" inputmode="decimal" oninput="onTimeInput(' + id + ',\'in\')" onchange="calcHours(' + id + ');autoCalculate()">'
     + '</div>'
     + '<div class="sri-time-field"><span class="sri-tlbl">out</span>'
-    + '<input data-field="out" inputmode="decimal">'
+    + '<input data-field="out" inputmode="decimal" oninput="onTimeInput(' + id + ',\'out\')" onchange="calcHours(' + id + ');autoCalculate()">'
     + '</div>'
     + '<div class="sri-hrs" id="hrs' + id + '">–</div>'
-    + '<button class="sri-closer" id="ct' + id + '" title="Closer" tabindex="-1"><span>c</span><span class="sc-lbl">close</span></button>'
-    + '<button class="sri-del" tabindex="-1">✕</button>';
+    + '<button class="sri-closer" id="ct' + id + '" onclick="toggleCloser(' + id + ')" title="Closer" tabindex="-1"><span>c</span><span class="sc-lbl">close</span></button>'
+    + '<button class="sri-del" onclick="delStaff(' + id + ',\'' + targetList + '\')" tabindex="-1">✕</button>';
 
   $(targetList).appendChild(div);
-
-  div.querySelector('[data-field="name"]').addEventListener('input', onStaffNameInput);
-  const inEl  = div.querySelector('[data-field="in"]');
-  const outEl = div.querySelector('[data-field="out"]');
-  inEl.addEventListener('input',  () => onTimeInput(id, 'in'));
-  inEl.addEventListener('change', () => { calcHours(id); autoCalculate(); });
-  outEl.addEventListener('input',  () => onTimeInput(id, 'out'));
-  outEl.addEventListener('change', () => { calcHours(id); autoCalculate(); });
-  div.querySelector('.sri-closer').addEventListener('click', () => toggleCloser(id));
-  div.querySelector('.sri-del').addEventListener('click', () => delStaff(id, targetList));
   reindexTabOrder();
   calcHours(id);
   updateSectionCounts();
@@ -188,4 +178,3 @@ function calcHours(id) {
   }
   if (shiftMode === 'day') updateDayStockCards(); else updateStockCards();
 }
-

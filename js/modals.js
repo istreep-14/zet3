@@ -6,7 +6,7 @@ function openModal(id) {
 function closeModal(id) {
   $(id).classList.remove('open');
   document.body.style.overflow = '';
-  updateStockCards();
+  updateShiftStockCards();
   autoCalculate();
 }
 

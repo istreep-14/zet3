@@ -28,7 +28,10 @@ function updateTabIndicators() {
     cs.textContent = '—';
     cs.className = 'tab-sub';
   }
-  const rows = document.querySelectorAll('#staffList .staff-row-modal');
+  const staffSelector = shiftMode === 'day'
+    ? '#bartenderList .staff-row-modal, #serverList .staff-row-modal'
+    : '#staffList .staff-row-modal';
+  const rows = document.querySelectorAll(staffSelector);
   let named = 0;
   rows.forEach(r => { if (r.querySelector('[data-field="name"]').value.trim()) named++; });
   const sd = $('tab-dot-staff'), ss = $('tab-sub-staff');
