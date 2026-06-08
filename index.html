@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="css/person-modal.css">
 <link rel="stylesheet" href="css/dist.css">
 <link rel="stylesheet" href="css/shift.css">
+<link rel="stylesheet" href="css/support.css">
 </head>
 <body>
 
@@ -80,28 +81,24 @@
       </button>
     </div>
 
-    <!-- NIGHT SHIFT CASH (existing single pool) -->
+    <!-- NIGHT SHIFT CASH -->
     <div id="night-cash-section">
       <div class="cash-page">
-        <div class="cash-mode-toggle">
-          <button class="cmt-btn active" id="cmb-perbill"  onclick="setCashMode('perbill')">Per Bill</button>
-          <button class="cmt-btn"        id="cmb-nettotal" onclick="setCashMode('nettotal')">Net Total</button>
-        </div>
         <div class="input-message" id="cash-error"></div>
 
-        <!-- Per-bill section -->
-        <div id="cash-per-bill">
-          <div class="cash-page-hdr">
-            <div class="cash-page-hdr-left">
-              <div class="cash-page-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="2" y="7" width="20" height="14" rx="2"/><circle cx="12" cy="14" r="2"/><path d="M6 14h.01M18 14h.01"/>
-                </svg>
-              </div>
-              <div class="cash-page-title">Cash on Hand</div>
-            </div>
-            <div class="cash-page-total zero" id="cash-page-total">$0</div>
+        <!-- Net total (default, shown first) -->
+        <div id="cash-net-total">
+          <div class="net-input-row">
+            <span class="net-dollar-sign">$</span>
+            <input type="number" id="net-total-input" class="net-total-input" min="0" step="1" placeholder="0" inputmode="numeric" oninput="onNetTotalChange()">
           </div>
+          <div class="net-breakdown" id="net-breakdown">
+            <div class="net-empty-hint">Enter total above to see ideal bill breakdown</div>
+          </div>
+        </div>
+
+        <!-- Per-bill (hidden by default — revealed via toggle) -->
+        <div id="cash-per-bill" style="display:none">
           <div class="cash-denom-list">
             <div class="cash-denom-row"><div class="cash-denom-label">$100</div><input class="cash-denom-input" id="b100" type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="10" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub100">—</div></div>
             <div class="cash-denom-row"><div class="cash-denom-label">$50</div> <input class="cash-denom-input" id="b50"  type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="11" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub50">—</div></div>
@@ -116,16 +113,14 @@
           </div>
         </div>
 
-        <!-- Net total section -->
-        <div id="cash-net-total" style="display:none">
-          <div class="net-input-row">
-            <span class="net-dollar-sign">$</span>
-            <input type="number" id="net-total-input" class="net-total-input" min="0" step="1" placeholder="0" inputmode="numeric" oninput="onNetTotalChange()">
-          </div>
-          <div class="net-breakdown" id="net-breakdown">
-            <div class="net-empty-hint">Enter total above to see ideal breakdown</div>
-          </div>
+        <!-- Mode toggle at bottom (secondary) -->
+        <div class="cash-mode-toggle cash-mode-toggle--bottom">
+          <button class="cmt-btn" id="cmb-nettotal" onclick="setCashMode('nettotal')">Net Total</button>
+          <button class="cmt-btn" id="cmb-perbill"  onclick="setCashMode('perbill')">Bill Counts</button>
         </div>
+
+        <!-- Hidden compat span -->
+        <span id="cash-page-total" style="display:none">$0</span>
       </div>
     </div>
 
@@ -141,53 +136,64 @@
   <!-- TAB: STAFF -->
   <div class="tab-panel" id="tab-staff">
 
-    <!-- NIGHT SHIFT staff section -->
+    <!-- Role toggle — persists across night/day shift -->
+    <div class="role-toggle">
+      <button class="role-btn role-btn--bar active" id="rb-bartender" onclick="switchStaffRole('bartender')">Bartender</button>
+      <button class="role-btn role-btn--srv"        id="rb-server"    onclick="switchStaffRole('server')">Server</button>
+      <button class="role-btn role-btn--sup"        id="rb-support"   onclick="switchStaffRole('support')">Support</button>
+    </div>
+
+    <!-- Per-role defaults + count row -->
+    <div class="role-view-hdr">
+      <span class="role-view-count" id="role-view-count">0 people</span>
+      <div class="role-defaults-inline">
+        <span class="rdef-lbl">In</span>
+        <input class="rdef-input" id="rdef-in"  inputmode="decimal" placeholder="—" oninput="onRoleDefaultChange('in')">
+        <span class="rdef-sep">–</span>
+        <span class="rdef-lbl">Out</span>
+        <input class="rdef-input" id="rdef-out" inputmode="decimal" placeholder="—" oninput="onRoleDefaultChange('out')">
+      </div>
+      <button class="defaults-open-btn" onclick="openModal('defaultTimesModal')" title="Global defaults">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </button>
+    </div>
+
+    <!-- NIGHT SHIFT: bartenders in staffList, servers in nightServerList -->
     <div id="night-staff-section">
-      <div class="staff-page">
-        <div class="staff-page-topbar">
-          <span class="staff-page-count" id="staffPageCount">0 people</span>
-          <button class="defaults-open-btn" onclick="openModal('defaultTimesModal')">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-            Default Times
-          </button>
-        </div>
+      <div id="night-bar-wrap">
         <div class="staff-list-modal" id="staffList"></div>
-        <button class="add-btn" onclick="addStaff(true,'staffList')">+ Add Person</button>
+        <button class="add-btn" onclick="addStaff(true,'staffList')">+ Add Bartender</button>
+      </div>
+      <div id="night-srv-wrap" style="display:none">
+        <div class="staff-list-modal" id="nightServerList"></div>
+        <button class="add-btn" onclick="addStaff(true,'nightServerList')">+ Add Server</button>
       </div>
     </div>
 
-    <!-- DAY SHIFT staff section -->
+    <!-- DAY SHIFT: bartenderList and serverList (role-switched) -->
     <div id="day-staff-section" style="display:none">
-      <div class="staff-page">
-
-        <!-- Default times button at top -->
-        <div class="staff-page-topbar" style="margin-bottom:0">
-          <span class="staff-page-count" id="staffPageCount2">0 people</span>
-          <button class="defaults-open-btn" onclick="openModal('defaultTimesModal')">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-            Default Times
-          </button>
-        </div>
-
-        <!-- Bartenders section -->
-        <!-- NOTE: id="bartenderList" — distinct from night-shift id="staffList" -->
-        <div class="staff-section-hdr" style="margin-top:12px">
-          <span class="staff-section-title bartender-title">Bartenders</span>
-          <span class="staff-section-count" id="bartender-count">0 people</span>
-        </div>
+      <div id="day-bar-wrap">
         <div class="staff-list-modal" id="bartenderList"></div>
-        <button class="add-btn" onclick="addStaff(true,'bartenderList')" style="margin-bottom:4px">+ Add Bartender</button>
-
-        <!-- Servers section -->
-        <div class="staff-section-hdr" style="margin-top:14px">
-          <span class="staff-section-title server-title">Servers</span>
-          <span class="staff-section-count" id="server-count">0 people</span>
-        </div>
+        <button class="add-btn" onclick="addStaff(true,'bartenderList')">+ Add Bartender</button>
+      </div>
+      <div id="day-srv-wrap" style="display:none">
         <div class="staff-list-modal" id="serverList"></div>
         <button class="add-btn" onclick="addStaff(true,'serverList')">+ Add Server</button>
-
       </div>
     </div>
+
+    <!-- SHARED support staff — shown when role='support', both shifts -->
+    <div id="support-staff-section" style="display:none">
+      <div class="support-staff-note" id="support-staff-note">Support staff share a pool of hours but earn no tips. In Day mode, assign each person to one or more cuts to calculate their tip-out.</div>
+      <div class="staff-list-modal" id="supportList"></div>
+      <button class="add-btn" onclick="addStaff(true,'supportList')">+ Add Support</button>
+    </div>
+
+    <!-- Hidden IDs needed by tabs/cards (keep for compat) -->
+    <span id="staffPageCount" style="display:none">0 people</span>
+    <span id="staffPageCount2" style="display:none">0 people</span>
+    <span id="bartender-count" style="display:none">0 people</span>
+    <span id="server-count" style="display:none">0 people</span>
 
   </div><!-- end tab-staff -->
 
@@ -255,19 +261,66 @@
     <div class="modal-drag"></div>
     <div class="modal-title">Default Shift Times<button class="modal-close" onclick="closeModal('defaultTimesModal')">✕</button></div>
     <div class="modal-body">
+
+      <!-- Global fallback -->
       <div class="defaults-panel">
         <div class="defaults-panel-hdr">
-          <span class="defaults-panel-title">Global Defaults</span>
-          <span class="defaults-panel-hint">fills blank fields only</span>
+          <span class="defaults-panel-title">Global Fallback</span>
+          <span class="defaults-panel-hint">all roles, blank fields</span>
         </div>
         <div class="defaults-fields">
           <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="gc-in" placeholder="e.g. 5" inputmode="decimal" oninput="onDefaultTimesChange()"></div>
           <span class="defaults-sep">–</span>
           <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="gc-out" placeholder="e.g. 2" inputmode="decimal" oninput="onDefaultTimesChange()"></div>
         </div>
-        <div class="defaults-note">Blank In/Out fields use these values.<br><em>Blank Out = auto closer · fill Out to finalize</em></div>
+        <div class="defaults-note">Fills any blank In/Out field across all roles. Role defaults below take priority.</div>
       </div>
+
+      <!-- Per-role defaults -->
+      <div class="defaults-panel" style="margin-top:10px">
+        <div class="defaults-panel-hdr">
+          <span class="defaults-panel-title">Per-Role Defaults</span>
+          <span class="defaults-panel-hint">auto-inferred · editable</span>
+        </div>
+        <div class="role-defaults-grid">
+          <div class="rdg-row">
+            <span class="rdg-role-lbl rdg-bar">Bar</span>
+            <div class="rdg-fields">
+              <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="rdef-modal-bar-in"  inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('bartender','in')"></div>
+              <span class="defaults-sep">–</span>
+              <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="rdef-modal-bar-out" inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('bartender','out')"></div>
+            </div>
+          </div>
+          <div class="rdg-row">
+            <span class="rdg-role-lbl rdg-srv">Srv</span>
+            <div class="rdg-fields">
+              <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="rdef-modal-srv-in"  inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('server','in')"></div>
+              <span class="defaults-sep">–</span>
+              <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="rdef-modal-srv-out" inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('server','out')"></div>
+            </div>
+          </div>
+          <div class="rdg-row">
+            <span class="rdg-role-lbl rdg-sup">Sup</span>
+            <div class="rdg-fields">
+              <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="rdef-modal-sup-in"  inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('support','in')"></div>
+              <span class="defaults-sep">–</span>
+              <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="rdef-modal-sup-out" inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('support','out')"></div>
+            </div>
+          </div>
+        </div>
+        <div class="defaults-note">Role defaults override the global fallback for their role.<br>Tip: enter one person's times — the rest fill automatically.</div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+<!-- MODAL: SUPPORT TIP-OUT -->
+<div class="modal-overlay" id="supportTipOutModal" onclick="modalBgClose(event,'supportTipOutModal')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title"><span id="supportModalTitle">Support Tip-Out</span><button class="modal-close" onclick="closeModal('supportTipOutModal')">✕</button></div>
+    <div id="supportModalBody" class="modal-body"></div>
   </div>
 </div>
 
@@ -296,6 +349,7 @@
 <script src="js/summary_day.js"></script>
 <script src="js/dist.js"></script>
 <script src="js/person.js"></script>
+<script src="js/support.js"></script>
 <script src="js/calculator.js"></script>
 <script src="js/main.js"></script>
 </body>
