@@ -143,7 +143,16 @@
   </div><!-- end tab-cash -->
 
   <!-- TAB: STAFF -->
-  <div class="tab-panel" id="tab-staff">
+  <div class="tab-panel staff-page" id="tab-staff">
+
+    <div class="staff-page-hero">
+      <div>
+        <div class="staff-page-eyebrow">Staff</div>
+        <div class="staff-page-title" id="staff-role-title">Bartenders</div>
+        <div class="staff-page-subtitle" id="staff-role-subtitle">Night shift payout team</div>
+      </div>
+      <span class="role-badge role-bartender" id="staff-role-badge">Bartender</span>
+    </div>
 
     <!-- Role toggle — persists across night/day shift -->
     <div class="role-toggle">
@@ -154,8 +163,12 @@
 
     <!-- Per-role defaults + count row -->
     <div class="role-view-hdr">
-      <span class="role-view-count" id="role-view-count">0 people</span>
+      <div class="role-view-summary">
+        <span class="role-view-label">Current list</span>
+        <span class="role-view-count" id="role-view-count">0 people</span>
+      </div>
       <div class="role-defaults-inline">
+        <span class="role-defaults-title">Defaults</span>
         <span class="rdef-lbl">In</span>
         <input class="rdef-input" id="rdef-in"  inputmode="decimal" placeholder="—" oninput="onRoleDefaultChange('in')">
         <span class="rdef-sep">–</span>
