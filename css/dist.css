@@ -14,8 +14,12 @@
   font-size: .68rem;
 }
 
+.dist-name-col  { width: 38%; }
+.dist-bill-col  { width: 7%; }
+.dist-total-col { width: 20%; }
+
 .dist-tbl th {
-  padding: 7px 3px;
+  padding: 7px 2px;
   background: var(--surface2);
   color: var(--muted);
   font-size: .48rem;
@@ -29,7 +33,7 @@
 .dist-tbl th:first-child { text-align: left; padding-left: 12px; }
 
 .dist-tbl td {
-  padding: 7px 3px;
+  padding: 7px 2px;
   border-bottom: 1px solid #15151f;
   text-align: center;
   font-family: var(--font-mono);
@@ -42,6 +46,9 @@
   color: var(--text);
   font-weight: 600;
   font-family: var(--font-sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dist-tbl tr:last-child td { border-bottom: none; }
@@ -64,9 +71,9 @@
   text-transform: uppercase;
 }
 
-.dist-tbl td.person-total  { color: var(--text2); font-weight: 700; border-left: 1px solid var(--border); }
+.dist-tbl td.person-total  { color: var(--text2); font-weight: 700; border-left: 1px solid var(--border); white-space: nowrap; }
 .dist-tbl th.total-col     { border-left: 1px solid var(--border2); }
-.dist-totals-row td.grand-total { color: var(--gold); font-size: .9rem; border-left: 1px solid var(--border); }
+.dist-totals-row td.grand-total { color: var(--gold); font-size: .82rem; border-left: 1px solid var(--border); white-space: nowrap; }
 
 .dist-rem-row td {
   border-top: 1px dashed var(--border);
