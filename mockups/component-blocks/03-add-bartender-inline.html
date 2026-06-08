@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03 Add Bartender Inline</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="phone">
+      <header class="mock-header">
+        <div class="brand">TIP <span>POOL</span></div>
+        <div class="date-pill">Staff</div>
+      </header>
+      <div class="mock-body">
+        <div class="mock-title">
+          <h1>Inline add bartender</h1>
+          <p>The add action becomes a live row so users can enter name, times, and closer state without leaving the list.</p>
+        </div>
+
+        <div class="role-strip">
+          <button class="role-btn bar active">Bartender</button>
+          <button class="role-btn srv">Server</button>
+          <button class="role-btn sup">Support</button>
+        </div>
+
+        <div class="row-list">
+          <article class="row-card">
+            <div class="row-name">
+              <div class="input name">Alex</div>
+              <div class="row-meta">9.0 hrs - global in/out</div>
+            </div>
+            <div class="time-box muted">5</div>
+            <div class="time-box muted">2</div>
+            <div class="hours">9.0</div>
+          </article>
+          <article class="row-card contrast">
+            <div class="row-name">
+              <div class="input name">New bartender</div>
+              <div class="row-meta">draft row - saved when name is entered</div>
+            </div>
+            <div class="time-box muted">5</div>
+            <div class="time-box">2.5</div>
+            <div class="closer">C</div>
+          </article>
+        </div>
+
+        <div class="panel">
+          <div class="chip-row">
+            <span class="chip blue">Bartender</span>
+            <span class="chip on">Use global 5-2</span>
+            <span class="chip red">Closer on</span>
+          </div>
+          <div style="height:10px"></div>
+          <div class="field-row">
+            <button class="primary-btn">Save Bartender</button>
+            <button class="ghost-btn">Cancel</button>
+          </div>
+        </div>
+
+        <div class="notice">A draft row keeps add/edit controls visually consistent with existing staff rows and makes the row-list structure easier to validate.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

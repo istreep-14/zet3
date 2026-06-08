@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>06 Global Times Matrix</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="phone">
+      <header class="mock-header">
+        <div class="brand">TIP <span>POOL</span></div>
+        <div class="date-pill">Defaults</div>
+      </header>
+      <div class="mock-body" style="min-height:760px">
+        <div class="mock-title">
+          <h1>Default time matrix</h1>
+          <p>A modal-style editor groups global defaults and per-role overrides into one scannable matrix.</p>
+        </div>
+
+        <div class="panel">
+          <div class="section-label" style="padding-top:0">Global applies when role is blank</div>
+          <div class="grid two">
+            <div class="field">
+              <label>Global in</label>
+              <div class="time-box">5</div>
+            </div>
+            <div class="field">
+              <label>Global out</label>
+              <div class="time-box">2</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet">
+          <div class="toolbar">
+            <div class="mock-title" style="padding:0;flex:1">
+              <h1 style="font-size:1.05rem">Edit default times</h1>
+              <p>Role rows inherit global values until edited.</p>
+            </div>
+            <button class="ghost-btn">Close</button>
+          </div>
+
+          <div class="grid" style="margin-top:12px">
+            <div class="row-card compact contrast">
+              <div class="row-name">
+                <div class="row-meta" style="margin:0;color:var(--blue2)">BARTENDER</div>
+              </div>
+              <div class="time-box">5</div>
+              <div class="time-box">2</div>
+              <span class="chip blue">Custom</span>
+            </div>
+            <div class="row-card compact">
+              <div class="row-name">
+                <div class="row-meta" style="margin:0;color:var(--gold2)">SERVER</div>
+              </div>
+              <div class="time-box muted">5</div>
+              <div class="time-box">12</div>
+              <span class="chip gold">Out only</span>
+            </div>
+            <div class="row-card compact">
+              <div class="row-name">
+                <div class="row-meta" style="margin:0;color:var(--purple)">SUPPORT</div>
+              </div>
+              <div class="time-box muted">5</div>
+              <div class="time-box muted">2</div>
+              <span class="chip purple">Inherit</span>
+            </div>
+            <div class="field-row">
+              <button class="primary-btn">Apply Defaults</button>
+              <button class="ghost-btn">Reset all</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

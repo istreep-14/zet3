@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02 Role Select Expanded</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="phone">
+      <header class="mock-header">
+        <div class="brand">TIP <span>POOL</span></div>
+        <div class="status-pill ready">Staff ready</div>
+      </header>
+      <div class="mock-body">
+        <div class="mock-title">
+          <h1>Expanded role chooser</h1>
+          <p>All roles remain visible with counts, default windows, and a role-specific add CTA below the selected block.</p>
+        </div>
+
+        <div class="role-stack">
+          <button class="role-btn bar active">Bartender <span class="meta">3 people - 26.5 hrs</span></button>
+          <button class="role-btn srv">Server <span class="meta">2 people - 13.0 hrs</span></button>
+          <button class="role-btn sup">Support <span class="meta">1 person - cuts A, B</span></button>
+        </div>
+
+        <div class="grid three">
+          <div class="metric">
+            <div class="mini-label">Role total</div>
+            <div class="value blue">26.5h</div>
+          </div>
+          <div class="metric">
+            <div class="mini-label">Default in</div>
+            <div class="value">5:00</div>
+          </div>
+          <div class="metric">
+            <div class="mini-label">Default out</div>
+            <div class="value">2:00</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="field-row">
+            <div class="field" style="flex:1">
+              <label>Next bartender name</label>
+              <div class="input name">Add name...</div>
+            </div>
+            <button class="primary-btn" style="width:auto;padding:0 14px">Add</button>
+          </div>
+        </div>
+
+        <div class="section-label">Preview rows</div>
+        <div class="row-list">
+          <article class="row-card contrast">
+            <div class="row-name">
+              <div class="input name">Tess</div>
+              <div class="row-meta">closer suggested from blank out</div>
+            </div>
+            <div class="time-box">5</div>
+            <div class="time-box muted">auto</div>
+            <div class="closer">C</div>
+          </article>
+        </div>
+
+        <div class="notice">This direction favors discoverability when users frequently switch between bartender, server, and support while building the shift.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

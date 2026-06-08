@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>01 Role Select Compact</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="phone">
+      <header class="mock-header">
+        <div class="brand">TIP <span>POOL</span></div>
+        <div class="date-pill">Night shift</div>
+      </header>
+      <div class="mock-body">
+        <div class="mock-title">
+          <h1>Compact selected role</h1>
+          <p>The staff tab opens with only the active role visible, keeping the add bartender path close to the list.</p>
+        </div>
+
+        <div class="role-stack">
+          <button class="role-btn bar active">Bartender <span class="meta">3 people - tap to change</span></button>
+          <button class="role-btn srv">Server</button>
+          <button class="role-btn sup">Support</button>
+        </div>
+
+        <div class="toolbar">
+          <span class="count-pill">3 bartenders</span>
+          <div class="field-row" style="flex:1">
+            <div class="field" style="flex:1">
+              <label>In</label>
+              <div class="time-box muted">5</div>
+            </div>
+            <div class="field" style="flex:1">
+              <label>Out</label>
+              <div class="time-box muted">2</div>
+            </div>
+          </div>
+          <button class="icon-btn">Global</button>
+        </div>
+
+        <div class="section-label">Bartender rows</div>
+        <div class="row-list">
+          <article class="row-card">
+            <div class="row-name">
+              <div class="input name">Maya</div>
+              <div class="row-meta">uses global times</div>
+            </div>
+            <div class="time-box muted">5</div>
+            <div class="time-box muted">2</div>
+            <div class="hours">9.0</div>
+          </article>
+          <article class="row-card">
+            <div class="row-name">
+              <div class="input name">Drew</div>
+              <div class="row-meta">custom out time</div>
+            </div>
+            <div class="time-box muted">5</div>
+            <div class="time-box">1.5</div>
+            <div class="hours">8.5</div>
+          </article>
+        </div>
+
+        <button class="add-btn">+ Add Bartender</button>
+        <div class="notice">Explores the smallest role block: active role, count, defaults, list, and add action all in one vertical flow.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

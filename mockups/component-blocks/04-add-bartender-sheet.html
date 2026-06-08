@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04 Add Bartender Sheet</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="phone">
+      <header class="mock-header">
+        <div class="brand">TIP <span>POOL</span></div>
+        <div class="status-pill hot">Adding</div>
+      </header>
+      <div class="mock-body" style="min-height:760px">
+        <div class="mock-title">
+          <h1>Sheet-based add flow</h1>
+          <p>A focused bottom sheet gives add bartender more room for role, default, and close-time decisions.</p>
+        </div>
+
+        <div class="section-label">Behind sheet</div>
+        <div class="row-list">
+          <article class="row-card">
+            <div class="row-name">
+              <div class="input name">Maya</div>
+              <div class="row-meta">bartender - 9.0 hrs</div>
+            </div>
+            <div class="time-box muted">5</div>
+            <div class="time-box muted">2</div>
+            <div class="hours">9.0</div>
+          </article>
+          <button class="add-btn">+ Add Bartender</button>
+        </div>
+
+        <div class="sheet">
+          <div class="toolbar">
+            <div class="mock-title" style="padding:0;flex:1">
+              <h1 style="font-size:1.05rem">Add bartender</h1>
+              <p>Defaults are prefilled from the selected role.</p>
+            </div>
+            <button class="ghost-btn">Done</button>
+          </div>
+          <div class="grid" style="margin-top:12px">
+            <div class="field">
+              <label>Name</label>
+              <div class="input name">Jordan</div>
+            </div>
+            <div class="role-strip">
+              <button class="role-btn bar active">Bar</button>
+              <button class="role-btn srv">Server</button>
+              <button class="role-btn sup">Support</button>
+            </div>
+            <div class="grid two">
+              <div class="field">
+                <label>In</label>
+                <div class="time-box">5</div>
+              </div>
+              <div class="field">
+                <label>Out</label>
+                <div class="time-box muted">blank = closer</div>
+              </div>
+            </div>
+            <div class="chip-row">
+              <span class="chip on">Apply global times</span>
+              <span class="chip red">Mark closer</span>
+              <span class="chip blue">Focus next row</span>
+            </div>
+            <button class="primary-btn">Add Bartender</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

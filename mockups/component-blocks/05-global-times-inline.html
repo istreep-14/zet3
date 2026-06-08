@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05 Global Times Inline</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="phone">
+      <header class="mock-header">
+        <div class="brand">TIP <span>POOL</span></div>
+        <div class="status-pill warn">Times edited</div>
+      </header>
+      <div class="mock-body">
+        <div class="mock-title">
+          <h1>Inline global times</h1>
+          <p>Global defaults stay visible above role rows, with overrides called out directly in the staff list.</p>
+        </div>
+
+        <div class="panel">
+          <div class="toolbar">
+            <div style="flex:1">
+              <div class="section-label" style="padding:0 0 8px">Global defaults</div>
+              <div class="field-row">
+                <div class="field" style="flex:1">
+                  <label>In</label>
+                  <div class="time-box">5</div>
+                </div>
+                <div class="field" style="flex:1">
+                  <label>Out</label>
+                  <div class="time-box">2</div>
+                </div>
+              </div>
+            </div>
+            <button class="icon-btn">Reset</button>
+          </div>
+        </div>
+
+        <div class="role-strip">
+          <button class="role-btn bar active">Bar <span class="meta">5-2</span></button>
+          <button class="role-btn srv">Srv <span class="meta">6-12</span></button>
+          <button class="role-btn sup">Sup <span class="meta">5-11</span></button>
+        </div>
+
+        <div class="section-label">Rows using and overriding global</div>
+        <div class="row-list">
+          <article class="row-card">
+            <div class="row-name">
+              <div class="input name">Maya</div>
+              <div class="row-meta">using global in/out</div>
+            </div>
+            <div class="time-box muted">5</div>
+            <div class="time-box muted">2</div>
+            <div class="hours">9.0</div>
+          </article>
+          <article class="row-card contrast">
+            <div class="row-name">
+              <div class="input name">Nico</div>
+              <div class="row-meta">custom in - keeps global out</div>
+            </div>
+            <div class="time-box">6</div>
+            <div class="time-box muted">2</div>
+            <div class="hours">8.0</div>
+          </article>
+        </div>
+
+        <div class="notice">This mockup tests whether global time editing should be a first-class block on Staff instead of hidden behind a modal.</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
