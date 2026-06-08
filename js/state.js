@@ -67,7 +67,7 @@ let dayPools = {
 // Which role tab is active in the staff section
 let staffViewRole = 'bartender'; // 'bartender' | 'server' | 'support'
 
-// Per-role default times — auto-inferred from first explicit entry in each role's list
+// Per-role default times — explicitly set by the inline/default-time controls.
 let roleDefaults = {
   bartender: { in: '', out: '' },
   server:    { in: '', out: '' },

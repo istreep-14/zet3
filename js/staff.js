@@ -117,45 +117,6 @@ function _setRoleDefault(role, field, val) {
   autoCalculate();
 }
 
-// After a time input, scan for the first explicit value in the role → auto-set role default
-function _inferRoleDefault(listId, field) {
-  const role = getRoleForList(listId);
-  const rows = document.querySelectorAll('#' + listId + ' .staff-row-modal');
-  let firstVal = '';
-  rows.forEach(r => {
-    if (firstVal) return;
-    const el = r.querySelector('[data-field="' + field + '"]');
-    if (el && el.value.trim()) firstVal = el.value.trim();
-  });
-  if (firstVal && firstVal !== roleDefaults[role][field]) {
-    roleDefaults[role][field] = firstVal;
-    // Sync the inline UI if this is the active role
-    if (role === staffViewRole) updateRoleDefaultsUI();
-    _syncModalRoleFields();
-    _refreshRolePlaceholders(role, field);
-    // Recalculate displayed hours for every blank row in this role now that the default changed
-    _recalcRoleHours(role);
-    // Update global gc-in/gc-out if all roles agree on one value (or role is the only one set)
-    _syncGlobalFromRoles(field);
-  }
-}
-
-function _syncGlobalFromRoles(field) {
-  const gcId = field === 'in' ? 'gc-in' : 'gc-out';
-  const gcEl = $(gcId);
-  if (!gcEl) return;
-  // If global is blank and there's a consensus or any role value, suggest it
-  const vals = ['bartender', 'server']
-    .map(r => roleDefaults[r][field])
-    .filter(Boolean);
-  if (!vals.length) return;
-  // Only auto-set global if it's currently blank
-  if (!gcEl.value.trim()) {
-    const consensus = vals.every(v => v === vals[0]) ? vals[0] : '';
-    if (consensus) { gcEl.value = consensus; onDefaultTimesChange(); }
-  }
-}
-
 function _refreshRolePlaceholders(role, field) {
   const listIds = _listIdsForRole(role);
   const defaultVal = roleDefaults[role][field]
@@ -481,10 +442,6 @@ function onTimeInput(id, field) {
   const el  = row.querySelector('[data-field="' + field + '"]');
   if (el) el.classList.remove('using-default');
   calcHours(id);
-
-  // Smart default: infer role default from first explicit entry
-  const listId = _findListForId(id);
-  if (listId) _inferRoleDefault(listId, field);
 }
 
 function _findListForId(id) {

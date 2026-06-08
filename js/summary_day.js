@@ -228,7 +228,7 @@ function renderDayDist(result, distCtx) {
   const hasErr = !!distributionError || unpaid > 0;
   const errMsg = distributionError || (unpaid > 0 ? 'Distribution short $' + unpaid : '');
 
-  const hCols = DENOMS.map(d => `<th><span class="dist-tbl-denom">$${d}</span></th>`).join('')
+  const hCols = DENOMS.map(d => `<th><span class="dist-tbl-denom">${d}</span></th>`).join('')
               + '<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th>';
 
   const roleLbl = p => p.role === 'support' ? 'sup' : p.role === 'bartender' ? 'bar' : 'srv';
@@ -236,15 +236,12 @@ function renderDayDist(result, distCtx) {
     const safe      = escapeHTML(p.n);
     const roleCls   = p.role || 'bartender';
     const roleBadge = `<span class="role-badge role-${roleCls}" style="margin-left:3px">${roleLbl(p)}</span>`;
-    const dot = p.closer
-      ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:3px;vertical-align:middle"></span>'
-      : '';
     const pt   = DENOMS.reduce((s, d) => s + (p.bills[d] || 0) * d, 0);
     const cols = DENOMS.map(d => {
       const n = p.bills[d] || 0;
       return n > 0 ? `<td class="has-bills">${n}</td>` : `<td class="zero">—</td>`;
     }).join('');
-    return `<tr><td>${safe}${roleBadge}${dot}</td>${cols}<td class="person-total">$${pt}</td></tr>`;
+    return `<tr><td>${safe}${roleBadge}</td>${cols}<td class="person-total">$${pt}</td></tr>`;
   }).join('');
 
   let remRow = '';
@@ -267,6 +264,7 @@ function renderDayDist(result, distCtx) {
   const totalRow = `<tr class="dist-totals-row"><td>Total</td>${dtCols}<td class="grand-total">$${dGT}</td></tr>`;
 
   const tableHTML = `<div class="dist-tbl-wrap"><table class="dist-tbl">
+    <colgroup><col class="dist-name-col">${DENOMS.map(() => '<col class="dist-bill-col">').join('')}<col class="dist-total-col"></colgroup>
     <thead><tr><th>Name</th>${hCols}</tr></thead>
     <tbody>${rows}${remRow}</tbody>
     <tfoot>${totalRow}</tfoot>

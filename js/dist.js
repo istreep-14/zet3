@@ -351,7 +351,8 @@ function renderTradeUpCard(tradeUp, pool) {
     </div>
     <div class="dist-tbl-wrap dist-trade-table">
       <table class="dist-tbl">
-        <thead><tr><th></th>${DENOMS.map(d => `<th><span class="dist-tbl-denom">$${d}</span></th>`).join('')}<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th></tr></thead>
+        ${renderDistColGroup()}
+        <thead><tr><th></th>${DENOMS.map(d => `<th><span class="dist-tbl-denom">${d}</span></th>`).join('')}<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th></tr></thead>
         <tbody>
           <tr><td>Now</td>${nowCells}<td class="person-total">$${nowTotal}</td></tr>
           <tr><td>Delta</td>${deltaCells}${deltaTotalCell}</tr>
@@ -396,7 +397,8 @@ function renderTradeDownCard(preview, pool) {
     <div class="trade-card-trades">${tradeItems}</div>
     <div class="dist-tbl-wrap dist-trade-table">
       <table class="dist-tbl">
-        <thead><tr><th></th>${DENOMS.map(d => `<th><span class="dist-tbl-denom">$${d}</span></th>`).join('')}<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th></tr></thead>
+        ${renderDistColGroup()}
+        <thead><tr><th></th>${DENOMS.map(d => `<th><span class="dist-tbl-denom">${d}</span></th>`).join('')}<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th></tr></thead>
         <tbody>
           <tr><td>Now</td>${nowCells}<td class="person-total">$${nowTotal}</td></tr>
           <tr><td>Delta</td>${deltaCells}${deltaTotalCell}</tr>
@@ -413,8 +415,14 @@ function renderCountCell(count) {
   return count > 0 ? `<td class="has-bills">${count}</td>` : '<td class="zero">—</td>';
 }
 
+function renderDistColGroup() {
+  return '<colgroup><col class="dist-name-col">'
+    + DENOMS.map(() => '<col class="dist-bill-col">').join('')
+    + '<col class="dist-total-col"></colgroup>';
+}
+
 function renderDistTableMarkup(swb, options = {}) {
-  const hCols  = DENOMS.map(d => `<th><span class="dist-tbl-denom">$${d}</span></th>`).join('')
+  const hCols  = DENOMS.map(d => `<th><span class="dist-tbl-denom">${d}</span></th>`).join('')
                + '<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th>';
   const sumRem      = options.leftover || 0;
   const previewLabel = options.preview
@@ -424,14 +432,11 @@ function renderDistTableMarkup(swb, options = {}) {
   const rows = swb.map(p => {
     const safe = escapeHTML(p.n);
     const pt   = DENOMS.reduce((s, d) => s + (p.bills[d] || 0) * d, 0);
-    const dot  = p.closer
-      ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:3px;vertical-align:middle"></span>'
-      : '';
     const cols = DENOMS.map(d => {
       const n = p.bills[d] || 0;
       return n > 0 ? `<td class="has-bills">${n}</td>` : `<td class="zero">—</td>`;
     }).join('');
-    return `<tr><td>${safe}${dot}</td>${cols}<td class="person-total">$${pt}</td></tr>`;
+    return `<tr><td>${safe}</td>${cols}<td class="person-total">$${pt}</td></tr>`;
   }).join('');
 
   let remRow = '', remBills = {}, remAT = 0;
@@ -455,5 +460,5 @@ function renderDistTableMarkup(swb, options = {}) {
   const totalRow = `<tr class="dist-totals-row"><td>Total</td>${dtCols}<td class="grand-total">$${dGT}</td></tr>`;
 
   return previewLabel
-    + `<div class="dist-tbl-wrap"><table class="dist-tbl"><thead><tr><th>Name</th>${hCols}</tr></thead><tbody>${rows}${remRow}</tbody><tfoot>${totalRow}</tfoot></table></div>`;
+    + `<div class="dist-tbl-wrap"><table class="dist-tbl">${renderDistColGroup()}<thead><tr><th>Name</th>${hCols}</tr></thead><tbody>${rows}${remRow}</tbody><tfoot>${totalRow}</tfoot></table></div>`;
 }
