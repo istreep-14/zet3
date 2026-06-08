@@ -330,13 +330,13 @@
 .staff-row-modal {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 62px 62px 52px;
-  gap: 8px;
-  align-items: stretch;
-  padding: 11px;
+  grid-template-columns: minmax(0, 1fr) 48px 48px 42px;
+  gap: 5px;
+  align-items: center;
+  padding: 6px;
   position: relative;
   transition: border-color .15s, background .15s;
 }
@@ -344,20 +344,20 @@
 .staff-row-modal:focus-within { border-color: var(--border2); }
 
 .sri-name {
-  grid-column: 1 / -1;
+  grid-column: auto;
   min-width: 0;
   border-right: none;
 }
 
 .sri-name input {
   width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  border-radius: 0;
   color: var(--text);
-  padding: 11px 12px;
-  font-size: 1.04rem;
-  font-weight: 700;
+  padding: 1px 2px 0;
+  font-size: .9rem;
+  font-weight: 800;
   outline: none;
   font-family: var(--font-sans);
 }
@@ -367,11 +367,14 @@
 .sri-meta {
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: .62rem;
+  font-size: .48rem;
   font-weight: 700;
   letter-spacing: .2px;
-  margin-top: 6px;
-  min-height: 16px;
+  margin-top: 2px;
+  min-height: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sri-meta-badge {
@@ -380,10 +383,10 @@
   border-radius: var(--radius-chip);
   color: var(--accent);
   display: inline-flex;
-  font-size: .48rem;
-  letter-spacing: .7px;
-  margin-left: 6px;
-  padding: 1px 5px;
+  font-size: .38rem;
+  letter-spacing: .5px;
+  margin-left: 4px;
+  padding: 0 4px;
   text-transform: uppercase;
 }
 
@@ -394,7 +397,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--input-bg);
-  min-height: 52px;
+  min-height: 38px;
 }
 
 .sri-tlbl {
@@ -403,7 +406,7 @@
   letter-spacing: .5px;
   color: var(--muted2);
   font-family: var(--font-mono);
-  padding-top: 6px;
+  padding-top: 4px;
   line-height: 1;
   pointer-events: none;
 }
@@ -415,8 +418,8 @@
   border: none;
   color: var(--text);
   text-align: center;
-  padding: 2px 3px 6px;
-  font-size: 1.02rem;
+  padding: 1px 2px 4px;
+  font-size: .86rem;
   font-weight: 800;
   outline: none;
   font-family: var(--font-mono);
@@ -431,13 +434,14 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  font-size: .98rem;
+  font-size: .84rem;
   font-weight: 800;
   color: var(--muted);
   font-family: var(--font-mono);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface2);
+  min-height: 38px;
 }
 
 .sri-hrs.filled       { color: var(--gold2); }
