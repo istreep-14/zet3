@@ -9,6 +9,12 @@
   margin-bottom: 12px;
 }
 
+/* Bottom toggle: secondary / small, sits below the main input */
+.cash-mode-toggle--bottom {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
 .cmt-btn {
   flex: 1;
   background: none;
