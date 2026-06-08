@@ -8,6 +8,7 @@ let lastTotal    = 0;
 let lastTotH     = 0;
 let lastRate     = 0;
 let lastLeftover = 0;
+let lastRemainderPool = 0;
 let lastPoolAfter = {};
 let lastRemainderBills = {};
 let lastDistributionError = '';
@@ -19,6 +20,7 @@ let netTotalSnapshot = '';
 let isRestoringState = false;
 let isUpdatingNetTotal = false;
 let currentInputError = '';
+let remainderOverrides = null; // null = automatic closer split; object = manual rowId -> add-on dollars
 
 // ── Shift mode ────────────────────────────────────────────────────────────────
 // 'night' = current single-pool behaviour

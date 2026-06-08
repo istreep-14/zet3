@@ -76,6 +76,7 @@ if (_saved) {
     });
   }
   if (_saved.staffViewRole) staffViewRole = _saved.staffViewRole;
+  remainderOverrides = _saved.remainderOverrides || null;
 
   // ── Servers (day shift) ──
   if (savedShift === 'day' && _saved.servers?.length) {

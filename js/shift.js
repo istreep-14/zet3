@@ -13,6 +13,8 @@ function setShiftMode(mode, skipConfirm) {
   }
 
   shiftMode = mode;
+  remainderOverrides = null;
+  lastRemainderPool = 0;
 
   // Toggle tab-panel visibility for cash section
   const nightCash = $('night-cash-section');

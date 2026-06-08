@@ -249,7 +249,10 @@ function renderDistTable(swb, poolAfter, distCtx) {
   const tradeDownHTML = renderTradeDownCard(_pendingTradeDown, pool);
   const tradeUpHTML   = _pendingTradeUp ? renderTradeUpCard(_pendingTradeUp, pool) : '';
 
-  const ctBtn = '<button class="ct-open-btn" onclick="openCloseTimeSidebar()">⏱ Close Time</button>';
+  const actionBtns = '<div class="dist-action-grid">'
+    + '<button class="ct-open-btn" onclick="openCloseTimeSidebar()">⏱ Close Time</button>'
+    + '<button class="ct-open-btn rem-open-btn" onclick="openRemainderSidebar()">Remainder</button>'
+    + '</div>';
 
   if (hasErr) {
     const previewTableHTML = _pendingTradeDown
@@ -270,14 +273,14 @@ function renderDistTable(swb, poolAfter, distCtx) {
       + reqHTML
       + tradeDownHTML
       + previewTableHTML
-      + ctBtn;
+      + actionBtns;
     return;
   }
 
   $('dist-content').innerHTML = reqHTML + tradeUpHTML + renderDistTableMarkup(swb, {
     remainderBills,
     leftover,
-  }) + ctBtn;
+  }) + actionBtns;
 }
 
 // ── Requirement summary ───────────────────────────────────────────────────────

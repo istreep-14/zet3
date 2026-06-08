@@ -67,6 +67,7 @@ function saveState() {
     cashMode,
     staffViewRole,
     roleDefaults,
+    remainderOverrides,
     bills:        (typeof readBillInputSnapshot === 'function') ? readBillInputSnapshot() : {},
     perBillBills: perBillSnapshot,
     netBillBills: netBillSnapshot,
@@ -127,6 +128,16 @@ function validateSessionSnapshot(snap) {
   }
   if (snap.shiftMode && snap.shiftMode !== 'night' && snap.shiftMode !== 'day') {
     throw new Error('shiftMode is invalid');
+  }
+  if (snap.remainderOverrides != null && !isPlainObject(snap.remainderOverrides)) {
+    throw new Error('remainderOverrides must be an object');
+  }
+  if (isPlainObject(snap.remainderOverrides)) {
+    Object.values(snap.remainderOverrides).forEach(value => {
+      if (!Number.isSafeInteger(Number(value)) || Number(value) < 0) {
+        throw new Error('remainderOverrides contains invalid values');
+      }
+    });
   }
   validateBillSnapshot(snap.bills, 'bills');
   validateBillSnapshot(snap.perBillBills, 'perBillBills');
