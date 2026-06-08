@@ -3,7 +3,7 @@ function updateStockCards() {
   $('sc-total').textContent = '$' + total;
   const bc = DENOMS.map(d => ({ d, n: getVal('b' + d) })).filter(x => x.n > 0);
   $('sc-billcount').textContent = bc.length ? bc.reduce((s, x) => s + x.n, 0) + ' bills' : '—';
-  const rows = document.querySelectorAll('#staffList .staff-row-modal');
+  const rows = document.querySelectorAll('#staffList .staff-row-modal, #nightServerList .staff-row-modal');
   let nc = 0;
   rows.forEach(r => { if (r.querySelector('[data-field="name"]').value.trim()) nc++; });
   $('sc-staffcount').textContent = nc;
@@ -30,7 +30,7 @@ function updateHomeLive(staffArr, metrics) {
   const distributionError = metrics?.distributionError ?? lastDistributionError ?? '';
 
   const total = getTotal();
-  const rows  = document.querySelectorAll('#staffList .staff-row-modal');
+  const rows  = document.querySelectorAll('#staffList .staff-row-modal, #nightServerList .staff-row-modal');
   let named = 0;
   rows.forEach(r => { if (r.querySelector('[data-field="name"]').value.trim()) named++; });
 

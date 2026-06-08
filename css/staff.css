@@ -354,3 +354,23 @@
 }
 
 .add-btn:active { border-color: var(--green); color: var(--green); }
+
+@media (max-width: 390px) {
+  .sup-row {
+    flex-wrap: wrap;
+  }
+
+  .sup-row .sup-cuts {
+    order: 2;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid var(--border);
+    border-right: none;
+  }
+
+  .sup-row .sup-cut-chip {
+    padding: 4px 7px;
+  }
+}

@@ -50,13 +50,11 @@ function openCloseTimeSidebar() {
   _ctCenter = (gcOutParsed.valid && !gcOutParsed.empty) ? gcOutParsed.value : 2;
 
   _ctRenderSidebar();
-  $('closeTimeSidebar').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  openModal('closeTimeSidebar');
 }
 
 function closeCloseTimeSidebar() {
-  $('closeTimeSidebar').classList.remove('open');
-  document.body.style.overflow = '';
+  closeModal('closeTimeSidebar');
 }
 
 // Select a column — commit that time as the new gc-out, re-center the table on it

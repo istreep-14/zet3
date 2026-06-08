@@ -35,6 +35,7 @@
 
 .ds-table {
   width: 100%;
+  min-width: 520px;
   border-collapse: collapse;
   font-family: var(--font-mono);
   font-size: .8rem;

@@ -23,7 +23,7 @@
   border-top: 1px solid var(--border2);
   border-radius: 20px 20px 0 0;
   width: 100%;
-  max-width: 480px;
+  max-width: var(--app-max-w);
   /* Sits above the tab bar; keyboard-open adds extra room automatically
      since tab bar is gone. Use dvh so it responds to keyboard shrinkage. */
   max-height: 82dvh;
@@ -64,6 +64,10 @@ body.keyboard-open .modal-sheet {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
 }
 
 .modal-close {
@@ -84,3 +88,29 @@ body.keyboard-open .modal-sheet {
 .modal-close:hover { border-color: var(--accent); color: var(--accent); }
 
 .modal-body { padding: 14px 16px; }
+
+@media (min-width: 760px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .modal-sheet {
+    width: min(calc(100vw - 48px), var(--app-max-w));
+    max-height: min(86dvh, 720px);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding-bottom: 0;
+    transform: translateY(14px) scale(.98);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .55);
+  }
+
+  body.keyboard-open .modal-sheet {
+    max-height: 72dvh;
+    padding-bottom: 0;
+  }
+
+  .modal-overlay.open .modal-sheet {
+    transform: translateY(0) scale(1);
+  }
+}

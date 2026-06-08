@@ -51,6 +51,13 @@ function collectNamedStaffRows() {
   setInputInvalid($('gc-out'), !!gcOut && !gcOutParsed.valid);
   if (gcIn  && !gcInParsed.valid)  errors.push('Default In must be a valid time (e.g. 5, 11, 12.5).');
   if (gcOut && !gcOutParsed.valid) errors.push('Default Out must be a valid time (e.g. 5, 11, 12.5).');
+  ['bartender', 'server'].forEach(role => {
+    const defs = roleDefaults[role] || {};
+    const inParsed = parseTimeString(defs.in || '');
+    const outParsed = parseTimeString(defs.out || '');
+    if (defs.in && !inParsed.valid) errors.push(role + ' default In must be a valid time.');
+    if (defs.out && !outParsed.valid) errors.push(role + ' default Out must be a valid time.');
+  });
 
   const rawData = [];
   allRows.forEach(r => {

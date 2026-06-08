@@ -19,7 +19,7 @@ assert.strictEqual(ctx.parseTimeString('5').value, 5);
 assert.strictEqual(ctx.parseTimeString('5.5').value, 5.5);
 assert.strictEqual(ctx.parseTimeString('.5').value, 0.5);
 assert.strictEqual(ctx.parseTimeString('12').valid, true);
-assert.strictEqual(ctx.parseTimeString('12.5').valid, false);
+assert.strictEqual(ctx.parseTimeString('12.5').valid, true);
 assert.strictEqual(ctx.parseTimeString('5abc').valid, false);
 assert.strictEqual(ctx.parseTimeString('-1').valid, false);
 

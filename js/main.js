@@ -224,3 +224,33 @@ if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', updateKeyboardState);
   window.visualViewport.addEventListener('scroll', updateKeyboardState);
 }
+
+// Desktop keyboard shortcuts. Numeric tab jumps only run when the user is not typing.
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.setAttribute('role', 'tab');
+  btn.setAttribute('aria-selected', btn.classList.contains('active') ? 'true' : 'false');
+});
+
+function _isTypingTarget(el) {
+  if (!el) return false;
+  const tag = el.tagName;
+  return el.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || _isTypingTarget(e.target)) return;
+
+  const tabByKey = { '1': 'home', '2': 'cash', '3': 'staff', '4': 'summary', '5': 'dist' };
+  const tabName = tabByKey[e.key];
+  if (tabName) {
+    switchTab(tabName, $('tb-' + tabName));
+    e.preventDefault();
+    return;
+  }
+
+  if (e.key.toLowerCase() === 'a' && $('tab-staff')?.classList.contains('active')) {
+    const listId = (typeof getActiveListId === 'function') ? getActiveListId() : 'staffList';
+    addStaff(true, listId);
+    e.preventDefault();
+  }
+});

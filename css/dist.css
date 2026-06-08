@@ -3,11 +3,17 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 8px;
 }
 
-.dist-tbl { width: 100%; border-collapse: collapse; font-size: .78rem; }
+.dist-tbl {
+  width: 100%;
+  min-width: 540px;
+  border-collapse: collapse;
+  font-size: .78rem;
+}
 
 .dist-tbl th {
   padding: 8px 7px;
@@ -94,6 +100,7 @@
 
 .dist-cash-section .dist-tbl th { padding: 4px 7px; }
 .dist-cash-section .dist-tbl td { padding: 6px 7px; border-bottom: none; }
+.dist-cash-section .dist-tbl { min-width: 0; }
 
 .dist-cash-hdr-row td {
   border-top: 2px solid var(--border2);
@@ -246,6 +253,10 @@
 .dist-trade-table {
   border-radius: var(--radius-sm);
   margin-bottom: 0;
+}
+
+.dist-trade-table .dist-tbl {
+  min-width: 500px;
 }
 
 .dist-tbl td.delta-pos { color: var(--green);   font-weight: 700; }

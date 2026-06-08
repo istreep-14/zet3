@@ -110,7 +110,7 @@ function setCashMode(mode) {
 }
 
 function getIdealTargetsForTotal(total) {
-  const rows = document.querySelectorAll('#staffList .staff-row-modal');
+  const rows = document.querySelectorAll('#staffList .staff-row-modal, #nightServerList .staff-row-modal');
   const rawData = [];
   const gcIn = $('gc-in')?.value.trim() || '', gcOut = $('gc-out')?.value.trim() || '';
   rows.forEach(r => {
@@ -119,11 +119,18 @@ function getIdealTargetsForTotal(total) {
     const rowId  = r.id.replace('staff', '');
     const inStr  = r.querySelector('[data-field="in"]')?.value.trim()  || '';
     const outStr = r.querySelector('[data-field="out"]')?.value.trim() || '';
-    rawData.push({ inStr, outStr, hasOut: !!outStr, rowId });
+    const role = (typeof getRoleForList === 'function' && typeof _listIdForRowId === 'function')
+      ? getRoleForList(_listIdForRowId(rowId))
+      : 'bartender';
+    const rDef = roleDefaults[role] || {};
+    rawData.push({ inStr, outStr, hasOut: !!outStr, rowId, role, rDef });
   });
   if (!rawData.length) return [total];
 
-  rawData.forEach(r => { r.effIn = r.inStr || gcIn; r.effOut = r.outStr || gcOut; });
+  rawData.forEach(r => {
+    r.effIn = r.inStr || r.rDef.in || gcIn;
+    r.effOut = r.outStr || r.rDef.out || gcOut;
+  });
   let maxEo = 0;
   rawData.forEach(r => {
     if (!r.effIn || !r.effOut) return;
