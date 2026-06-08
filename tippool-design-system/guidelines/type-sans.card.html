@@ -1,0 +1,30 @@
+<!-- @dsCard group="Type" viewport="700x150" name="Names / body — IBM Plex Sans" subtitle="Employee names and prose only" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-sans); padding: 18px; display:flex; align-items:center; gap:40px; }
+  .names { display:flex; flex-direction:column; gap:7px; }
+  .name { color: var(--text); font-size: 1rem; font-weight: 800; }
+  .name.muted { color: var(--muted); font-weight: 500; }
+  .tag { color:var(--muted); font-family:var(--font-mono); font-size:.5rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:8px; }
+  .prose { max-width: 320px; color: var(--text-2); font-size: .84rem; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div>
+    <div class="tag">Names · black 800</div>
+    <div class="names">
+      <div class="name">Maya Rodriguez</div>
+      <div class="name">Devon Clarke</div>
+      <div class="name muted">+ Add Bartender</div>
+    </div>
+  </div>
+  <div>
+    <div class="tag">Body · regular 400</div>
+    <p class="prose">Support staff share a pool of hours but earn no tips. Assign each person to one or more cuts to calculate their tip-out.</p>
+  </div>
+</body>
+</html>

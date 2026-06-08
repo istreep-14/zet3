@@ -1,0 +1,23 @@
+<!-- @dsCard group="Spacing" viewport="700x150" name="Radii" subtitle="14 cards · 9 controls · pill · chip" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 18px; display:flex; gap:18px; align-items:flex-end; }
+  .cell { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .box { width: 86px; height: 64px; background: var(--surface-2); border: 1px solid var(--border-2); }
+  .name { color:var(--text-2); font-size:.58rem; font-weight:700; }
+  .val { color:var(--muted); font-size:.52rem; }
+  .pill { width:86px; height:30px; border-radius:var(--radius-pill); }
+  .chip { width:56px; height:24px; border-radius:var(--radius-chip); }
+</style>
+</head>
+<body>
+  <div class="cell"><div class="box" style="border-radius:var(--radius)"></div><div class="name">--radius</div><div class="val">14px</div></div>
+  <div class="cell"><div class="box" style="border-radius:var(--radius-sm)"></div><div class="name">--radius-sm</div><div class="val">9px</div></div>
+  <div class="cell"><div class="box pill"></div><div class="name">--radius-pill</div><div class="val">999px</div></div>
+  <div class="cell"><div class="box chip"></div><div class="name">--radius-chip</div><div class="val">4px</div></div>
+</body>
+</html>

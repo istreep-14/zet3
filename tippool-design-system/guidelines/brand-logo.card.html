@@ -1,0 +1,26 @@
+<!-- @dsCard group="Brand" viewport="700x180" name="App icon & wordmark" subtitle="Tip-jar mark · TIP POOL with red accent" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 22px; display:flex; align-items:center; gap:34px; }
+  .icon { width: 96px; height: 96px; border-radius: 21px; box-shadow: var(--shadow-menu); }
+  .stack { display:flex; flex-direction:column; gap:16px; }
+  .wordmark { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; letter-spacing: 1.5px; color: var(--text); }
+  .wordmark span { color: var(--accent); }
+  .chrome { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; letter-spacing: 1px; color: var(--text); }
+  .chrome span { color: var(--accent); }
+  .chrome em { color: var(--muted); font-style: normal; font-size:.52rem; letter-spacing:.5px; margin-left:7px; font-weight:600; }
+  .tag { color:var(--muted); font-size:.5rem; text-transform:uppercase; letter-spacing:.6px; margin-top:6px; }
+</style>
+</head>
+<body>
+  <img class="icon" src="../assets/brand/icon-512.png" alt="TipPool icon">
+  <div class="stack">
+    <div><div class="wordmark">TIP <span>POOL</span></div><div class="tag">Wordmark · POOL in --accent</div></div>
+    <div><div class="chrome">TIP <span>POOL</span><em>Night Shift</em></div><div class="tag">In-app header lockup</div></div>
+  </div>
+</body>
+</html>

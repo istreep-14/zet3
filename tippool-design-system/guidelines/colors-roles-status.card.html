@@ -1,0 +1,40 @@
+<!-- @dsCard group="Colors" viewport="700x170" name="Role coding & status" subtitle="Bartender blue · Server gold · Support purple · status dots" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 18px; display:flex; flex-direction:column; gap:14px; }
+  .row { display: flex; gap: 10px; }
+  .badge { font-size:.5rem; font-weight:700; letter-spacing:.6px; text-transform:uppercase; border-radius: var(--radius-chip); padding:4px 8px; border:1px solid; }
+  .bar { color:var(--role-bartender); border-color:var(--role-bartender-border); background:var(--role-bartender-bg); }
+  .srv { color:var(--role-server); border-color:var(--role-server-border); background:var(--role-server-bg); }
+  .sup { color:var(--role-support); border-color:var(--role-support-border); background:var(--role-support-bg); }
+  .dots { display:flex; gap:18px; align-items:center; }
+  .dotcell { display:flex; align-items:center; gap:7px; }
+  .dot { width:9px; height:9px; border-radius:50%; border:1.5px solid var(--surface); }
+  .lbl { color:var(--muted); font-size:.56rem; letter-spacing:.6px; text-transform:uppercase; }
+  .eyebrow { color:var(--muted); font-size:.5rem; letter-spacing:1.2px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+  <div>
+    <div class="eyebrow" style="margin-bottom:8px">Staff roles</div>
+    <div class="row">
+      <span class="badge bar">Bartender</span>
+      <span class="badge srv">Server</span>
+      <span class="badge sup">Support</span>
+    </div>
+  </div>
+  <div>
+    <div class="eyebrow" style="margin-bottom:8px">Status dots</div>
+    <div class="dots">
+      <div class="dotcell"><span class="dot" style="background:var(--status-ready)"></span><span class="lbl">Ready</span></div>
+      <div class="dotcell"><span class="dot" style="background:var(--status-attention)"></span><span class="lbl">Attention</span></div>
+      <div class="dotcell"><span class="dot" style="background:var(--status-pending)"></span><span class="lbl">Pending</span></div>
+      <div class="dotcell"><span class="dot" style="background:var(--accent)"></span><span class="lbl">Closer</span></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Elevation & card surface" subtitle="One real shadow + the top-left sheen on cards" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 22px 18px; display:flex; gap:20px; align-items:center; }
+  .card { position:relative; width: 150px; height: 90px; background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; padding:11px 13px; }
+  .card::after { content:''; position:absolute; inset:0; background: var(--sheen); pointer-events:none; }
+  .card .lbl { color:var(--muted); font-size:.5rem; letter-spacing:1.2px; text-transform:uppercase; font-weight:700; }
+  .card .val { color:var(--gold); font-size:1.4rem; font-weight:800; margin-top:4px; }
+  .menu { width: 168px; background: var(--surface-2); border:1px solid var(--border-2); border-radius: var(--radius-sm); box-shadow: var(--shadow-menu); overflow:hidden; }
+  .menu button { display:block; width:100%; text-align:left; padding:11px 14px; background:none; border:none; border-bottom:1px solid var(--border); color:var(--text-2); font-family:var(--font-mono); font-size:.66rem; font-weight:600; }
+  .menu button:last-child { border-bottom:none; color:var(--accent); }
+  .tag { color:var(--muted); font-size:.5rem; text-transform:uppercase; letter-spacing:.6px; margin-top:8px; text-align:center; }
+</style>
+</head>
+<body>
+  <div>
+    <div class="card"><div class="lbl">Cash on Hand</div><div class="val">$1,284</div></div>
+    <div class="tag">card · sheen</div>
+  </div>
+  <div>
+    <div class="menu"><button>Export JSON</button><button>Import JSON</button><button>New Session</button></div>
+    <div class="tag">--shadow-menu</div>
+  </div>
+</body>
+</html>

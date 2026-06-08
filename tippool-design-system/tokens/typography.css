@@ -1,0 +1,72 @@
+/* ============================================================
+   TipPool — Typography tokens
+   Mono-first. Numbers, labels and denominations are ALWAYS mono;
+   sans is reserved for human names and sentence prose.
+   The app runs at a phone scale, so the type ramp is compact.
+   ============================================================ */
+
+:root {
+  /* ---- Families ---- */
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+
+  /* ---- Weights ---- */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-heavy:    800;   /* money values, names, totals */
+  --fw-regular:      var(--weight-regular);
+  --fw-medium:       var(--weight-medium);
+  --fw-semibold:     var(--weight-semibold);
+  --fw-bold:         var(--weight-bold);
+  --fw-black:        var(--weight-heavy);
+
+  /* ---- Size ramp (phone scale; 1rem = 16px) ---- */
+  --text-display: 2.5rem;   /* 40px — summary hero total */
+  --text-hero:    1.9rem;   /* 30px — net-total input */
+  --text-xl:      1.65rem;  /* 26px — grand totals */
+  --text-lg:      1.4rem;   /* 22px — card values, denomination inputs */
+  --text-money:   1.22rem;  /* 19.5px — per-person payout */
+  --text-base:    1.04rem;  /* 16.6px — name inputs (min for no iOS zoom) */
+  --text-body:    0.84rem;  /* 13.4px — secondary values */
+  --text-sm:      0.72rem;  /* 11.5px — meta, captions */
+  --text-xs:      0.62rem;  /* 9.9px — sub-labels */
+  --text-2xs:     0.52rem;  /* 8.3px — section headers */
+  --text-micro:   0.44rem;  /* 7px — chip / tab micro-labels */
+  --text-2xl:     var(--text-xl);
+  --text-caption: var(--text-xs);
+  --text-tiny:    var(--text-2xs);
+
+  /* ---- Tracking — uppercase mono labels are always tracked out ---- */
+  --track-label:   1.4px;   /* section headers, card labels */
+  --track-tab:     0.5px;   /* tab labels */
+  --track-tight:   0.2px;   /* default body */
+  --track-eyebrow: var(--track-label);
+  --track-wide:    1px;
+
+  /* ---- Line heights ---- */
+  --leading-none:  1;       /* big numbers */
+  --leading-snug:  1.4;     /* notes, warnings */
+  --leading-body:  1.5;     /* prose */
+  --leading-tight: var(--leading-snug);
+
+  /* ============================================================
+     Semantic type roles
+     ============================================================ */
+
+  /* Section header: tiny, tracked, uppercase, mono, muted */
+  --type-section-size:   var(--text-2xs);
+  --type-section-weight: var(--weight-bold);
+  --type-section-track:  var(--track-label);
+  --type-eyebrow-size:   var(--type-section-size);
+  --type-eyebrow-weight: var(--type-section-weight);
+
+  /* Money value: heavy mono, gold (color set by component) */
+  --type-money-family: var(--font-mono);
+  --type-money-weight: var(--weight-heavy);
+
+  /* Person / staff name: heavy sans */
+  --type-name-family:  var(--font-sans);
+  --type-name-weight:  var(--weight-heavy);
+}

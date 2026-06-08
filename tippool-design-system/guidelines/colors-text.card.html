@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x130" name="Text ramp" subtitle="From primary to placeholder, all on bg" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 18px; }
+  .row { display:flex; gap: 10px; }
+  .cell { flex:1; }
+  .demo { font-size: 1.1rem; font-weight: 800; }
+  .name { font-size:.56rem; color:var(--muted); margin-top:6px; text-transform:uppercase; letter-spacing:.5px; }
+  .hex { font-size:.52rem; color:var(--muted-2); margin-top:2px; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="cell"><div class="demo" style="color:var(--text)">Aa 1234</div><div class="name">text</div><div class="hex">#f0f0f8</div></div>
+    <div class="cell"><div class="demo" style="color:var(--text-2)">Aa 1234</div><div class="name">text-2</div><div class="hex">#c0c0d8</div></div>
+    <div class="cell"><div class="demo" style="color:var(--muted)">Aa 1234</div><div class="name">muted</div><div class="hex">#6a6a8a</div></div>
+    <div class="cell"><div class="demo" style="color:var(--muted-2)">Aa 1234</div><div class="name">muted-2</div><div class="hex">#3e3e5e</div></div>
+  </div>
+</body>
+</html>

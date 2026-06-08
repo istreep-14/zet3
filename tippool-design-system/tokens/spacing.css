@@ -1,0 +1,49 @@
+/* ============================================================
+   TipPool — Spacing, radii, layout & elevation tokens
+   The app is a single 480px-max centered phone column.
+   Spacing is tight; gaps of 5–12px dominate.
+   ============================================================ */
+
+:root {
+  /* ---- Spacing scale (4px base, but the app leans on odd phone values) ---- */
+  --space-0:  0;
+  --space-1:  2px;
+  --space-2:  4px;
+  --space-3:  5px;
+  --space-4:  8px;    /* the workhorse gap between cards / list items */
+  --space-5:  10px;
+  --space-6:  12px;   /* content padding, card inner padding */
+  --space-7:  14px;   /* hero / status card padding */
+  --space-8:  16px;   /* modal body padding, header side padding */
+  --space-10: 20px;
+  --space-12: 24px;
+
+  /* ---- Radii ---- */
+  --radius:     14px;   /* cards, hero, mini-cards, large surfaces */
+  --radius-sm:  9px;    /* inputs, rows, chips, toggles, buttons */
+  --radius-pill: 999px; /* bonus pills, capsules */
+  --radius-chip: 4px;   /* tiny badges */
+  --radius-sheet: 20px; /* bottom-sheet modal top corners */
+
+  /* ---- Layout ---- */
+  --app-max-w:  480px;             /* the entire app is capped to a phone column */
+  --hdr-h:      52px;              /* sticky header */
+  --tab-h:      60px;              /* fixed bottom tab bar */
+  --tap-min:    44px;              /* minimum interactive tap target */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* ---- Elevation — used sparingly. Only overlays float. ---- */
+  --shadow-menu:  0 8px 24px rgba(0, 0, 0, .5);   /* dropdown / session menu */
+  --shadow-sheet: 0 -8px 40px rgba(0, 0, 0, .55); /* bottom-sheet lift */
+
+  /* Sheen: the only "decorative" effect — a 2.5% top-left light wash on mini-cards */
+  --sheen: linear-gradient(135deg, rgba(255,255,255,.025) 0%, transparent 60%); /* @kind other */
+
+  /* ---- Motion ---- */
+  --ease:        cubic-bezier(.4, 0, .2, 1);     /* @kind other */
+  --ease-sheet:  cubic-bezier(.32, 1, .42, 1);   /* @kind other — bottom-sheet spring-in */
+  --dur-fast:    .12s;   /* @kind other — hover / press feedback */
+  --dur-base:    .15s;   /* @kind other — color & border transitions */
+  --dur:         var(--dur-base);
+  --dur-sheet:   .28s;   /* @kind other — sheet slide */
+}

@@ -1,0 +1,28 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Surfaces & borders" subtitle="Near-black navy layers, lightest on top" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 18px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sw { flex: 1; min-width: 96px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+  .chip { height: 56px; }
+  .meta { padding: 7px 9px; background: var(--surface); }
+  .name { color: var(--text); font-size: .62rem; font-weight: 700; letter-spacing: .3px; }
+  .hex { color: var(--muted); font-size: .56rem; margin-top: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--bg)"></div><div class="meta"><div class="name">bg</div><div class="hex">#0a0a0f</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface)"></div><div class="meta"><div class="name">surface</div><div class="hex">#13131e</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-2)"></div><div class="meta"><div class="name">surface-2</div><div class="hex">#1a1a28</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--surface-3)"></div><div class="meta"><div class="name">surface-3</div><div class="hex">#202030</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--input-bg)"></div><div class="meta"><div class="name">input-bg</div><div class="hex">#0d0d18</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--border)"></div><div class="meta"><div class="name">border</div><div class="hex">#252538</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--border-2)"></div><div class="meta"><div class="name">border-2</div><div class="hex">#2e2e48</div></div></div>
+  </div>
+</body>
+</html>

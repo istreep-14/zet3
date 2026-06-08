@@ -1,0 +1,475 @@
+/* ── Shift mode toggle ───────────────────────────────────────────────────────── */
+.shift-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.shift-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 9px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.shift-btn svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  flex-shrink: 0;
+}
+
+.shift-btn.active {
+  background: var(--surface3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+
+.shift-btn.active.night-btn { color: var(--blue2); border-color: var(--blue2); }
+.shift-btn.active.day-btn   { color: var(--gold);  border-color: var(--gold-dim); }
+
+/* ── Day shift cash panels ───────────────────────────────────────────────────── */
+.dp-pool-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.dp-pool-card-hdr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  gap: 8px;
+}
+
+.dp-pool-card-left { flex: 1; min-width: 0; }
+
+.dp-pool-card-name {
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  font-family: var(--font-mono);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.dp-window-auto {
+  font-size: .56rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  line-height: 1.4;
+}
+
+.dp-window-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.dp-window-field {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  flex: 1;
+}
+
+.dp-window-lbl {
+  font-size: .46rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.dp-window-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: .82rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  outline: none;
+  text-align: center;
+  min-width: 0;
+  width: 40px;
+}
+
+.dp-window-input::placeholder { color: var(--muted2); font-weight: 400; }
+
+.dp-window-sep {
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  flex-shrink: 0;
+}
+
+.dp-remove-party-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .72rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+
+.dp-remove-party-btn:active { color: var(--accent); }
+
+.dp-pool-total-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.dp-pool-total {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.dp-pool-total.zero { color: var(--muted2); }
+
+/* Mode toggle inside pool card */
+.dp-cash-mode-toggle {
+  display: flex;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 4px;
+  gap: 3px;
+}
+
+.dp-cmt-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  transition: all .15s;
+}
+
+.dp-cmt-btn.active {
+  background: var(--surface3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+
+/* Per-bill rows inside pool card */
+.dp-denom-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #15151f;
+  overflow: hidden;
+}
+
+.dp-denom-row:last-child { border-bottom: none; }
+
+.dp-denom-label {
+  width: 44px;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  font-weight: 800;
+  color: var(--gold);
+  border-right: 1px solid var(--border);
+  padding: 9px 6px;
+  background: var(--surface2);
+}
+
+.dp-denom-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  text-align: center;
+  padding: 9px 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  outline: none;
+  font-family: var(--font-mono);
+  min-width: 0;
+}
+
+.dp-denom-input::placeholder { color: var(--muted2); font-size: .82rem; font-weight: 400; }
+
+.dp-subtotal {
+  width: 56px;
+  flex-shrink: 0;
+  text-align: right;
+  padding: 9px 10px;
+  font-family: var(--font-mono);
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--text2);
+  border-left: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.dp-subtotal.zero { color: var(--muted2); }
+
+/* Net total inside pool card */
+.dp-net-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+}
+
+.dp-net-sign {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  padding: 0 10px 0 4px;
+}
+
+.dp-net-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 1.7rem;
+  font-weight: 700;
+  padding: 12px 0;
+  outline: none;
+  font-family: var(--font-mono);
+  min-width: 0;
+}
+
+.dp-net-input::placeholder { color: var(--muted2); font-size: 1rem; font-weight: 400; }
+
+/* Add party button */
+.dp-add-party-row { margin-bottom: 8px; }
+
+.dp-add-party-btn {
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--border2);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  font-size: .76rem;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all .15s;
+}
+
+.dp-add-party-btn:active { border-color: var(--gold-dim); color: var(--gold); }
+
+/* ── Day shift staff sections ─────────────────────────────────────────────────── */
+.staff-section-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 8px;
+  margin-top: 14px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.staff-section-hdr:first-child { margin-top: 0; }
+
+.staff-section-title {
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.staff-section-title.bartender-title { color: var(--blue2); }
+.staff-section-title.server-title    { color: var(--gold2); }
+
+.staff-section-count {
+  font-size: .56rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Role badges ─────────────────────────────────────────────────────────────── */
+.role-badge {
+  font-size: .4rem;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  border-radius: 3px;
+  padding: 1px 3px;
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.role-badge.role-bartender {
+  color: var(--blue2);
+  border-color: #2a3a58;
+  background: #0e1a2e;
+}
+
+.role-badge.role-server {
+  color: var(--gold2);
+  border-color: var(--gold-dim);
+  background: #1a1508;
+}
+
+/* ── Pool breakdown in Summary ───────────────────────────────────────────────── */
+.pool-sections { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+
+.pool-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.pool-section-hdr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.pool-section-left { flex: 1; min-width: 0; }
+
+.pool-section-name {
+  font-size: .6rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  font-family: var(--font-mono);
+  display: block;
+}
+
+.pool-section-window {
+  font-size: .56rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  display: block;
+  margin-top: 2px;
+}
+
+.pool-section-right { text-align: right; flex-shrink: 0; }
+
+.pool-section-total {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  display: block;
+  line-height: 1;
+}
+
+.pool-section-rate {
+  font-size: .56rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  display: block;
+  margin-top: 2px;
+}
+
+.pool-participants { padding: 5px 0; }
+
+.pool-participant-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: .72rem;
+}
+
+.pool-participant-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.pool-participant-hrs {
+  color: var(--muted);
+  font-size: .66rem;
+  width: 40px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.pool-participant-raw {
+  color: var(--text2);
+  font-weight: 700;
+  width: 60px;
+  text-align: right;
+  flex-shrink: 0;
+  font-size: .72rem;
+}
+
+/* Pool chips on person cards */
+.pool-chips-row {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.pool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: .46rem;
+}
+
+.pool-chip-lbl { color: var(--muted2); }
+.pool-chip-val { color: var(--text2); font-weight: 700; }

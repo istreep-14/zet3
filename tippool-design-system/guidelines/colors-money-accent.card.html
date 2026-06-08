@@ -1,0 +1,29 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Money & accent" subtitle="Gold = money, red = the one attention accent" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 18px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sw { flex: 1; min-width: 96px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+  .chip { height: 56px; display:flex; align-items:flex-end; padding:6px 8px; }
+  .chip b { color: rgba(0,0,0,.55); font-size:1.1rem; font-weight:800; }
+  .meta { padding: 7px 9px; background: var(--surface); }
+  .name { color: var(--text); font-size: .62rem; font-weight: 700; }
+  .hex { color: var(--muted); font-size: .56rem; margin-top: 2px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw"><div class="chip" style="background:var(--gold)"><b>$</b></div><div class="meta"><div class="name">gold</div><div class="hex">#f5c842</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--gold-2)"><b>$</b></div><div class="meta"><div class="name">gold-2</div><div class="hex">#ffd966</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--gold-dim)"></div><div class="meta"><div class="name">gold-dim</div><div class="hex">#7a6010</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--accent)"></div><div class="meta"><div class="name">accent</div><div class="hex">#e94560</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--accent-2)"></div><div class="meta"><div class="name">accent-2</div><div class="hex">#ff6b87</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--green)"></div><div class="meta"><div class="name">green</div><div class="hex">#2ecc71</div></div></div>
+    <div class="sw"><div class="chip" style="background:var(--amber)"></div><div class="meta"><div class="name">amber</div><div class="hex">#f5a623</div></div></div>
+  </div>
+</body>
+</html>

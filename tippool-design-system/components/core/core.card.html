@@ -1,0 +1,76 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Core — Button · Badge · Segmented" subtitle="Buttons, role badges, and the signature toggle" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 20px; }
+  .group { margin-bottom: 22px; }
+  .eyebrow { color: var(--muted); font-size: .5rem; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  #root { max-width: 480px; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { Button, Badge, SegmentedControl } = window.TipPoolDesignSystem_bcb6c4;
+    function Demo() {
+      const [shift, setShift] = React.useState('night');
+      const [role, setRole] = React.useState('bartender');
+      return (
+        <div>
+          <div className="group">
+            <div className="eyebrow">Buttons</div>
+            <div className="row">
+              <Button variant="accent">Calculate</Button>
+              <Button variant="gold">Confirm</Button>
+              <Button variant="secondary">Cancel</Button>
+              <Button variant="ghost">Skip</Button>
+              <Button variant="danger" size="sm">New Session</Button>
+              <Button variant="secondary" disabled>Disabled</Button>
+            </div>
+            <div className="row" style={{ marginTop: 10 }}>
+              <Button variant="dashed" fullWidth>+ Add Bartender</Button>
+            </div>
+          </div>
+
+          <div className="group">
+            <div className="eyebrow">Badges</div>
+            <div className="row">
+              <Badge variant="bartender">Bartender</Badge>
+              <Badge variant="server">Server</Badge>
+              <Badge variant="support">Support</Badge>
+              <Badge variant="closer">Closer</Badge>
+              <Badge variant="bonus" pill>+$24</Badge>
+              <Badge variant="neutral">Default</Badge>
+            </div>
+          </div>
+
+          <div className="group" style={{ marginBottom: 0 }}>
+            <div className="eyebrow">Segmented control</div>
+            <SegmentedControl
+              options={[{value:'night',label:'Night Shift'},{value:'day',label:'Day Shift'}]}
+              value={shift} onChange={setShift} />
+            <div style={{ height: 8 }} />
+            <SegmentedControl
+              options={[{value:'bartender',label:'Bartender'},{value:'server',label:'Server'},{value:'support',label:'Support'}]}
+              value={role} onChange={setRole}
+              accentMap={{
+                bartender:{color:'var(--role-bartender)',border:'var(--role-bartender-border)'},
+                server:{color:'var(--role-server)',border:'var(--role-server-border)'},
+                support:{color:'var(--role-support)',border:'var(--role-support-border)'},
+              }} />
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+  </script>
+</body>
+</html>

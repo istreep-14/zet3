@@ -1,0 +1,297 @@
+/* ── Mode toggle ─────────────────────────────────── */
+.cash-mode-toggle {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+/* Bottom toggle: secondary / small, sits below the main input */
+.cash-mode-toggle--bottom {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+.cmt-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 8px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: .66rem;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  transition: all .15s;
+}
+
+.cmt-btn.active {
+  background: var(--surface3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+
+.cash-mode-toggle:not(.open) .cmt-btn:not(.active) { display: none; }
+.cash-mode-toggle:not(.open) .cmt-btn.active::after {
+  content: 'Change';
+  float: right;
+  color: var(--muted);
+  font-size: .5rem;
+  letter-spacing: .7px;
+}
+
+/* ── Per-bill section ─────────────────────────────── */
+.cash-page { display: flex; flex-direction: column; }
+
+.cash-page-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px 10px;
+}
+
+.cash-page-hdr-left { display: flex; align-items: center; gap: 8px; }
+
+.cash-page-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1508, #282010);
+  border: 1px solid #3a3010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cash-page-icon svg { width: 14px; height: 14px; stroke: var(--gold); }
+
+.cash-page-title {
+  font-size: .55rem;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.cash-page-total {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.cash-page-total.zero { color: var(--muted2); }
+
+.cash-denom-list { display: flex; flex-direction: column; gap: 5px; }
+
+.cash-denom-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+
+.cash-denom-row:focus-within { border-color: var(--gold-dim); }
+
+.cash-denom-label {
+  width: 50px;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: .92rem;
+  font-weight: 800;
+  color: var(--gold);
+  border-right: 1px solid var(--border);
+  padding: 11px 6px;
+  background: var(--surface2);
+}
+
+.cash-denom-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  text-align: center;
+  padding: 11px 8px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  outline: none;
+  font-family: var(--font-mono);
+  min-width: 0;
+}
+
+.cash-denom-input::placeholder {
+  color: var(--muted2);
+  font-size: .88rem;
+  font-weight: 400;
+}
+
+.cash-denom-subtotal {
+  width: 62px;
+  flex-shrink: 0;
+  text-align: right;
+  padding: 11px 10px;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--text2);
+  border-left: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.cash-denom-subtotal.zero { color: var(--muted2); }
+
+.cash-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 2px 2px;
+  border-top: 1px solid var(--border);
+  margin-top: 5px;
+}
+
+.cash-total-lbl {
+  color: var(--muted);
+  font-size: .74rem;
+  font-family: var(--font-mono);
+  letter-spacing: .8px;
+}
+
+.cash-total-val {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+}
+
+.cash-total-val.zero { color: var(--muted2); }
+
+/* ── Net total section ───────────────────────────── */
+.net-input-row {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.net-dollar-sign {
+  padding: 0 14px;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.net-total-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 1.9rem;
+  font-weight: 700;
+  padding: 14px 0;
+  outline: none;
+  font-family: var(--font-mono);
+  min-width: 0;
+}
+
+.net-total-input::placeholder {
+  color: var(--muted2);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.net-breakdown {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.net-breakdown-hdr {
+  font-size: .52rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.net-denom-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.net-denom-row:last-child { border-bottom: none; }
+
+.ndr-lbl {
+  width: 38px;
+  font-size: .9rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.ndr-times {
+  color: var(--muted2);
+  font-size: .72rem;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  padding: 0 6px;
+}
+
+.ndr-count {
+  font-size: .9rem;
+  font-weight: 800;
+  color: var(--text);
+  font-family: var(--font-mono);
+  flex: 1;
+}
+
+.ndr-note {
+  color: var(--muted);
+  display: block;
+  font-size: .48rem;
+  font-weight: 700;
+  letter-spacing: .6px;
+  margin-top: 1px;
+  text-transform: uppercase;
+}
+
+.ndr-sub {
+  font-size: .78rem;
+  color: var(--text2);
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+.net-empty-hint {
+  text-align: center;
+  padding: 16px;
+  color: var(--muted2);
+  font-size: .72rem;
+  font-family: var(--font-mono);
+}

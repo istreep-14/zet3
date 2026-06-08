@@ -1,0 +1,355 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/core/**",
+              "components/money/**",
+              "components/people/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:IBM Plex Mono|IBM Plex Sans))/i]",
+        "message": "Font not provided by the design system. Available: IBM Plex Mono, IBM Plex Sans."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|variant|pill|style|key|ref|className|style|children)$/]",
+        "message": "<Badge> doesn't accept that prop. Declared props: children, variant, pill, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:neutral|bartender|server|support|closer|bonus)$/]",
+        "message": "<Badge> variant must be one of 'neutral' | 'bartender' | 'server' | 'support' | 'closer' | 'bonus'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|variant|size|icon|disabled|fullWidth|style|onClick|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: children, variant, size, icon, disabled, fullWidth, style, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:accent|gold|secondary|ghost|danger|dashed)$/]",
+        "message": "<Button> variant must be one of 'accent' | 'gold' | 'secondary' | 'ghost' | 'danger' | 'dashed'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md|lg)$/]",
+        "message": "<Button> size must be one of 'sm' | 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='DenomRow'] > JSXAttribute > JSXIdentifier[name!=/^(?:denom|count|subtotal|onCountChange|style|key|ref|className|style|children)$/]",
+        "message": "<DenomRow> doesn't accept that prop. Declared props: denom, count, subtotal, onCountChange, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MoneyValue'] > JSXAttribute > JSXIdentifier[name!=/^(?:amount|label|size|bright|style|key|ref|className|style|children)$/]",
+        "message": "<MoneyValue> doesn't accept that prop. Declared props: amount, label, size, bright, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MoneyValue'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md|lg|xl|2xl|hero)$/]",
+        "message": "<MoneyValue> size must be one of 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'hero'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='PersonCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|hours|inTime|outTime|payout|basePay|bonus|isCloser|onClick|style|key|ref|className|style|children)$/]",
+        "message": "<PersonCard> doesn't accept that prop. Declared props: name, hours, inTime, outTime, payout, basePay, bonus, isCloser, onClick, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SegmentOption'] > JSXAttribute > JSXIdentifier[name!=/^(?:value|label|key|ref|className|style|children)$/]",
+        "message": "<SegmentOption> doesn't accept that prop. Declared props: value, label."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StatCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:label|value|sub|tone|onClick|style|key|ref|className|style|children)$/]",
+        "message": "<StatCard> doesn't accept that prop. Declared props: label, value, sub, tone, onClick, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='StatCard'] > JSXAttribute[name.name='tone'] > Literal[value!=/^(?:money|neutral)$/]",
+        "message": "<StatCard> tone must be one of 'money' | 'neutral'."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "Badge": {
+        "replaces": []
+      },
+      "Button": {
+        "replaces": []
+      },
+      "DenomRow": {
+        "replaces": []
+      },
+      "MoneyValue": {
+        "replaces": []
+      },
+      "PersonCard": {
+        "replaces": []
+      },
+      "SegmentOption": {
+        "replaces": []
+      },
+      "StatCard": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--accent",
+      "--accent-2",
+      "--amber",
+      "--app-max-w",
+      "--bg",
+      "--blue",
+      "--blue-2",
+      "--border",
+      "--border-2",
+      "--border-default",
+      "--border-focus",
+      "--border-strong",
+      "--color-bg",
+      "--dur",
+      "--dur-fast",
+      "--dur-sheet",
+      "--ease",
+      "--font-body",
+      "--font-mono",
+      "--font-name",
+      "--font-numeric",
+      "--font-sans",
+      "--fw-black",
+      "--fw-bold",
+      "--fw-medium",
+      "--fw-regular",
+      "--fw-semibold",
+      "--gold",
+      "--gold-2",
+      "--gold-dim",
+      "--green",
+      "--green-bg",
+      "--green-border",
+      "--hdr-h",
+      "--input-bg",
+      "--leading-body",
+      "--leading-none",
+      "--leading-tight",
+      "--muted",
+      "--muted-2",
+      "--purple",
+      "--purple-bg",
+      "--purple-border",
+      "--radius",
+      "--radius-chip",
+      "--radius-pill",
+      "--radius-sm",
+      "--role-bartender",
+      "--role-bartender-bg",
+      "--role-bartender-border",
+      "--role-server",
+      "--role-server-bg",
+      "--role-server-border",
+      "--role-support",
+      "--role-support-bg",
+      "--role-support-border",
+      "--safe-bottom",
+      "--shadow-menu",
+      "--shadow-sheet",
+      "--sheen",
+      "--space-0",
+      "--space-1",
+      "--space-10",
+      "--space-12",
+      "--space-2",
+      "--space-3",
+      "--space-4",
+      "--space-5",
+      "--space-6",
+      "--space-7",
+      "--space-8",
+      "--status-attention",
+      "--status-pending",
+      "--status-ready",
+      "--surface",
+      "--surface-2",
+      "--surface-3",
+      "--surface-card",
+      "--surface-input",
+      "--surface-overlay",
+      "--surface-raised",
+      "--tab-h",
+      "--tap-min",
+      "--text",
+      "--text-2",
+      "--text-2xl",
+      "--text-base",
+      "--text-caption",
+      "--text-danger",
+      "--text-hero",
+      "--text-info",
+      "--text-lg",
+      "--text-micro",
+      "--text-money",
+      "--text-money-bright",
+      "--text-muted",
+      "--text-placeholder",
+      "--text-positive",
+      "--text-primary",
+      "--text-secondary",
+      "--text-sm",
+      "--text-tiny",
+      "--text-xl",
+      "--text-xs",
+      "--track-eyebrow",
+      "--track-label",
+      "--track-tight",
+      "--track-wide",
+      "--type-eyebrow-size",
+      "--type-eyebrow-weight"
+    ],
+    "tokenKinds": {
+      "--bg": "color",
+      "--surface": "color",
+      "--surface-2": "color",
+      "--surface-3": "color",
+      "--input-bg": "color",
+      "--border": "color",
+      "--border-2": "color",
+      "--accent": "color",
+      "--accent-2": "color",
+      "--gold": "color",
+      "--gold-2": "color",
+      "--gold-dim": "color",
+      "--green": "color",
+      "--green-bg": "color",
+      "--green-border": "color",
+      "--blue": "color",
+      "--blue-2": "color",
+      "--purple": "color",
+      "--purple-bg": "color",
+      "--purple-border": "color",
+      "--amber": "color",
+      "--text": "font",
+      "--text-2": "font",
+      "--muted": "color",
+      "--muted-2": "color",
+      "--color-bg": "color",
+      "--surface-card": "color",
+      "--surface-raised": "color",
+      "--surface-overlay": "color",
+      "--surface-input": "color",
+      "--border-default": "color",
+      "--border-strong": "color",
+      "--border-focus": "color",
+      "--text-primary": "font",
+      "--text-secondary": "font",
+      "--text-muted": "font",
+      "--text-placeholder": "font",
+      "--text-money": "font",
+      "--text-money-bright": "font",
+      "--text-positive": "font",
+      "--text-danger": "font",
+      "--text-info": "font",
+      "--role-bartender": "color",
+      "--role-bartender-border": "color",
+      "--role-bartender-bg": "color",
+      "--role-server": "color",
+      "--role-server-border": "color",
+      "--role-server-bg": "color",
+      "--role-support": "color",
+      "--role-support-border": "color",
+      "--role-support-bg": "color",
+      "--status-ready": "color",
+      "--status-pending": "color",
+      "--status-attention": "color",
+      "--font-mono": "font",
+      "--font-sans": "font",
+      "--font-numeric": "font",
+      "--font-name": "font",
+      "--font-body": "font",
+      "--fw-regular": "font",
+      "--fw-medium": "font",
+      "--fw-semibold": "font",
+      "--fw-bold": "font",
+      "--fw-black": "font",
+      "--text-micro": "font",
+      "--text-tiny": "font",
+      "--text-caption": "font",
+      "--text-xs": "font",
+      "--text-sm": "font",
+      "--text-base": "font",
+      "--text-lg": "font",
+      "--text-xl": "font",
+      "--text-2xl": "font",
+      "--text-hero": "font",
+      "--track-eyebrow": "spacing",
+      "--track-label": "spacing",
+      "--track-tight": "spacing",
+      "--track-wide": "spacing",
+      "--leading-none": "font",
+      "--leading-tight": "font",
+      "--leading-body": "font",
+      "--type-eyebrow-size": "font",
+      "--type-eyebrow-weight": "font",
+      "--space-0": "spacing",
+      "--space-1": "spacing",
+      "--space-2": "spacing",
+      "--space-3": "spacing",
+      "--space-4": "spacing",
+      "--space-5": "spacing",
+      "--space-6": "spacing",
+      "--space-7": "spacing",
+      "--space-8": "spacing",
+      "--space-10": "spacing",
+      "--space-12": "spacing",
+      "--radius": "radius",
+      "--radius-sm": "radius",
+      "--radius-pill": "radius",
+      "--radius-chip": "radius",
+      "--app-max-w": "spacing",
+      "--tab-h": "spacing",
+      "--hdr-h": "spacing",
+      "--tap-min": "spacing",
+      "--safe-bottom": "color",
+      "--shadow-menu": "shadow",
+      "--shadow-sheet": "shadow",
+      "--sheen": "other",
+      "--ease": "other",
+      "--dur-fast": "other",
+      "--dur": "other",
+      "--dur-sheet": "other"
+    },
+    "fontFamilies": [
+      "IBM Plex Mono",
+      "IBM Plex Sans"
+    ]
+  }
+}

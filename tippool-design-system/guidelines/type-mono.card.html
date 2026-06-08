@@ -1,0 +1,26 @@
+<!-- @dsCard group="Type" viewport="700x170" name="Numeric / mono — IBM Plex Mono" subtitle="Money, hours, counts, labels. Tabular figures." -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 18px; display:flex; align-items:center; gap:32px; }
+  .hero { color: var(--gold); font-size: 2.5rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .hero small { display:block; color:var(--muted); font-size:.5rem; letter-spacing:1.4px; text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+  .col { display:flex; flex-direction:column; gap:9px; }
+  .specimen { display:flex; align-items:baseline; gap:10px; }
+  .v { font-variant-numeric: tabular-nums; font-weight: 800; }
+  .tag { color:var(--muted); font-size:.5rem; text-transform:uppercase; letter-spacing:.6px; }
+</style>
+</head>
+<body>
+  <div class="hero"><small>Pool total</small>$1,284</div>
+  <div class="col">
+    <div class="specimen"><span class="v" style="color:var(--gold-2); font-size:1.05rem">8.5h</span><span class="tag">hours · gold-2</span></div>
+    <div class="specimen"><span class="v" style="color:var(--text); font-size:1.05rem">$214</span><span class="tag">payout · text</span></div>
+    <div class="specimen"><span class="v" style="color:var(--text-2); font-size:.84rem">5:00–2:00</span><span class="tag">times · text-2</span></div>
+    <div class="specimen"><span class="v" style="color:var(--muted); font-size:.56rem; letter-spacing:1.4px; text-transform:uppercase">Cash on Hand</span><span class="tag">eyebrow · muted</span></div>
+  </div>
+</body>
+</html>
