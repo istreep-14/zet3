@@ -15,7 +15,7 @@ body {
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  max-width: 480px;
+  max-width: var(--app-max-w);
   margin: 0 auto;
 }
 
@@ -66,4 +66,17 @@ body.keyboard-open .content {
 }
 .staff-row-modal.pulse-hint {
   animation: pulseHint 0.8s ease-in-out 2;
+}
+
+@media (min-width: 760px) {
+  body {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    box-shadow: 0 0 48px rgba(0, 0, 0, .35);
+  }
+
+  .content {
+    padding: 16px 18px 8px;
+    padding-bottom: calc(var(--tab-h) + var(--safe-bottom) + 14px);
+  }
 }

@@ -27,7 +27,14 @@
   --radius-sm: 9px;
   --tab-h:     60px;
   --hdr-h:     52px;
+  --app-max-w: 480px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --font-mono: 'IBM Plex Mono', monospace;
   --font-sans: 'IBM Plex Sans', sans-serif;
+}
+
+@media (min-width: 760px) {
+  :root {
+    --app-max-w: 720px;
+  }
 }
