@@ -21,8 +21,8 @@ function runExample(pool) {
   const names = ['a', 'bc', 'c', 'd', 'aa'];
   const finals = [439, 487, 475, 390, 488];
   const staff = finals.map((final, i) => ({ n: names[i], final }));
-  ctx.distributeBills(staff, pool, 1);
-  const remainderBills = vm.runInContext('lastRemainderBills', ctx);
+  const result = ctx.distributeBills(staff, pool, 1);
+  const remainderBills = result.remainderBills;
 
   staff.forEach(person => {
     assert.strictEqual(totalBills(person.bills), person.final, person.n + ' total');
