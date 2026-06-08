@@ -1,0 +1,9 @@
+/* ============================================================
+   TipPool — Webfonts
+   Two-family system, both IBM Plex, loaded from Google Fonts
+   (matches the source app exactly).
+     · IBM Plex Mono — every number, label, time, denomination
+     · IBM Plex Sans — names and prose only
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');

@@ -1,0 +1,56 @@
+<!-- @dsCard group="Components" viewport="700x430" name="Money — Value · StatCard · DenomRow" subtitle="Money figures, home tiles, the cash counter row" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 20px; }
+  .group { margin-bottom: 20px; }
+  .eyebrow { color: var(--muted); font-size: .5rem; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+  .row { display: flex; gap: 24px; align-items: flex-end; }
+  #root { max-width: 480px; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { MoneyValue, StatCard, DenomRow } = window.TipPoolDesignSystem_bcb6c4;
+    function Demo() {
+      const [c, setC] = React.useState(3);
+      return (
+        <div>
+          <div className="group">
+            <div className="eyebrow">Money values</div>
+            <div className="row">
+              <MoneyValue label="Pool total" amount={1284} size="hero" />
+              <MoneyValue label="Payout" amount={214} size="xl" />
+              <MoneyValue label="Remainder" amount={0} size="xl" />
+            </div>
+          </div>
+          <div className="group">
+            <div className="eyebrow">Home stat tiles</div>
+            <div className="row" style={{ alignItems: 'stretch' }}>
+              <div style={{ flex: 1.4 }}><StatCard label="Cash on Hand" value="$1,284" sub="42 bills" onClick={()=>{}} /></div>
+              <div style={{ flex: 1 }}><StatCard label="Staff" value="6" sub="employees" tone="neutral" onClick={()=>{}} /></div>
+            </div>
+          </div>
+          <div className="group" style={{ marginBottom: 0 }}>
+            <div className="eyebrow">Cash counter rows</div>
+            <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
+              <DenomRow denom={100} count={c} subtotal={'$'+(c*100).toLocaleString()} onCountChange={(v)=>setC(Number(v)||0)} />
+              <DenomRow denom={20} count={6} subtotal="$120" />
+              <DenomRow denom={5} count={''} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo />);
+  </script>
+</body>
+</html>

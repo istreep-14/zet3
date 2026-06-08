@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Spacing scale" subtitle="Tight, phone-first — 8px does most of the work" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 18px; display:flex; flex-direction:column; gap:7px; }
+  .r { display:flex; align-items:center; gap:12px; }
+  .bar { height: 12px; background: var(--gold-dim); border-radius:2px; }
+  .tok { color:var(--text-2); font-size:.56rem; width:78px; }
+  .px { color:var(--muted); font-size:.52rem; width:36px; }
+</style>
+</head>
+<body>
+  <div class="r"><span class="tok">--space-2</span><span class="px">4</span><div class="bar" style="width:4px"></div></div>
+  <div class="r"><span class="tok">--space-4</span><span class="px">8</span><div class="bar" style="width:8px; background:var(--gold)"></div></div>
+  <div class="r"><span class="tok">--space-6</span><span class="px">12</span><div class="bar" style="width:12px"></div></div>
+  <div class="r"><span class="tok">--space-7</span><span class="px">14</span><div class="bar" style="width:14px"></div></div>
+  <div class="r"><span class="tok">--space-8</span><span class="px">16</span><div class="bar" style="width:16px"></div></div>
+  <div class="r"><span class="tok">--space-10</span><span class="px">20</span><div class="bar" style="width:20px"></div></div>
+  <div class="r"><span class="tok">--space-12</span><span class="px">24</span><div class="bar" style="width:24px"></div></div>
+</body>
+</html>

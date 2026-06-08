@@ -1,0 +1,274 @@
+.summary-hero {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+
+.summary-hero-label {
+  font-size: .56rem;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-bottom: 6px;
+}
+
+.summary-hero-val {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.summary-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.summary-meta-item { display: flex; flex-direction: column; gap: 1px; }
+
+.summary-meta-lbl {
+  font-size: .54rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.summary-meta-val {
+  font-size: .84rem;
+  font-weight: 700;
+  color: var(--text2);
+  font-family: var(--font-mono);
+}
+
+/* Person cards */
+.summary-breakdown-head {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 74px 54px;
+  gap: 9px;
+  padding: 0 10px 5px;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: .48rem;
+  font-weight: 800;
+  letter-spacing: .9px;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.person-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+
+.person-card:active {
+  border-color: var(--border2);
+  background: var(--surface2);
+}
+
+.person-card-top {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 11px;
+}
+
+.person-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .62rem;
+  font-weight: 700;
+  color: var(--text2);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+
+.person-main { flex: 1; min-width: 0; }
+
+.person-name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.person-name { font-size: 1rem; font-weight: 800; color: var(--text); }
+
+.closer-badge {
+  font-size: .42rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  color: var(--muted);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+
+/* Tip column */
+.person-tip-col { text-align: right; flex-shrink: 0; }
+
+.person-tip {
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.person-bonus-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.person-bonus-base { font-size: .58rem; color: var(--muted); font-family: var(--font-mono); }
+
+.person-bonus-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green);
+  border-radius: 10px;
+  padding: 0 5px;
+  height: 14px;
+  font-size: .48rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+}
+
+.person-bonus-lbl { font-size: .48rem; color: var(--muted2); font-family: var(--font-mono); }
+
+/* Person hours block (inside card) */
+.person-hrs-block  { text-align: right; flex-shrink: 0; width: 74px; margin: 0 2px; font-variant-numeric: tabular-nums; }
+.person-hrs-val    { font-size: 1.05rem; font-weight: 800; color: var(--gold2); font-family: var(--font-mono); line-height: 1; }
+.person-hrs-val.muted { color: var(--muted2); }
+.person-hrs-times  { font-size: .54rem; color: var(--text2); font-family: var(--font-mono); margin-top: 2px; white-space: nowrap; }
+
+.person-tip-col {
+  text-align: right;
+  flex-shrink: 0;
+  width: 54px;
+  font-variant-numeric: tabular-nums;
+}
+
+.person-tip.muted { color: var(--muted); }
+
+/* Remainder card — compact, no cursor, not interactive */
+.remainder-card {
+  border-style: dashed;
+  background: var(--surface2);
+  cursor: default;
+  margin-bottom: 8px;
+}
+
+.remainder-card .person-card-top {
+  padding: 5px 10px;
+}
+
+.remainder-card:active {
+  background: var(--surface2);
+  border-color: var(--border);
+}
+
+.remainder-avatar {
+  color: var(--muted);
+  border-style: dashed;
+  width: 22px;
+  height: 22px;
+  font-size: .52rem;
+}
+
+/* Totals strip — hours and tip value aligned consistently */
+.summary-totals-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+}
+
+.summary-totals-lbl {
+  font-size: .56rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+/* Right side of totals — hrs and $ aligned like the card columns */
+.summary-totals-right {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.summary-totals-hrs {
+  font-size: .86rem;
+  font-weight: 800;
+  color: var(--gold2);
+  font-family: var(--font-mono);
+  /* Match .person-hrs-block width so columns align */
+  width: 74px;
+  text-align: right;
+  margin-right: 9px; /* mirrors the gap between hrs-block and tip-col in cards */
+}
+
+.summary-totals-val {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  /* Match .person-tip-col width so the $ column aligns with cards above */
+  width: 54px;
+  text-align: right;
+}
+
+/* ── Closer bonus line height fix ────────────────────────────────────────────
+   Always render the bonus row so all cards have identical height.
+   Non-closers show their base pay muted; closers show base + green pill.    */
+
+.person-bonus-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 2px;
+  min-height: 14px; /* reserve space even when empty */
+}
+
+/* base pay shown for non-closers — muted, no pill */
+.person-bonus-base--only {
+  font-size: .58rem;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+}
