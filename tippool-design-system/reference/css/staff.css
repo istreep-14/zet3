@@ -336,7 +336,7 @@
   grid-template-columns: minmax(0, 1fr) 62px 62px 52px;
   gap: 8px;
   align-items: stretch;
-  padding: 11px;
+  padding: 12px;
   position: relative;
   transition: border-color .15s, background .15s;
 }
