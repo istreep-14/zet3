@@ -108,10 +108,12 @@ function renderDaySummary(result, distCtx) {
     </td>`;
   }).join('');
 
+  const totalPaidWithSupport = totalPaidSum + (result.supportPeople || []).reduce((s, p) => s + p.final, 0);
+
   const totalsRow = `<tr class="ds-totals-row">
     <td class="ds-label-col">Total</td>
     ${totalsTds}
-    <td class="ds-total-col ds-bold">$${totalPaidSum}</td>
+    <td class="ds-total-col ds-bold">$${totalPaidWithSupport}</td>
   </tr>`;
 
   // ── Remainder row ─────────────────────────────────────────────────────────
@@ -158,11 +160,57 @@ function renderDaySummary(result, distCtx) {
           ${personRows}
           ${totalsRow}
           ${remRow}
+          ${_renderSupportSummaryRows(result, colCount, pools)}
         </tbody>
       </table>
     </div>
     ${warnHTML}
   `;
+}
+
+function _renderSupportSummaryRows(result, colCount, pools) {
+  const sup      = result.supportPeople || [];
+  if (!sup.length) return '';
+  const tipOuts  = result.supportTipOuts || {};
+
+  const rows = sup.map(p => {
+    // Show per-cut tip-out in each pool column
+    const cutCells = pools.map(pool => {
+      const cutItems = tipOuts[pool.id] || [];
+      const item     = cutItems.find(x => x.rowId === p._rowId);
+      return item && item.tipOut > 0
+        ? `<td class="ds-pool-col ds-person-cell"><span class="ds-pay">${item.tipOut}</span></td>`
+        : `<td class="ds-pool-col ds-empty">—</td>`;
+    }).join('');
+    return `<tr class="ds-person-row ds-support-row">
+      <td class="ds-label-col ds-name-cell">
+        ${escapeHTML(p.n)}<span class="ds-role-badge ds-role-support">sup</span>
+      </td>
+      ${cutCells}
+      <td class="ds-total-col ds-bold ds-support-val">$${p.final}</td>
+    </tr>`;
+  }).join('');
+
+  const total = sup.reduce((s, p) => s + p.final, 0);
+  const totalCutCells = pools.map(pool => {
+    const poolTotal = (tipOuts[pool.id] || []).reduce((s, x) => s + x.tipOut, 0);
+    return poolTotal > 0
+      ? `<td class="ds-pool-col ds-person-cell"><span class="ds-pay">${poolTotal}</span></td>`
+      : `<td class="ds-pool-col ds-empty">—</td>`;
+  }).join('');
+
+  return `<tr class="ds-divider"><td colspan="${colCount}"></td></tr>
+    <tr class="ds-name-hdr">
+      <th class="ds-label-col" style="color:#9d7dca;letter-spacing:.8px">Support Tip-Out</th>
+      ${pools.map(p => `<th class="ds-pool-col" style="color:#9d7dca">${escapeHTML(p.id === 'morning' ? 'Day' : p.id === 'middle' ? 'Mid' : p.id)}</th>`).join('')}
+      <th class="ds-total-col" style="color:#9d7dca">Total</th>
+    </tr>
+    ${rows}
+    <tr class="ds-support-total-row">
+      <td class="ds-label-col" style="color:var(--muted)">Total</td>
+      ${totalCutCells}
+      <td class="ds-total-col ds-bold ds-support-val">$${total}</td>
+    </tr>`;
 }
 
 // ── Day shift dist renderer ───────────────────────────────────────────────────
@@ -174,16 +222,20 @@ function renderDayDist(result, distCtx) {
   const remainderBills    = distCtx?.remainderBills    ?? lastRemainderBills   ?? {};
   const distributionError = distCtx?.distributionError ?? lastDistributionError ?? '';
 
-  const unpaid = result.people.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
+  // Include support people (already in distCtx.staffWithBills) in unpaid check
+  const allStaff = distCtx?.staffWithBills ?? [...result.people, ...(result.supportPeople || [])];
+  const unpaid = allStaff.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
   const hasErr = !!distributionError || unpaid > 0;
   const errMsg = distributionError || (unpaid > 0 ? 'Distribution short $' + unpaid : '');
 
   const hCols = DENOMS.map(d => `<th><span class="dist-tbl-denom">$${d}</span></th>`).join('')
               + '<th class="total-col"><span class="dist-tbl-denom" style="color:var(--text2)">TOT</span></th>';
 
-  const rows = result.people.map(p => {
+  const roleLbl = p => p.role === 'support' ? 'sup' : p.role === 'bartender' ? 'bar' : 'srv';
+  const rows = allStaff.map(p => {
     const safe      = escapeHTML(p.n);
-    const roleBadge = `<span class="role-badge role-${p.role}" style="margin-left:3px">${p.role === 'bartender' ? 'bar' : 'srv'}</span>`;
+    const roleCls   = p.role || 'bartender';
+    const roleBadge = `<span class="role-badge role-${roleCls}" style="margin-left:3px">${roleLbl(p)}</span>`;
     const dot = p.closer
       ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:3px;vertical-align:middle"></span>'
       : '';
@@ -207,10 +259,10 @@ function renderDayDist(result, distCtx) {
   }
 
   const dtCols = DENOMS.map(d => {
-    const t = result.people.reduce((s, p) => s + (p.bills[d] || 0), 0) + (remainderBills[d] || 0);
+    const t = allStaff.reduce((s, p) => s + (p.bills[d] || 0), 0) + (remainderBills[d] || 0);
     return t > 0 ? `<td style="color:var(--gold)">${t}</td>` : `<td class="zero">—</td>`;
   }).join('');
-  const dGT = result.people.reduce((s, p) => s + DENOMS.reduce((ss, d) => ss + (p.bills[d] || 0) * d, 0), 0)
+  const dGT = allStaff.reduce((s, p) => s + DENOMS.reduce((ss, d) => ss + (p.bills[d] || 0) * d, 0), 0)
             + poolValue(remainderBills);
   const totalRow = `<tr class="dist-totals-row"><td>Total</td>${dtCols}<td class="grand-total">$${dGT}</td></tr>`;
 

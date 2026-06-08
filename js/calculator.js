@@ -40,17 +40,20 @@ function blockCalculation(reason, options = {}) {
 // ── Input collection ──────────────────────────────────────────────────────────
 
 function collectNamedStaffRows() {
-  const rows = document.querySelectorAll('#staffList .staff-row-modal');
+  // Night shift: collect bartenders (staffList) + servers (nightServerList), exclude support
+  const selectors = ['#staffList .staff-row-modal', '#nightServerList .staff-row-modal'];
+  const allRows = selectors.flatMap(sel => [...document.querySelectorAll(sel)]);
+
   const gcIn = $('gc-in').value.trim(), gcOut = $('gc-out').value.trim();
   const errors = [];
   const gcInParsed = parseTimeString(gcIn), gcOutParsed = parseTimeString(gcOut);
   setInputInvalid($('gc-in'),  !!gcIn  && !gcInParsed.valid);
   setInputInvalid($('gc-out'), !!gcOut && !gcOutParsed.valid);
-  if (gcIn  && !gcInParsed.valid)  errors.push('Default In must be a valid 0–12 time.');
-  if (gcOut && !gcOutParsed.valid) errors.push('Default Out must be a valid 0–12 time.');
+  if (gcIn  && !gcInParsed.valid)  errors.push('Default In must be a valid time (e.g. 5, 11, 12.5).');
+  if (gcOut && !gcOutParsed.valid) errors.push('Default Out must be a valid time (e.g. 5, 11, 12.5).');
 
   const rawData = [];
-  rows.forEach(r => {
+  allRows.forEach(r => {
     const name    = r.querySelector('[data-field="name"]').value.trim();
     const inEl    = r.querySelector('[data-field="in"]');
     const outEl   = r.querySelector('[data-field="out"]');
@@ -87,7 +90,13 @@ function computeNightShift() {
     return { ok: false, reason: 'Add staff with names.' };
   }
 
-  rawData.forEach(r => { r.effIn = r.inStr || gcIn; r.effOut = r.outStr || gcOut; });
+  // Effective in/out: explicit value → role default → global default
+  rawData.forEach(r => {
+    const role = getRoleForList(_listIdForRowId(r.rowId));
+    const rDef = roleDefaults[role] || {};
+    r.effIn  = r.inStr  || rDef.in  || gcIn;
+    r.effOut = r.outStr || rDef.out || gcOut;
+  });
 
   let maxEo = 0;
   rawData.forEach(r => {
@@ -101,21 +110,30 @@ function computeNightShift() {
   const defaultIn  = 5;
   const defaultOut = maxEo > 0 ? (maxEo > 12 ? maxEo - 12 : maxEo) : 2;
 
+  // First pass: build staff with times, no closer yet
   const staff = rawData.map(r => {
     const inParsed  = parseTimeString(r.effIn);
     const outParsed = parseTimeString(r.effOut);
     const inVal     = inParsed.empty  ? defaultIn  : inParsed.value;
     const outVal    = outParsed.empty ? defaultOut : outParsed.value;
     let h = outVal - inVal; if (h < 0) h += 12;
-    const eo          = outVal < inVal ? outVal + 12 : outVal;
-    const autoCloser  = !r.hasOut;
-    const ctEl        = document.getElementById('ct' + r.rowId);
-    const closer      = (ctEl ? ctEl.classList.contains('on') : false) || autoCloser;
+    const eo = outVal < inVal ? outVal + 12 : outVal;
     return {
       n: r.name, i: inVal, o: outVal, h, eo,
-      _rowId: r.rowId, _autoCloser: autoCloser, closer,
+      _rowId: r.rowId, _autoCloser: false, closer: false,
       bills: { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 },
     };
+  });
+
+  // Closer logic: the person(s) with the latest effective out time are closers.
+  // Tied at the max → all are closers. Manual toggle (ct button) also forces closer.
+  const peakEo = staff.length ? Math.max(...staff.map(p => p.eo)) : 0;
+  staff.forEach(p => {
+    const ctEl = document.getElementById('ct' + p._rowId);
+    const manualOn = ctEl ? ctEl.classList.contains('on') : false;
+    const autoClose = peakEo > 0 && p.eo >= peakEo;
+    p._autoCloser = autoClose;
+    p.closer = manualOn || autoClose;
   });
 
   const invalidStaff = staff.find(p => p.h <= 0 || p.h > 12);
@@ -149,13 +167,13 @@ function computeNightShift() {
 // outputs into an explicit object returned to the caller.
 
 function runDistribution(staff, pool, leftover) {
-  const sc     = staff.map(p => ({ ...p, bills: {}, rem: p.final }));
-  const poolAfter = distributeBills(sc, { ...pool }, leftover);
+  const sc   = staff.map(p => ({ ...p, bills: {}, rem: p.final }));
+  const dist = distributeBills(sc, { ...pool }, leftover);
   return {
-    staffWithBills:       sc,
-    poolAfter,
-    remainderBills:       { ...lastRemainderBills },
-    distributionError:    lastDistributionError,
+    staffWithBills:    sc,
+    poolAfter:         dist.poolAfter,
+    remainderBills:    dist.remainderBills,
+    distributionError: dist.distributionError,
   };
 }
 
@@ -247,20 +265,33 @@ function calculate(silent) {
   if (!silent) switchTab('summary', $('tb-summary'));
 }
 
+function _listIdForRowId(rowId) {
+  const lists = ['staffList','nightServerList','bartenderList','serverList','supportList'];
+  for (const lid of lists) {
+    const el = document.querySelector('#' + lid + ' #staff' + rowId);
+    if (el) return lid;
+  }
+  return 'staffList';
+}
+
 // ── Day shift: input collection ───────────────────────────────────────────────
 
 function collectDayStaffRows(listId, role) {
   const rows  = document.querySelectorAll('#' + listId + ' .staff-row-modal');
   const gcIn  = ($('gc-in').value  || '').trim();
   const gcOut = ($('gc-out').value || '').trim();
+  // Use role-specific defaults, falling back to global
+  const rDef   = (typeof roleDefaults !== 'undefined' && roleDefaults[role]) || {};
+  const defIn  = rDef.in  || gcIn;
+  const defOut = rDef.out || gcOut;
   const result = [];
 
   rows.forEach(r => {
     const name   = r.querySelector('[data-field="name"]').value.trim();
     const inEl   = r.querySelector('[data-field="in"]');
     const outEl  = r.querySelector('[data-field="out"]');
-    const inStr  = inEl.value.trim()  || gcIn;
-    const outStr = outEl.value.trim() || gcOut;
+    const inStr  = inEl.value.trim()  || defIn;
+    const outStr = outEl.value.trim() || defOut;
     const ctEl   = r.querySelector('.sri-closer');
     if (!name) return;
     result.push({ name, inStr, outStr, rowId: r.id.replace('staff', '').replace('server', ''),
@@ -335,7 +366,22 @@ function autoCalculateDay() {
     party2: { enabled: dayPools.party2.enabled, start: dayPools.party2.windowStart, end: dayPools.party2.windowEnd },
   };
 
-  const poolCash = getDayPoolCash();
+  const rawPoolCash = getDayPoolCash();
+
+  // ── Support tip-outs: compute and subtract from each cut's total ──────────
+  const supportRows    = collectSupportRows();
+  const supportTipOuts = computeAllSupportTipOuts(rawPoolCash, partyConfig, supportRows);
+
+  // Reduce each cut's cash by its support tip-out total
+  const poolCash = { ...rawPoolCash };
+  Object.entries(supportTipOuts).forEach(([cutId, items]) => {
+    const totalTipOut = items.reduce((s, x) => s + x.tipOut, 0);
+    if (cutId === 'morning' || cutId === 'middle' || cutId === 'party1' || cutId === 'party2') {
+      if (poolCash[cutId] !== null && poolCash[cutId] !== undefined) {
+        poolCash[cutId] = Math.max(0, (poolCash[cutId] || 0) - totalTipOut);
+      }
+    }
+  });
 
   if (!bartenderRows.length && !serverRows.length) {
     currentInputError = '';
@@ -358,22 +404,47 @@ function autoCalculateDay() {
   const activePoolIds = ['morning', 'middle'];
   if (dayPools.party1.enabled) activePoolIds.push('party1');
   if (dayPools.party2.enabled) activePoolIds.push('party2');
-  const mergedBills = mergeBillPools(activePoolIds);
 
-  // Run distribution, capture all outputs into a local object
-  const sc = engineResult.people.map(p => ({ ...p, bills: { 100:0,50:0,20:0,10:0,5:0,1:0 }, rem: p.final }));
-  distributeBills(sc, mergedBills, engineResult.leftover);
+  // Build support people for distribution (have final = sum of tip-outs across cuts)
+  const supportForDist = aggregateSupportForDist(supportTipOuts);
+
+  // Distribute bills across ALL people (tipped staff + support)
+  const allPeople = [...engineResult.people, ...supportForDist];
+
+  // Compute ideal merged bills from actual person targets so the distribution
+  // engine always gets the right small-bill mix regardless of cash entry mode.
+  // (Net-total mode fills hidden per-bill inputs with targets=[total], which
+  // produces zero $1s/$5s — wrong. Use real person finals instead.)
+  const totalCash = activePoolIds.reduce((s, id) => s + (rawPoolCash[id] || 0), 0);
+  const targets   = [
+    ...allPeople.map(p => p.final).filter(v => v > 0),
+    ...(engineResult.leftover > 0 ? [engineResult.leftover] : []),
+  ];
+  const mergedBills = computeIdealBillsForTargets(totalCash, targets);
+  const sc = allPeople.map(p => ({ ...p, bills: { 100:0,50:0,20:0,10:0,5:0,1:0 }, rem: p.final }));
+  const dist = distributeBills(sc, mergedBills, engineResult.leftover);
+
+  // Split sc back into regular staff and support
+  const nRegular = engineResult.people.length;
+  engineResult.people.forEach((p, i) => { p.bills = { ...sc[i].bills }; });
+  const supportWithBills = supportForDist.map((p, i) => ({
+    ...p,
+    bills: { ...sc[nRegular + i].bills },
+    rem:   sc[nRegular + i].rem,
+  }));
+  engineResult.supportPeople = supportWithBills;
 
   const distResult = {
-    staffWithBills:    sc,
-    remainderBills:    { ...lastRemainderBills },
-    distributionError: lastDistributionError,
-    poolAfter:         { ...lastPoolAfter },
+    staffWithBills:    sc,       // all people including support (for dist tab)
+    remainderBills:    dist.remainderBills,
+    distributionError: dist.distributionError,
+    poolAfter:         dist.poolAfter,
     mergedBills,
   };
 
-  // Copy bills back onto engineResult.people so renderers have them
-  engineResult.people.forEach((p, i) => { p.bills = { ...sc[i].bills }; });
+  // Attach support tip-out data for rendering/modal use
+  engineResult.supportTipOuts = supportTipOuts;
+  engineResult.rawPoolCash    = rawPoolCash;
 
   // Write globals — single location for day shift
   lastDayResult         = engineResult;
@@ -382,11 +453,14 @@ function autoCalculateDay() {
   lastRemainderBills    = distResult.remainderBills;
   lastDistributionError = distResult.distributionError;
   lastPoolAfter         = distResult.poolAfter;
+  // Expose all staff (including support) for person modal lookup
+  _lastDistStaff = distResult.staffWithBills;
 
   // Render: pass data explicitly
   renderDaySummary(engineResult, distResult);
   renderDayDist(engineResult, distResult);
   updateHomeLiveDay(engineResult, distResult);
+  updateSupportTipOutButtons();
 
   saveState();
 }

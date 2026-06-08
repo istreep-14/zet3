@@ -234,14 +234,7 @@ function runPreflight(slots, pool) {
     return { ok: false, msg: 'Need $' + needs.oneFiveTenShort + ' more in $1s/$5s/$10s after $50s.' };
   }
 
-  return {
-    ok: true,
-    ideals: {
-      1: needs.minOnes,
-      5: Math.max(0, (needs.minOneFiveValue - needs.minOnes) / 5),
-      10: Math.max(0, (needs.minOneFiveTenValue - needs.minOneFiveValue) / 10)
-    }
-  };
+  return { ok: true };
 }
 
 function runCascadingSieve(slots, poolIn) {
@@ -768,8 +761,9 @@ function gradePaths(paths) {
 function distributeBills(staff, available, leftover) {
   staff.forEach(p => { p.bills = blankBills(); p.rem = p.final; });
   const result = calculateV19Pipeline(staff, available, leftover || 0);
-  lastRemainderBills = result.remainderBills || blankBills();
-  lastDistributionError = result.success ? '' : result.msg;
-  lastPoolAfter = result.poolAfter || normalizePool(available);
-  return lastPoolAfter;
+  return {
+    poolAfter:         result.poolAfter || normalizePool(available),
+    remainderBills:    result.remainderBills || blankBills(),
+    distributionError: result.success ? '' : result.msg,
+  };
 }
