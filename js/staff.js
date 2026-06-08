@@ -430,13 +430,34 @@ function updateSectionCounts() {
 
 function updateRoleViewCount() {
   const el = $('role-view-count');
-  if (!el) return;
   const listId = getActiveListId();
   const rows = document.querySelectorAll('#' + listId + ' .staff-row-modal');
   let named = 0;
   rows.forEach(r => { if (r.querySelector('[data-field="name"]').value.trim()) named++; });
   const roleLabel = { bartender: 'bartender', server: 'server', support: 'support' }[staffViewRole] || staffViewRole;
-  el.textContent = named + ' ' + (named === 1 ? roleLabel : roleLabel + 's');
+  if (el) el.textContent = named + ' ' + (named === 1 ? roleLabel : roleLabel + 's');
+  updateStaffPageChrome(named);
+}
+
+function updateStaffPageChrome(namedCount) {
+  const title = $('staff-role-title');
+  const subtitle = $('staff-role-subtitle');
+  const badge = $('staff-role-badge');
+  const labels = {
+    bartender: { title: 'Bartenders', badge: 'Bartender', cls: 'role-bartender' },
+    server: { title: 'Servers', badge: 'Server', cls: 'role-server' },
+    support: { title: 'Support', badge: 'Support', cls: 'role-support' }
+  };
+  const current = labels[staffViewRole] || labels.bartender;
+  const modeLabel = shiftMode === 'day' ? 'Day shift' : 'Night shift';
+  const countLabel = namedCount === 1 ? '1 named person' : namedCount + ' named people';
+
+  if (title) title.textContent = current.title;
+  if (subtitle) subtitle.textContent = modeLabel + ' · ' + countLabel;
+  if (badge) {
+    badge.textContent = current.badge;
+    badge.className = 'role-badge ' + current.cls;
+  }
 }
 
 function onDefaultTimesChange() {
