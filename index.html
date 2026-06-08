@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Tip Pool</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tip Pool">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1a1a1a">
 <link rel="stylesheet" href="css/variables.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/header.css">
@@ -28,6 +34,9 @@
   <div class="hdr-title">TIP <span>POOL</span><span class="shift-mode-label" id="shift-mode-label" style="font-size:.52rem;color:var(--muted);margin-left:7px;letter-spacing:.5px;font-weight:600;vertical-align:middle">Night Shift</span></div>
   <div class="hdr-date"><input type="date" id="tipDate"></div>
   <div class="hdr-actions">
+    <button class="hdr-action-btn hdr-ct-btn" onclick="openCloseTimeSidebar()" title="Close time bills">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/></svg>
+    </button>
     <button class="hdr-action-btn" id="sessionMenuBtn" onclick="toggleSessionMenu()" title="Session options">⋯</button>
     <div class="session-menu hidden" id="sessionMenu">
       <button onclick="exportSession()">Export JSON</button>
@@ -253,6 +262,15 @@
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
     <span class="tab-label">Dist</span>
   </button>
+</div>
+
+<!-- MODAL: CLOSE TIME BILLS -->
+<div class="modal-overlay" id="closeTimeSidebar" onclick="if(event.target===this)closeCloseTimeSidebar()">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">Close Time Bills<button class="modal-close" onclick="closeCloseTimeSidebar()">✕</button></div>
+    <div id="close-time-body" class="modal-body ct-modal-body"></div>
+  </div>
 </div>
 
 <!-- MODAL: DEFAULT TIMES -->
