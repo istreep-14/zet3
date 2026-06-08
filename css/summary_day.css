@@ -29,44 +29,41 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
 }
 
 .ds-table {
   width: 100%;
-  min-width: 520px;
+  table-layout: fixed;
   border-collapse: collapse;
   font-family: var(--font-mono);
-  font-size: .8rem;
+  font-size: .68rem;
 }
 
 /* ── Shared column widths / borders ── */
 .ds-label-col {
   text-align: left;
-  padding: 6px 10px 6px 12px;
-  min-width: 56px;
+  padding: 6px 5px 6px 8px;
 }
 
 .ds-pool-col {
   text-align: center;
-  padding: 6px 8px;
+  padding: 6px 4px;
   border-left: 1px solid var(--border);
 }
 
 .ds-total-col {
   text-align: right;
-  padding: 6px 12px 6px 8px;
+  padding: 6px 8px 6px 4px;
   border-left: 1px solid var(--border2);
-  min-width: 58px;
 }
 
 /* ── Top header (Cut / Day / Mid / Party / Total) ── */
 .ds-table thead tr th {
-  padding: 9px 8px 8px;
+  padding: 8px 4px 7px;
   background: var(--surface2);
   border-bottom: 1px solid var(--border2);
-  font-size: .54rem;
+  font-size: .46rem;
   font-weight: 700;
   letter-spacing: 1.1px;
   text-transform: uppercase;
@@ -138,7 +135,7 @@
   color: var(--text) !important;
   font-weight: 600;
   font-family: var(--font-sans);
-  font-size: .84rem;
+  font-size: .76rem;
   white-space: nowrap;
   display: flex;
   align-items: center;

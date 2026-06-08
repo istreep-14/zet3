@@ -18,6 +18,7 @@ function getActiveListId() {
 
 function switchStaffRole(role) {
   staffViewRole = role;
+  document.querySelector('.role-toggle')?.classList.remove('open');
 
   // Update toggle buttons
   ['bartender', 'server', 'support'].forEach(r => {
@@ -28,6 +29,15 @@ function switchStaffRole(role) {
   _applyRoleVisibility();
   updateRoleDefaultsUI();
   updateRoleViewCount();
+}
+
+function onRoleButtonClick(role) {
+  const toggle = document.querySelector('.role-toggle');
+  if (role === staffViewRole && toggle && !toggle.classList.contains('open')) {
+    toggle.classList.add('open');
+    return;
+  }
+  switchStaffRole(role);
 }
 
 function _applyRoleVisibility() {
@@ -244,6 +254,7 @@ function addStaff(focusNew, listId) {
   }
 
   $(listId).appendChild(div);
+  initStaffRowSwipe(div);
   reindexTabOrder();
   calcHours(id);
   updateSectionCounts();
@@ -255,6 +266,7 @@ function addStaff(focusNew, listId) {
 function _staffRowHTML(id, listId) {
   return '<div class="sri-name">'
     + '<input data-field="name" oninput="onStaffNameInput()" autocomplete="off" autocorrect="off" autocapitalize="words">'
+    + '<div class="sri-meta" id="meta' + id + '">Add times to calculate hours</div>'
     + '</div>'
     + '<div class="sri-time-field"><span class="sri-tlbl">in</span>'
     + '<input data-field="in" inputmode="decimal" oninput="onTimeInput(' + id + ',\'in\')" onchange="calcHours(' + id + ');autoCalculate()">'
@@ -264,7 +276,7 @@ function _staffRowHTML(id, listId) {
     + '</div>'
     + '<div class="sri-hrs" id="hrs' + id + '">–</div>'
     + '<button class="sri-closer" id="ct' + id + '" onclick="toggleCloser(' + id + ')" title="Closer override" tabindex="-1"><span>c</span><span class="sc-lbl">close</span></button>'
-    + '<button class="sri-del" onclick="delStaff(' + id + ',\'' + listId + '\')" tabindex="-1">✕</button>';
+    + '<button class="sri-del" onclick="delStaff(' + id + ',\'' + listId + '\')" tabindex="-1">Delete</button>';
 }
 
 function _supportRowHTML(id, listId) {
@@ -274,6 +286,7 @@ function _supportRowHTML(id, listId) {
     : '<div class="sup-cuts sup-cuts--hidden" id="sup-cuts-' + id + '"></div>';
   return '<div class="sri-name">'
     + '<input data-field="name" oninput="onStaffNameInput()" autocomplete="off" autocorrect="off" autocapitalize="words">'
+    + '<div class="sri-meta" id="meta' + id + '">Add times to calculate hours</div>'
     + '</div>'
     + '<div class="sri-time-field"><span class="sri-tlbl">in</span>'
     + '<input data-field="in" inputmode="decimal" oninput="onTimeInput(' + id + ',\'in\')" onchange="calcHours(' + id + ');autoCalculate()">'
@@ -283,7 +296,32 @@ function _supportRowHTML(id, listId) {
     + '</div>'
     + '<div class="sri-hrs" id="hrs' + id + '">–</div>'
     + cutsHTML
-    + '<button class="sri-del" onclick="delStaff(' + id + ',\'supportList\')" tabindex="-1">✕</button>';
+    + '<button class="sri-del" onclick="delStaff(' + id + ',\'supportList\')" tabindex="-1">Delete</button>';
+}
+
+function initStaffRowSwipe(row) {
+  if (!row || row.dataset.swipeReady) return;
+  row.dataset.swipeReady = '1';
+  let startX = 0;
+  let startY = 0;
+  row.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+  }, { passive: true });
+  row.addEventListener('touchend', e => {
+    if (!startX) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - startX;
+    const dy = t.clientY - startY;
+    if (Math.abs(dx) > Math.abs(dy) && dx < -44) {
+      row.classList.add('swiped');
+    } else if (dx > 24 || Math.abs(dx) < 8) {
+      row.classList.remove('swiped');
+    }
+    startX = 0;
+    startY = 0;
+  }, { passive: true });
 }
 
 function _supportCutChipsHTML(rowId) {
@@ -343,7 +381,21 @@ function delStaff(id, listId) {
 
 function toggleCloser(id) {
   $('ct' + id)?.classList.toggle('on');
+  const row = $('staff' + id);
+  if (row) _updateStaffMeta(row, $('hrs' + id)?.textContent || '');
   autoCalculate();
+}
+
+function _updateStaffMeta(row, hoursText) {
+  if (!row) return;
+  const id = row.id.replace('staff', '');
+  const meta = $('meta' + id);
+  if (!meta) return;
+  const ctEl = $('ct' + id);
+  const outEl = row.querySelector('[data-field="out"]');
+  const closer = (ctEl && ctEl.classList.contains('on')) || !outEl?.value.trim();
+  const safeHours = hoursText && hoursText !== '–' ? hoursText + ' hrs' : 'Add times to calculate hours';
+  meta.innerHTML = escapeHTML(safeHours) + (closer ? ' <span class="sri-meta-badge">closer</span>' : '');
 }
 
 function updateSectionCounts() {
@@ -453,11 +505,13 @@ function calcHours(id) {
 
   if (!inParsed.valid || !outParsed.valid) {
     if (el) { el.textContent = '?'; el.className = 'sri-hrs err'; }
+    _updateStaffMeta(row, '?');
     _updateCards();
     return;
   }
   if (inParsed.empty || outParsed.empty) {
     if (el) { el.textContent = '–'; el.className = 'sri-hrs'; }
+    _updateStaffMeta(row, '');
     _updateCards();
     return;
   }
@@ -467,6 +521,7 @@ function calcHours(id) {
   if (h < 0) h += 12;
   if (h === 0 || h > 12) {
     if (el) { el.textContent = '?'; el.className = 'sri-hrs err'; }
+    _updateStaffMeta(row, '?');
     _updateCards();
     return;
   }
@@ -474,6 +529,7 @@ function calcHours(id) {
     el.textContent = fmtHrs(h);
     el.className   = 'sri-hrs filled' + (uDI || uDO ? ' default-hrs' : '');
   }
+  _updateStaffMeta(row, fmtHrs(h));
   _updateCards();
 }
 

@@ -32,9 +32,3 @@
   --font-mono: 'IBM Plex Mono', monospace;
   --font-sans: 'IBM Plex Sans', sans-serif;
 }
-
-@media (min-width: 760px) {
-  :root {
-    --app-max-w: 720px;
-  }
-}
