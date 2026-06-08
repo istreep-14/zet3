@@ -159,13 +159,11 @@ function computeNightShift() {
 
   const floored   = staff.reduce((s, p) => s + p.base, 0);
   const remainder = total - floored;
-  const closers   = staff.filter(p => p.closer);
-  const perCloser = closers.length ? Math.floor(remainder / closers.length) : 0;
-  const leftover  = remainder - perCloser * closers.length;
-  closers.forEach(p => { p.bonus = perCloser; });
+  const remAlloc  = applyRemainderAllocation(staff, remainder);
+  const leftover  = remAlloc.leftover;
   staff.forEach(p => { p.final = p.base + p.bonus; p.rem = p.final; });
 
-  return { ok: true, staff, total, totH, rate, leftover, pool: getInputPool() };
+  return { ok: true, staff, total, totH, rate, leftover, remainderPool: remainder, pool: getInputPool() };
 }
 
 // ── Night shift: distribution ─────────────────────────────────────────────────
@@ -258,6 +256,7 @@ function calculate(silent) {
   lastTotH     = result.totH;
   lastRate     = result.rate;
   lastLeftover = result.leftover;
+  lastRemainderPool = result.remainderPool;
 
   const distResult = runDistribution(result.staff, result.pool, result.leftover);
 
@@ -268,6 +267,7 @@ function calculate(silent) {
   _lastDistStaff        = distResult.staffWithBills;
 
   renderNightShift(result, distResult);
+  if ($('remainderSidebar')?.classList.contains('open')) renderRemainderSidebar();
 
   if (!silent) switchTab('summary', $('tb-summary'));
 }

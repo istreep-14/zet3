@@ -333,6 +333,15 @@
   </div>
 </div>
 
+<!-- MODAL: REMAINDER ALLOCATION -->
+<div class="modal-overlay" id="remainderSidebar" onclick="if(event.target===this)closeRemainderSidebar()">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">Remainder Allocation<button class="modal-close" onclick="closeRemainderSidebar()">✕</button></div>
+    <div id="remainder-body" class="modal-body rem-modal-body"></div>
+  </div>
+</div>
+
 <!-- MODAL: SUPPORT TIP-OUT -->
 <div class="modal-overlay" id="supportTipOutModal" onclick="modalBgClose(event,'supportTipOutModal')">
   <div class="modal-sheet">
@@ -366,6 +375,7 @@
 <script src="js/summary.js"></script>
 <script src="js/summary_day.js"></script>
 <script src="js/dist.js"></script>
+<script src="js/remainder.js"></script>
 <script src="js/person.js"></script>
 <script src="js/support.js"></script>
 <script src="js/calculator.js"></script>
