@@ -16,6 +16,215 @@ function renderDist(swb, pa, distCtx) {
   renderDistTable(swb, pa, distCtx);
 }
 
+// ── Close Time Bills sidebar ──────────────────────────────────────────────────
+
+// Persisted state across re-renders inside the open sidebar
+let _ctRange    = 3;   // steps from center on each side (pinch adjusts this)
+let _ctCenter   = 2;
+let _ctRoleData = null;
+let _ctTotal    = 0;
+let _ctPool     = null;
+
+function openCloseTimeSidebar() {
+  if (!lastStaff || !lastStaff.length || !lastTotal) return;
+
+  const { rawData, gcIn, gcOut } = collectNamedStaffRows();
+  if (!rawData.length) return;
+
+  _ctPool  = livePool || {};
+  _ctTotal = lastTotal;
+
+  // In-time uses defaults (start time stable).
+  // fixedOut is ONLY the individual's own typed value — blank means "flex with close time".
+  _ctRoleData = rawData.map(r => {
+    const role = getRoleForList(_listIdForRowId(r.rowId));
+    const rDef = roleDefaults[role] || {};
+    return {
+      name:     r.name,
+      effIn:    r.inStr  || rDef.in  || gcIn,
+      fixedOut: r.outStr || '',
+    };
+  }).filter(r => r.name);
+
+  const gcOutParsed = parseTimeString(gcOut);
+  _ctCenter = (gcOutParsed.valid && !gcOutParsed.empty) ? gcOutParsed.value : 2;
+
+  _ctRenderSidebar();
+  $('closeTimeSidebar').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCloseTimeSidebar() {
+  $('closeTimeSidebar').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Select a column — commit that time as the new gc-out, re-center the table on it
+function selectCloseTime(t) {
+  const el = $('gc-out');
+  if (el) { el.value = String(t); onDefaultTimesChange(); }
+  _ctCenter = t;
+  _ctRenderSidebar();
+}
+
+function _ctRenderSidebar() {
+  // Build time list centered on _ctCenter with _ctRange steps on each side
+  const times = [];
+  for (let i = -_ctRange; i <= _ctRange; i++) {
+    const t = Math.round((_ctCenter + i * 0.25) * 4) / 4;
+    if (t > 0 && t <= 12) times.push(t);
+  }
+
+  const cols   = times.map(ct => _computeForCloseTime(_ctRoleData, _ctTotal, ct, _ctPool));
+  const nowIdx = times.findIndex(t => Math.abs(t - _ctCenter) < 0.01);
+
+  const body = $('close-time-body');
+  body.innerHTML = _renderCloseTimeTable(times, cols, _ctPool, nowIdx);
+
+  // Attach pinch listener to the scroll wrapper
+  const wrap = body.querySelector('.ct-scroll-wrap');
+  if (!wrap) return;
+
+  let pinchStartDist = 0;
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2)
+      pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                                  e.touches[0].clientY - e.touches[1].clientY);
+  }, { passive: true });
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length !== 2 || !pinchStartDist) return;
+    const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                         e.touches[0].clientY - e.touches[1].clientY);
+    if (d - pinchStartDist > 28) {
+      _ctRange = Math.min(_ctRange + 1, 9);
+      pinchStartDist = d;
+      _ctRenderSidebar();
+    } else if (pinchStartDist - d > 28) {
+      _ctRange = Math.max(_ctRange - 1, 1);
+      pinchStartDist = d;
+      _ctRenderSidebar();
+    }
+  }, { passive: true });
+  wrap.addEventListener('touchend', () => { pinchStartDist = 0; }, { passive: true });
+}
+
+function _fmtCloseTime(t) {
+  let hr = Math.floor(t), mn = Math.round((t - hr) * 60);
+  if (mn === 60) { hr++; mn = 0; }
+  const h12 = hr % 12 || 12;
+  return h12 + (mn > 0 ? ':' + (mn < 10 ? '0' : '') + mn : '') + (t <= 5 ? 'a' : 'p');
+}
+
+function _computeForCloseTime(roleData, total, closeTime, pool) {
+  const defaultIn = 5;
+  const staff = roleData.map(r => {
+    const effOut = r.fixedOut || closeTime;
+    const inParsed  = parseTimeString(r.effIn);
+    const outParsed = parseTimeString(String(effOut));
+    const inVal  = (inParsed.valid  && !inParsed.empty)  ? inParsed.value  : defaultIn;
+    const outVal = (outParsed.valid && !outParsed.empty) ? outParsed.value : closeTime;
+    let h = outVal - inVal; if (h < 0) h += 12;
+    const eo = outVal < inVal ? outVal + 12 : outVal;
+    return { n: r.name, h, eo, base: 0, bonus: 0, closer: false, final: 0 };
+  }).filter(p => p.h > 0 && p.h <= 12);
+
+  if (!staff.length) return null;
+
+  const totH = staff.reduce((s, p) => s + p.h, 0);
+  if (!totH) return null;
+
+  const rate = total / totH;
+  staff.forEach(p => { p.base = Math.floor(p.h * rate); });
+
+  const floored   = staff.reduce((s, p) => s + p.base, 0);
+  const remainder = total - floored;
+  const peakEo    = Math.max(...staff.map(p => p.eo));
+  const closers   = staff.filter(p => p.eo >= peakEo);
+  const perCloser = closers.length ? Math.floor(remainder / closers.length) : 0;
+  const leftover  = remainder - perCloser * closers.length;
+  closers.forEach(p => { p.bonus = perCloser; p.closer = true; });
+  staff.forEach(p => { p.final = p.base + p.bonus; });
+
+  const req = getSmallBillRequirements(staff, pool, leftover);
+  return {
+    staff,
+    req,
+    minFives: Math.max(0, (req.minOneFiveValue - req.minOnes) / 5),
+    minTens:  Math.max(0, (req.minOneFiveTenValue - req.minOneFiveValue) / 10),
+    leftover,
+  };
+}
+
+function _renderCloseTimeTable(times, cols, pool, nowIdx) {
+  const names = _ctRoleData.map(r => r.name);
+
+  // nowCls(i): extra class string for cells in the "current" column
+  const n = (i) => i === nowIdx ? ' ct-col-now' : '';
+
+  // Header — time columns are tappable to select that close time
+  const thCells = times.map((t, i) =>
+    `<th class="${i === nowIdx ? 'ct-th-now' : 'ct-th-sel'}" onclick="selectCloseTime(${t})">${_fmtCloseTime(t)}</th>`
+  ).join('');
+
+  // Per-person tip rows
+  const personRows = names.map(name => {
+    const cells = cols.map((col, i) => {
+      if (!col) return `<td class="zero${n(i)}">—</td>`;
+      const p = col.staff.find(s => s.n === name);
+      if (!p) return `<td class="zero${n(i)}">—</td>`;
+      return `<td class="${p.closer ? 'ct-closer' : 'ct-person'}${n(i)}">$${p.final}</td>`;
+    }).join('');
+    return `<tr><td class="ct-lbl">${escapeHTML(name)}</td>${cells}</tr>`;
+  }).join('');
+
+  // Remainder row
+  const remRow = `<tr class="ct-rem-row"><td class="ct-lbl">Rem</td>`
+    + cols.map((col, i) => {
+        if (!col || !col.leftover) return `<td class="zero${n(i)}">—</td>`;
+        return `<td class="ct-rem${n(i)}">$${col.leftover}</td>`;
+      }).join('')
+    + '</tr>';
+
+  // Bill rows — only $1s count; $1+5 and $1+5+10 cumulative values
+  const avail15   = (pool[1] || 0) + (pool[5]  || 0) * 5;
+  const avail1510 = avail15        + (pool[10] || 0) * 10;
+
+  function dataRow(label, getCls, getVal) {
+    return `<tr><td class="ct-lbl">${label}</td>`
+      + cols.map((col, i) => {
+          if (!col) return `<td class="zero${n(i)}">—</td>`;
+          const { cls, val } = getVal(col);
+          return `<td class="${cls}${n(i)}">${val}</td>`;
+        }).join('')
+      + '</tr>';
+  }
+
+  const onesRow    = dataRow('$1s', null, col => {
+    const v = col.req.minOnes, ok = v <= (pool[1] || 0);
+    return { cls: ok ? 'ct-ok' : 'ct-short', val: v };
+  });
+  const val15Row   = dataRow('$1+5', null, col => {
+    const v = col.req.minOneFiveValue, ok = v <= avail15;
+    return { cls: ok ? 'ct-ok' : 'ct-short', val: '$' + v };
+  });
+  const val1510Row = dataRow('$1+5+10', null, col => {
+    const v = col.req.minOneFiveTenValue, ok = v <= avail1510;
+    return { cls: ok ? 'ct-ok' : 'ct-short', val: '$' + v };
+  });
+
+  const divRow = (label) =>
+    `<tr class="ct-sect-hdr"><td colspan="${times.length + 1}">${label}</td></tr>`;
+
+  return `<div class="ct-scroll-wrap"><table class="ct-tbl">
+    <thead><tr><th class="ct-lbl-th"></th>${thCells}</tr></thead>
+    <tbody>
+      ${personRows}${remRow}
+      ${divRow('Bills')}
+      ${onesRow}${val15Row}${val1510Row}
+    </tbody>
+  </table></div>`;
+}
+
 function renderDistTable(swb, poolAfter, distCtx) {
   const sb = $('stale-dist'); if (sb) sb.classList.remove('visible');
 
@@ -42,6 +251,8 @@ function renderDistTable(swb, poolAfter, distCtx) {
   const tradeDownHTML = renderTradeDownCard(_pendingTradeDown, pool);
   const tradeUpHTML   = _pendingTradeUp ? renderTradeUpCard(_pendingTradeUp, pool) : '';
 
+  const ctBtn = '<button class="ct-open-btn" onclick="openCloseTimeSidebar()">⏱ Close Time</button>';
+
   if (hasErr) {
     const previewTableHTML = _pendingTradeDown
       ? '<div class="dist-preview-label">Distribution after simple trades</div>'
@@ -60,14 +271,15 @@ function renderDistTable(swb, poolAfter, distCtx) {
       + `</div>`
       + reqHTML
       + tradeDownHTML
-      + previewTableHTML;
+      + previewTableHTML
+      + ctBtn;
     return;
   }
 
   $('dist-content').innerHTML = reqHTML + tradeUpHTML + renderDistTableMarkup(swb, {
     remainderBills,
     leftover,
-  });
+  }) + ctBtn;
 }
 
 // ── Requirement summary ───────────────────────────────────────────────────────
