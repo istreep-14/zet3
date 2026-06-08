@@ -336,7 +336,7 @@
   grid-template-columns: minmax(0, 1fr) 62px 62px 52px;
   gap: 8px;
   align-items: stretch;
-  padding: 12px;
+  padding: 11px;
   position: relative;
   transition: border-color .15s, background .15s;
 }
@@ -496,7 +496,7 @@
   border: 1px dashed var(--border2);
   color: var(--muted);
   border-radius: var(--radius-sm);
-  padding: 11px;
+  padding: 12px;
   font-size: .8rem;
   cursor: pointer;
   margin-top: 10px;
