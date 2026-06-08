@@ -90,6 +90,7 @@ function onBillsChange() {
 function setCashMode(mode) {
   if (mode !== cashMode) snapshotCurrentCashMode();
   cashMode = mode;
+  document.querySelector('.cash-mode-toggle')?.classList.remove('open');
   const perBillEl  = $('cash-per-bill');
   const netEl      = $('cash-net-total');
   const btnPer     = $('cmb-perbill');
@@ -107,6 +108,15 @@ function setCashMode(mode) {
     writeBillInputSnapshot(perBillSnapshot);
     onBillsChange();
   }
+}
+
+function onCashModeButtonClick(mode) {
+  const toggle = document.querySelector('.cash-mode-toggle');
+  if (mode === cashMode && toggle && !toggle.classList.contains('open')) {
+    toggle.classList.add('open');
+    return;
+  }
+  setCashMode(mode);
 }
 
 function getIdealTargetsForTotal(total) {

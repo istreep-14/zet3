@@ -48,6 +48,7 @@ function openPersonModal(rowId) {
         </div>
       </div>
       <div class="profile-section"><div class="profile-section-lbl">Bill Distribution</div>${billsHTML}</div>
+      <button class="profile-delete-btn" onclick="deletePersonFromModal('${escapeHTML(String(rowId))}')">Delete person</button>
     </div>`;
   openModal('personModal');
 }
@@ -60,4 +61,11 @@ function updatePersonFromModal(rowId) {
   if (no) { const el = row.querySelector('[data-field="out"]'); if (el) { el.value = no.value; el.classList.remove('using-default'); } }
   calcHours(rowId); autoCalculate();
   setTimeout(() => { if ($('personModal').classList.contains('open')) openPersonModal(rowId); }, 120);
+}
+
+function deletePersonFromModal(rowId) {
+  const listId = (typeof _findListForId === 'function') ? _findListForId(rowId) : null;
+  if (!listId) return;
+  closeModal('personModal');
+  delStaff(rowId, listId);
 }

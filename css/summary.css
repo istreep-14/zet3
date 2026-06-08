@@ -85,7 +85,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 8px 10px;
+  padding: 10px 11px;
 }
 
 .person-avatar {
@@ -113,7 +113,7 @@
   margin-bottom: 2px;
 }
 
-.person-name { font-size: .84rem; font-weight: 600; color: var(--text); }
+.person-name { font-size: 1rem; font-weight: 800; color: var(--text); }
 
 .closer-badge {
   font-size: .42rem;
@@ -131,7 +131,7 @@
 .person-tip-col { text-align: right; flex-shrink: 0; }
 
 .person-tip {
-  font-size: 1.08rem;
+  font-size: 1.22rem;
   font-weight: 800;
   color: var(--gold);
   font-family: var(--font-mono);
@@ -167,9 +167,9 @@
 
 /* Person hours block (inside card) */
 .person-hrs-block  { text-align: right; flex-shrink: 0; width: 74px; margin: 0 2px; font-variant-numeric: tabular-nums; }
-.person-hrs-val    { font-size: .95rem; font-weight: 800; color: var(--text2); font-family: var(--font-mono); line-height: 1; }
+.person-hrs-val    { font-size: 1.05rem; font-weight: 800; color: var(--gold2); font-family: var(--font-mono); line-height: 1; }
 .person-hrs-val.muted { color: var(--muted2); }
-.person-hrs-times  { font-size: .5rem; color: var(--muted); font-family: var(--font-mono); margin-top: 2px; white-space: nowrap; }
+.person-hrs-times  { font-size: .54rem; color: var(--text2); font-family: var(--font-mono); margin-top: 2px; white-space: nowrap; }
 
 .person-tip-col {
   text-align: right;
@@ -233,9 +233,9 @@
 }
 
 .summary-totals-hrs {
-  font-size: .74rem;
-  font-weight: 700;
-  color: var(--text2);
+  font-size: .86rem;
+  font-weight: 800;
+  color: var(--gold2);
   font-family: var(--font-mono);
   /* Match .person-hrs-block width so columns align */
   width: 74px;
@@ -244,7 +244,7 @@
 }
 
 .summary-totals-val {
-  font-size: .98rem;
+  font-size: 1.08rem;
   font-weight: 800;
   color: var(--gold);
   font-family: var(--font-mono);

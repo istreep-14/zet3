@@ -1,6 +1,7 @@
 /* ── Mode toggle ─────────────────────────────────── */
 .cash-mode-toggle {
   display: flex;
+  flex-direction: column;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -35,6 +36,15 @@
   background: var(--surface3);
   color: var(--text);
   border: 1px solid var(--border2);
+}
+
+.cash-mode-toggle:not(.open) .cmt-btn:not(.active) { display: none; }
+.cash-mode-toggle:not(.open) .cmt-btn.active::after {
+  content: 'Change';
+  float: right;
+  color: var(--muted);
+  font-size: .5rem;
+  letter-spacing: .7px;
 }
 
 /* ── Per-bill section ─────────────────────────────── */

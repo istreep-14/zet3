@@ -151,3 +151,18 @@
 .pbc2-denom { font-size: .44rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 2px; }
 .pbc2-count { font-size: .88rem; font-weight: 700; color: var(--text2); display: block; }
 .pbc2-count.zero { color: var(--muted2); font-weight: 400; }
+
+.profile-delete-btn {
+  width: 100%;
+  background: #2a1018;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent2);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .8px;
+  padding: 11px 12px;
+  text-transform: uppercase;
+}

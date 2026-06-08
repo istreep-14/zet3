@@ -124,8 +124,8 @@
 
         <!-- Mode toggle at bottom (secondary) -->
         <div class="cash-mode-toggle cash-mode-toggle--bottom">
-          <button class="cmt-btn" id="cmb-nettotal" onclick="setCashMode('nettotal')">Net Total</button>
-          <button class="cmt-btn" id="cmb-perbill"  onclick="setCashMode('perbill')">Bill Counts</button>
+          <button class="cmt-btn" id="cmb-nettotal" onclick="onCashModeButtonClick('nettotal')">Net Total</button>
+          <button class="cmt-btn" id="cmb-perbill"  onclick="onCashModeButtonClick('perbill')">Bill Counts</button>
         </div>
 
         <!-- Hidden compat span -->
@@ -147,9 +147,9 @@
 
     <!-- Role toggle — persists across night/day shift -->
     <div class="role-toggle">
-      <button class="role-btn role-btn--bar active" id="rb-bartender" onclick="switchStaffRole('bartender')">Bartender</button>
-      <button class="role-btn role-btn--srv"        id="rb-server"    onclick="switchStaffRole('server')">Server</button>
-      <button class="role-btn role-btn--sup"        id="rb-support"   onclick="switchStaffRole('support')">Support</button>
+      <button class="role-btn role-btn--bar active" id="rb-bartender" onclick="onRoleButtonClick('bartender')">Bartender</button>
+      <button class="role-btn role-btn--srv"        id="rb-server"    onclick="onRoleButtonClick('server')">Server</button>
+      <button class="role-btn role-btn--sup"        id="rb-support"   onclick="onRoleButtonClick('support')">Support</button>
     </div>
 
     <!-- Per-role defaults + count row -->
