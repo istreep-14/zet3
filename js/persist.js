@@ -9,6 +9,7 @@ function saveState() {
       const rowId = r.id.replace('staff', '');
       const ctEl  = document.getElementById('ct' + rowId);
       return {
+        _rowId:  rowId,
         name:   r.querySelector('[data-field="name"]').value,
         in:     r.querySelector('[data-field="in"]').value,
         out:    r.querySelector('[data-field="out"]').value,
@@ -20,8 +21,13 @@ function saveState() {
     ? '#bartenderList .staff-row-modal'
     : '#staffList .staff-row-modal';
 
-  const staff   = serializeList(bartenderSelector);
-  const servers = serializeList('#serverList .staff-row-modal');
+  const staff        = serializeList(bartenderSelector);
+  const servers      = serializeList('#serverList .staff-row-modal');
+  const nightServers = serializeList('#nightServerList .staff-row-modal');
+  const support      = serializeList('#supportList .staff-row-modal').map(p => ({
+    ...p,
+    cuts: supportCutAssignments[p._rowId] || [],
+  }));
 
   // Snapshot current day pool cash states
   const dayPoolSnap = {};
@@ -52,19 +58,23 @@ function saveState() {
   });
 
   const snap = {
-    v:        2,
+    v:        3,
     saved:    Date.now(),
     date:     $('tipDate')?.value       ?? '',
     gcIn:     $('gc-in')?.value         ?? '',
     gcOut:    $('gc-out')?.value        ?? '',
     shiftMode,
     cashMode,
+    staffViewRole,
+    roleDefaults,
     bills:        (typeof readBillInputSnapshot === 'function') ? readBillInputSnapshot() : {},
     perBillBills: perBillSnapshot,
     netBillBills: netBillSnapshot,
     netTotal:     $('net-total-input')?.value ?? '',
     staff,
     servers,
+    nightServers,
+    support,
     dayPools: dayPoolSnap,
   };
 
@@ -108,7 +118,7 @@ function validateBillSnapshot(value, label) {
 
 function validateSessionSnapshot(snap) {
   if (!isPlainObject(snap)) throw new Error('Not a valid TipPool file');
-  if (snap.v !== 1 && snap.v !== 2) throw new Error('Incompatible file version');
+  if (snap.v !== 1 && snap.v !== 2 && snap.v !== 3) throw new Error('Incompatible file version');
   ['date', 'gcIn', 'gcOut', 'cashMode', 'netTotal'].forEach(key => {
     if (snap[key] != null && typeof snap[key] !== 'string') throw new Error(key + ' must be a string');
   });

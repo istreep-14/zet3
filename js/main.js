@@ -66,7 +66,18 @@ if (_saved) {
     calcHours(row.id.replace('staff', ''));
   });
 
-  // ── Servers (day shift only) ──
+  // ── Role defaults ──
+  if (_saved.roleDefaults) {
+    ['bartender', 'server', 'support'].forEach(role => {
+      if (_saved.roleDefaults[role]) {
+        roleDefaults[role].in  = _saved.roleDefaults[role].in  || '';
+        roleDefaults[role].out = _saved.roleDefaults[role].out || '';
+      }
+    });
+  }
+  if (_saved.staffViewRole) staffViewRole = _saved.staffViewRole;
+
+  // ── Servers (day shift) ──
   if (savedShift === 'day' && _saved.servers?.length) {
     _saved.servers.forEach((s, i) => {
       addStaff(false, 'serverList');
@@ -80,6 +91,35 @@ if (_saved) {
     });
   } else if (savedShift === 'day') {
     addStaff(false, 'serverList');
+  }
+
+  // ── Night shift servers ──
+  if (savedShift === 'night' && _saved.nightServers?.length) {
+    _saved.nightServers.forEach((s, i) => {
+      addStaff(false, 'nightServerList');
+      const row = document.querySelectorAll('#nightServerList .staff-row-modal')[i];
+      if (!row) return;
+      row.querySelector('[data-field="name"]').value = s.name ?? '';
+      row.querySelector('[data-field="in"]').value   = s.in   ?? '';
+      row.querySelector('[data-field="out"]').value  = s.out  ?? '';
+      if (s.closer) row.querySelector('.sri-closer')?.classList.add('on');
+      calcHours(row.id.replace('staff', ''));
+    });
+  }
+
+  // ── Support staff (both shifts) ──
+  if (_saved.support?.length) {
+    _saved.support.forEach((s, i) => {
+      addStaff(false, 'supportList');
+      const row = document.querySelectorAll('#supportList .staff-row-modal')[i];
+      if (!row) return;
+      const rowId = row.id.replace('staff', '');
+      row.querySelector('[data-field="name"]').value = s.name ?? '';
+      row.querySelector('[data-field="in"]').value   = s.in   ?? '';
+      row.querySelector('[data-field="out"]').value  = s.out  ?? '';
+      if (Array.isArray(s.cuts)) supportCutAssignments[rowId] = s.cuts;
+      calcHours(rowId);
+    });
   }
 
   // ── Day shift pool cash ──
@@ -132,9 +172,12 @@ if (_saved) {
     addStaff(false, 'serverList');
     renderDayPoolCashPanels();
   } else {
-    setCashMode('perbill');
+    setCashMode('nettotal');
   }
 }
+
+// Sync the default times modal per-role fields on load
+if (typeof _syncModalRoleFields === 'function') _syncModalRoleFields();
 
 isRestoringState = false;
 
@@ -144,6 +187,10 @@ $('tipDate').addEventListener('input',  saveState);
 
 reindexTabOrder();
 updateSectionCounts();
+
+// Apply role toggle UI state
+switchStaffRole(staffViewRole);
+updateRoleDefaultsUI();
 
 if (shiftMode === 'day') {
   updateDayStockCards();

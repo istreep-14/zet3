@@ -1,6 +1,7 @@
 // Global mutable state — written by calculator, read by renderers
 let staffId      = 0;
 let serverStaffId = 1000; // servers start at 1000 to avoid id collisions
+let supportId    = 2000;  // support staff start at 2000
 let livePool     = {};
 let lastStaff    = [];
 let lastTotal    = 0;
@@ -11,7 +12,7 @@ let lastPoolAfter = {};
 let lastRemainderBills = {};
 let lastDistributionError = '';
 let _lastDistStaff = [];
-let cashMode     = 'perbill';
+let cashMode     = 'nettotal';
 let perBillSnapshot = { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' };
 let netBillSnapshot = { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' };
 let netTotalSnapshot = '';
@@ -29,13 +30,13 @@ let shiftMode = 'night';
 // poolEnabled flags control whether party pools are active.
 let dayPools = {
   morning: {
-    cashMode: 'perbill',
+    cashMode: 'nettotal',
     perBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netTotalSnapshot: '',
   },
   middle: {
-    cashMode: 'perbill',
+    cashMode: 'nettotal',
     perBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netTotalSnapshot: '',
@@ -44,7 +45,7 @@ let dayPools = {
     enabled: false,
     windowStart: '',
     windowEnd:   '',
-    cashMode: 'perbill',
+    cashMode: 'nettotal',
     perBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netTotalSnapshot: '',
@@ -53,12 +54,31 @@ let dayPools = {
     enabled: false,
     windowStart: '',
     windowEnd:   '',
-    cashMode: 'perbill',
+    cashMode: 'nettotal',
     perBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netBillSnapshot: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netTotalSnapshot: '',
   },
 };
+
+// ── Staff role toggle ─────────────────────────────────────────────────────────
+// Which role tab is active in the staff section
+let staffViewRole = 'bartender'; // 'bartender' | 'server' | 'support'
+
+// Per-role default times — auto-inferred from first explicit entry in each role's list
+let roleDefaults = {
+  bartender: { in: '', out: '' },
+  server:    { in: '', out: '' },
+  support:   { in: '', out: '' },
+};
+
+// Support staff cut assignments: rowId → string[] of cut IDs
+// e.g. { '2001': ['middle', 'party1'] }
+let supportCutAssignments = {};
+
+// Support tip-out overrides per cut (set in the tip-out modal):
+// { cutId: { rowId: { hours: number, pct: number } } }
+let supportTipOutOverrides = {};
 
 // Which day-shift pool card is currently expanded (accordion — one at a time)
 let selectedDayPool = 'morning';

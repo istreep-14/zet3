@@ -167,7 +167,7 @@ function renderDayPoolCashPanels() {
 
     const isOpen = selectedDayPool === def.id;
     const total  = getDayPoolTotal(def.id);
-    const isNet  = pool.cashMode === 'nettotal';
+    pool.cashMode = 'nettotal'; // day shift always uses net total
 
     // Header subtitle — auto label for fixed pools, live times for party pools
     const headerSub = def.optional
@@ -228,19 +228,38 @@ function renderDayPoolCashPanels() {
       </button>
       <div class="dp-pool-body"${isOpen ? '' : ' style="display:none"'}>
         ${windowBodyHTML}
-        <div class="cash-mode-toggle dp-mode-toggle">
-          <button class="cmt-btn${!isNet ? ' active' : ''}" id="dp-cmb-per-${def.id}"
-            onclick="setDayPoolCashMode('${def.id}','perbill')">Per Bill</button>
-          <button class="cmt-btn${isNet ? ' active' : ''}" id="dp-cmb-net-${def.id}"
-            onclick="setDayPoolCashMode('${def.id}','nettotal')">Net Total</button>
-        </div>
-        <div id="dp-perbill-${def.id}"${isNet ? ' style="display:none"' : ''}>${perBillRows}</div>
-        <div id="dp-nettotal-${def.id}"${!isNet ? ' style="display:none"' : ''}>${netRow}</div>
+        <div id="dp-perbill-${def.id}" style="display:none">${perBillRows}</div>
+        <div id="dp-nettotal-${def.id}">${netRow}</div>
+        <button class="dp-support-btn" id="dp-sup-btn-${def.id}" onclick="openSupportTipOutModal('${def.id}')" style="display:none">Support Tip-Out</button>
       </div>
     </div>`;
   }).join('');
 
   getDayPoolActiveIds().forEach(id => refreshDayPoolTotal(id));
+}
+
+// ── Support tip-out button visibility ────────────────────────────────────────
+
+function updateSupportTipOutButtons() {
+  const activeIds = getDayPoolActiveIds();
+  activeIds.forEach(cutId => {
+    const btn = $('dp-sup-btn-' + cutId);
+    if (!btn) return;
+    const rows = document.querySelectorAll('#supportList .staff-row-modal');
+    const hasAssigned = [...rows].some(r => {
+      const rowId = r.id.replace('staff', '');
+      const name  = r.querySelector('[data-field="name"]').value.trim();
+      return name && (supportCutAssignments[rowId] || []).includes(cutId);
+    });
+    btn.style.display = hasAssigned ? '' : 'none';
+    if (hasAssigned) {
+      const tipOuts = lastDayResult?.supportTipOuts?.[cutId] || [];
+      const total   = tipOuts.reduce((s, x) => s + x.tipOut, 0);
+      btn.textContent = total > 0
+        ? 'Support Tip-Out · $' + total + ' out'
+        : 'Support Tip-Out';
+    }
+  });
 }
 
 // ── Day shift stock card update ───────────────────────────────────────────────

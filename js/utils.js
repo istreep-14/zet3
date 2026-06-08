@@ -17,10 +17,11 @@ function parseTimeString(raw) {
   if (!text) return { valid: true, empty: true, value: null };
   if (!/^(?:\d+(?:\.\d+)?|\.\d+)$/.test(text)) return { valid: false, empty: false, value: null };
   const value = Number(text);
+  const inRange = Number.isFinite(value) && value >= 0 && value < 13;
   return {
-    valid: Number.isFinite(value) && value >= 0 && value <= 12,
+    valid: inRange,
     empty: false,
-    value: Number.isFinite(value) && value >= 0 && value <= 12 ? value : null
+    value: inRange ? value : null
   };
 }
 

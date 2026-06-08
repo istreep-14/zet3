@@ -50,6 +50,8 @@ function setShiftMode(mode, skipConfirm) {
   renderBlockedPlaceholders(
     mode === 'night' ? 'Enter cash & staff to calculate.' : 'Enter day shift staff & pool cash to calculate.'
   );
+  // Re-apply role filter for the new shift mode
+  if (typeof reapplyRoleVisibility === 'function') reapplyRoleVisibility();
   updateShiftStockCards();
   autoCalculate();
   saveState();

@@ -31,8 +31,7 @@ function snapshotCurrentCashMode() {
 }
 
 function refreshCashTotals(total) {
-  const ptop = $('cash-page-total'), pbot = $('cash-total-bottom');
-  if (ptop) { ptop.textContent = '$' + total; ptop.className = 'cash-page-total' + (total ? '' : ' zero'); }
+  const pbot = $('cash-total-bottom');
   if (pbot) { pbot.textContent = '$' + total; pbot.className = 'cash-total-val' + (total ? '' : ' zero'); }
 }
 
@@ -91,14 +90,19 @@ function onBillsChange() {
 function setCashMode(mode) {
   if (mode !== cashMode) snapshotCurrentCashMode();
   cashMode = mode;
-  $('cash-per-bill').style.display  = mode === 'perbill'  ? '' : 'none';
-  $('cash-net-total').style.display = mode === 'nettotal' ? '' : 'none';
-  $('cmb-perbill').classList.toggle('active',  mode === 'perbill');
-  $('cmb-nettotal').classList.toggle('active', mode === 'nettotal');
+  const perBillEl  = $('cash-per-bill');
+  const netEl      = $('cash-net-total');
+  const btnPer     = $('cmb-perbill');
+  const btnNet     = $('cmb-nettotal');
+  if (perBillEl) perBillEl.style.display  = mode === 'perbill'  ? '' : 'none';
+  if (netEl)     netEl.style.display      = mode === 'nettotal' ? '' : 'none';
+  if (btnPer)    btnPer.classList.toggle('active',  mode === 'perbill');
+  if (btnNet)    btnNet.classList.toggle('active',  mode === 'nettotal');
   if (mode === 'nettotal') {
-    if ($('net-total-input')) $('net-total-input').value = netTotalSnapshot || '';
+    const inp = $('net-total-input');
+    if (inp) inp.value = netTotalSnapshot || '';
     onNetTotalChange({ fromModeSwitch: true });
-    setTimeout(() => $('net-total-input').focus(), 50);
+    setTimeout(() => $('net-total-input')?.focus(), 50);
   } else {
     writeBillInputSnapshot(perBillSnapshot);
     onBillsChange();
@@ -188,6 +192,34 @@ function computeIdealFromTotal(total) {
   pool[5]  = Math.floor(rem / 5);  rem -= pool[5] * 5;
   pool[1]  = rem;
   return { pool, targets, minimums: { ones: pool[1], fives: pool[5], tens: pool[10] } };
+}
+
+// Compute ideal bill breakdown for a given total and explicit target array.
+// Unlike computeIdealFromTotal, this takes targets directly (no DOM read).
+function computeIdealBillsForTargets(total, targets) {
+  const pool = { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 };
+  if (total <= 0 || !targets.length) return pool;
+
+  const minOnes     = targets.reduce((s, amt) => s + (amt % 5), 0);
+  const minMod10Val = targets.reduce((s, amt) => s + (amt % 10), 0);
+  const minFives    = Math.max(0, (minMod10Val - minOnes) / 5);
+  const minTens     = targets.filter(amt => Math.floor(amt / 10) % 2 !== 0).length;
+  const reserved    = minOnes + minFives * 5 + minTens * 10;
+
+  if (reserved <= total) {
+    pool[1]  = minOnes;
+    pool[5]  = minFives;
+    pool[10] = minTens;
+    pool[20] = Math.floor((total - reserved) / 20);
+    return pool;
+  }
+  // fallback: greedy
+  let rem  = total;
+  pool[20] = Math.floor(rem / 20); rem -= pool[20] * 20;
+  pool[10] = Math.floor(rem / 10); rem -= pool[10] * 10;
+  pool[5]  = Math.floor(rem / 5);  rem -= pool[5]  * 5;
+  pool[1]  = rem;
+  return pool;
 }
 
 function renderNetBreakdown(total, ideal) {
