@@ -18,7 +18,8 @@
             "group": [
               "components/core/**",
               "components/money/**",
-              "components/people/**"
+              "components/people/**",
+              "components/shifts/**"
             ],
             "message": "Import design-system components from 'index.js', not component internals."
           }
@@ -114,6 +115,12 @@
         "replaces": []
       },
       "PersonCard": {
+        "replaces": []
+      },
+      "StaffInputRow": {
+        "replaces": []
+      },
+      "DayPoolCashCard": {
         "replaces": []
       },
       "SegmentOption": {

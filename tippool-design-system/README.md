@@ -22,10 +22,12 @@ React consumers should import components through the package entry point:
 import {
   Badge,
   Button,
+  DayPoolCashCard,
   DenomRow,
   MoneyValue,
   PersonCard,
   SegmentedControl,
+  StaffInputRow,
   StatCard,
 } from './tippool-design-system/index.js';
 ```

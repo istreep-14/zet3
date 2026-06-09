@@ -348,12 +348,25 @@
   transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 
+.staff-row-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: transparent;
+}
+
+.staff-row-modal--bartender::before { background: var(--role-bartender-border); }
+.staff-row-modal--server::before    { background: var(--role-server-border); }
+.staff-row-modal--support::before   { background: var(--role-support-border); }
+
 .staff-row-modal:focus-within { border-color: var(--border2); }
 
 .sri-name {
   grid-column: auto;
   min-width: 0;
   border-right: none;
+  padding-left: 3px;
 }
 
 .sri-name input {
@@ -390,10 +403,12 @@
   border-radius: var(--radius-chip);
   color: var(--accent);
   display: inline-flex;
-  font-size: .38rem;
-  letter-spacing: .5px;
+  font-size: .48rem;
+  font-weight: 700;
+  letter-spacing: .7px;
+  line-height: 1.4;
   margin-left: 4px;
-  padding: 0 4px;
+  padding: 1px 4px;
   text-transform: uppercase;
 }
 
@@ -405,6 +420,12 @@
   border-radius: var(--radius-sm);
   background: var(--surface-input);
   min-height: 38px;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.sri-time-field:focus-within {
+  background: var(--surface3);
+  border-color: var(--border2);
 }
 
 .sri-tlbl {

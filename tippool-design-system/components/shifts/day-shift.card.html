@@ -1,0 +1,52 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Shift — Day pool cash card" subtitle="Accordion pool header, net total input, party window, support tip-out" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 20px; }
+  .stack { display: flex; flex-direction: column; gap: 10px; max-width: 480px; }
+  .pool { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .pool-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 10px 12px; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+  .pool-name { display: block; color: var(--text-2); font-size: .64rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .pool-sub { color: var(--muted); font-size: .56rem; line-height: 1.4; }
+  .pool-total { color: var(--gold); font-size: 1.22rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .body { padding: 4px 8px 8px; }
+  .net { display: flex; align-items: center; }
+  .sign { color: var(--gold); font-size: 1.5rem; font-weight: 800; padding: 0 10px 0 4px; }
+  .net input { flex: 1; background: transparent; border: 0; color: var(--text); font: 700 1.7rem var(--font-mono); outline: none; padding: 12px 0; font-variant-numeric: tabular-nums; }
+  .window { display: flex; align-items: center; gap: 5px; padding: 8px 8px 0; }
+  .field { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; background: var(--surface); border: 1px solid var(--border-2); border-radius: 6px; padding: 4px 8px; }
+  .field span { color: var(--muted); font-size: .46rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+  .field strong { flex: 1; color: var(--text); font-size: .82rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .support { width: 100%; margin-top: 6px; border: 1px dashed var(--role-support-border); border-radius: var(--radius-sm); background: transparent; color: var(--role-support); padding: 7px 10px; font: 700 .6rem var(--font-mono); letter-spacing: .5px; text-transform: uppercase; }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div class="pool">
+      <div class="pool-hdr">
+        <div><span class="pool-name">Morning Cut</span><span class="pool-sub">Earliest in -> last server out</span></div>
+        <span class="pool-total">$420</span>
+      </div>
+      <div class="body">
+        <div class="net"><span class="sign">$</span><input value="420"></div>
+        <button class="support">Support Tip-Out · $32 out</button>
+      </div>
+    </div>
+    <div class="pool">
+      <div class="pool-hdr">
+        <div><span class="pool-name">Party 1</span><span class="pool-sub">11 - 3</span></div>
+        <span class="pool-total">$180</span>
+      </div>
+      <div class="window">
+        <div class="field"><span>Start</span><strong>11</strong></div>
+        <span style="color:var(--muted-2)">-</span>
+        <div class="field"><span>End</span><strong>3</strong></div>
+      </div>
+      <div class="body"><div class="net"><span class="sign">$</span><input value="180"></div></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!-- @dsCard group="Components" viewport="700x300" name="People — Staff input row" subtitle="Name, in/out wells, hours, closer badge, support cuts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  body { margin: 0; background: var(--bg); font-family: var(--font-mono); padding: 20px; }
+  .stack { display: flex; flex-direction: column; gap: 8px; max-width: 480px; }
+  .row { display: grid; grid-template-columns: minmax(0,1fr) 48px 48px 42px; gap: 5px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px; overflow: hidden; }
+  .name-wrap { min-width: 0; }
+  .name-line { display: flex; align-items: center; gap: 5px; }
+  .name { color: var(--text); font: 800 .9rem var(--font-sans); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta { color: var(--muted); font-size: .48rem; font-weight: 700; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { display: inline-flex; align-items: center; border: 1px solid; border-radius: var(--radius-chip); padding: 1px 4px; font-size: .48rem; font-weight: 700; letter-spacing: .7px; line-height: 1.4; text-transform: uppercase; }
+  .bar { color: var(--role-bartender); border-color: var(--role-bartender-border); background: var(--role-bartender-bg); }
+  .sup { color: var(--role-support); border-color: var(--role-support-border); background: var(--role-support-bg); }
+  .closer { color: var(--accent); border-color: var(--accent); background: #1a0608; }
+  .time, .hrs { min-height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius-sm); font-variant-numeric: tabular-nums; }
+  .time { background: var(--surface-input); }
+  .time span { color: var(--muted-2); font-size: .42rem; letter-spacing: .5px; text-transform: uppercase; }
+  .time strong { color: var(--text); font-size: .86rem; }
+  .hrs { background: var(--surface-2); color: var(--gold-2); font-size: .84rem; font-weight: 800; }
+  .cuts { grid-column: 1 / -1; display: flex; gap: 4px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div class="row">
+      <div class="name-wrap">
+        <div class="name-line"><span class="name">Maya Rodriguez</span><span class="badge bar">Bartender</span><span class="badge closer">Closer</span></div>
+        <div class="meta">Blank out keeps closer status active</div>
+      </div>
+      <div class="time"><span>In</span><strong>5</strong></div>
+      <div class="time"><span>Out</span><strong>2</strong></div>
+      <div class="hrs">9h</div>
+    </div>
+    <div class="row">
+      <div class="name-wrap">
+        <div class="name-line"><span class="name">Sam Lee</span><span class="badge sup">Support</span></div>
+        <div class="meta">Assigned to two support cuts</div>
+      </div>
+      <div class="time"><span>In</span><strong>11</strong></div>
+      <div class="time"><span>Out</span><strong>4</strong></div>
+      <div class="hrs">5h</div>
+      <div class="cuts"><span class="badge sup">Day</span><span class="badge sup">P1</span></div>
+    </div>
+  </div>
+</body>
+</html>

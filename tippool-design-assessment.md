@@ -28,6 +28,8 @@ The React package is strongest as a **visual source of truth**. The static app s
 | `Badge` | Keep. Role/closer/bonus badges are low-risk visual improvements and help scanning. | Role badges, closer badges, support chips, and bonus pills are styled toward the React badge variants. |
 | `Button` | Keep the visual language, not the component runtime. Uppercase mono, dashed add buttons, danger buttons, and tactile press states work well. | Header/menu/default/add/action buttons now use tokenized transitions and press transforms. |
 | `SegmentedControl` | Keep for secondary choices. It works well for shift mode, role selection, and cash mode. | Existing toggles were preserved and polished with stable borders and React-style active/press states. |
+| `DayPoolCashCard` | Add. Day shift needed its own visual source of truth for pool accordions, party windows, and support tip-out actions. | Day cash cards now use a reset accordion header, visible gold total, chevron affordance, cleaner window fields, and support action styling. |
+| `StaffInputRow` | Add. Staff entry is central enough to deserve a component reference separate from payout `PersonCard`. | Staff rows now get role-aware accents, clearer time wells, stronger closer badges, and tabular hours. |
 
 ### React runtime recommendation
 
@@ -41,6 +43,8 @@ Do **not** migrate this app to React just to get the visuals. The current app is
 - Kept the redesigned net-total helper as an alternate mode.
 - Restored the visible cash header/total from the old page so bill counting has a clear page anchor.
 - Added React-inspired visual polish across the static CSS: type-scale aliases, tabular money numerals, tactile button/card press states, tokenized motion, menu/sheet shadows, and closer/bonus badge alignment.
+- Added React references and preview cards for day-shift cash (`DayPoolCashCard`) and staff input (`StaffInputRow`) inside the redesign folder.
+- Cleaned up static day-shift cash cards and staff input rows to match those new redesign references.
 
 ## Suggested next passes
 

@@ -5,3 +5,5 @@ export { DenomRow } from './components/money/DenomRow.jsx';
 export { MoneyValue } from './components/money/MoneyValue.jsx';
 export { StatCard } from './components/money/StatCard.jsx';
 export { PersonCard } from './components/people/PersonCard.jsx';
+export { StaffInputRow } from './components/people/StaffInputRow.jsx';
+export { DayPoolCashCard } from './components/shifts/DayPoolCashCard.jsx';
