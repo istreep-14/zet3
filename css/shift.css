@@ -12,7 +12,7 @@
 .shift-btn {
   flex: 1;
   background: none;
-  border: none;
+  border: 1px solid transparent;
   color: var(--muted);
   padding: 9px 6px;
   border-radius: 7px;
@@ -22,11 +22,11 @@
   letter-spacing: .8px;
   text-transform: uppercase;
   font-family: var(--font-mono);
-  transition: all .15s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 .shift-btn svg {
@@ -44,6 +44,7 @@
 
 .shift-btn.active.night-btn { color: var(--blue2); border-color: var(--blue2); }
 .shift-btn.active.day-btn   { color: var(--gold);  border-color: var(--gold-dim); }
+.shift-btn:active           { transform: scale(.97); }
 
 /* ── Day shift cash panels ───────────────────────────────────────────────────── */
 .dp-pool-card {
@@ -162,6 +163,7 @@
   color: var(--gold);
   font-family: var(--font-mono);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .dp-pool-total.zero { color: var(--muted2); }
@@ -178,7 +180,7 @@
 .dp-cmt-btn {
   flex: 1;
   background: none;
-  border: none;
+  border: 1px solid transparent;
   color: var(--muted);
   padding: 6px 4px;
   border-radius: 6px;
@@ -188,7 +190,7 @@
   letter-spacing: .5px;
   text-transform: uppercase;
   font-family: var(--font-mono);
-  transition: all .15s;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 .dp-cmt-btn.active {
@@ -196,6 +198,8 @@
   color: var(--text);
   border: 1px solid var(--border2);
 }
+
+.dp-cmt-btn:active { transform: scale(.97); }
 
 /* Per-bill rows inside pool card */
 .dp-denom-row {
@@ -232,6 +236,7 @@
   outline: none;
   font-family: var(--font-mono);
   min-width: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .dp-denom-input::placeholder { color: var(--muted2); font-size: .82rem; font-weight: 400; }
@@ -247,6 +252,7 @@
   color: var(--text2);
   border-left: 1px solid var(--border);
   background: var(--surface2);
+  font-variant-numeric: tabular-nums;
 }
 
 .dp-subtotal.zero { color: var(--muted2); }
@@ -278,6 +284,7 @@
   outline: none;
   font-family: var(--font-mono);
   min-width: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .dp-net-input::placeholder { color: var(--muted2); font-size: 1rem; font-weight: 400; }
@@ -295,10 +302,10 @@
   font-size: .76rem;
   cursor: pointer;
   font-family: var(--font-mono);
-  transition: all .15s;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
-.dp-add-party-btn:active { border-color: var(--gold-dim); color: var(--gold); }
+.dp-add-party-btn:active { border-color: var(--gold-dim); color: var(--gold); transform: scale(.99); }
 
 /* ── Day shift staff sections ─────────────────────────────────────────────────── */
 .staff-section-hdr {

@@ -4,9 +4,9 @@
   width: calc(100% - 16px);
   margin: 6px 8px 8px;
   background: none;
-  border: 1px dashed #3a2850;
+  border: 1px dashed var(--role-support-border);
   border-radius: var(--radius-sm);
-  color: #9d7dca;
+  color: var(--role-support);
   font-family: var(--font-mono);
   font-size: .6rem;
   font-weight: 700;
@@ -14,12 +14,13 @@
   text-transform: uppercase;
   padding: 7px 10px;
   cursor: pointer;
-  transition: all .15s;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 .dp-support-btn:active {
-  background: #1a0d2e;
-  border-color: #9d7dca;
+  background: var(--role-support-bg);
+  border-color: var(--role-support);
+  transform: scale(.99);
 }
 
 /* ── Support tip-out modal body ───────────────────────────────────────────────── */
@@ -115,6 +116,7 @@
   text-align: center;
   width: 100%;
   box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
 }
 
 .stom-input:focus { border-color: #3a2850; background: var(--surface3); }
@@ -155,6 +157,7 @@
   font-weight: 800;
   color: var(--text2);
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .stom-total-val.stom-adj { color: var(--gold); }

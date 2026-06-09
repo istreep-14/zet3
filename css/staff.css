@@ -110,12 +110,14 @@
   letter-spacing: .8px;
   text-transform: uppercase;
   font-family: var(--font-mono);
-  transition: background .15s, border-color .15s, color .15s;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 .role-btn.active {
   background: var(--surface3);
 }
+
+.role-btn:active { transform: scale(.97); }
 
 /* ── Role view header ────────────────────────────────────────────────────────── */
 .role-view-hdr {
@@ -318,10 +320,15 @@
   letter-spacing: .5px;
   text-transform: uppercase;
   font-family: var(--font-mono);
-  transition: all .15s;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), background var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
-.defaults-open-btn:active { border-color: var(--blue); color: var(--blue); }
+.defaults-open-btn:active {
+  background: var(--surface3);
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: scale(.97);
+}
 .defaults-open-btn svg { width: 12px; height: 12px; stroke: currentColor; }
 
 .staff-list-modal { display: flex; flex-direction: column; gap: 8px; }
@@ -338,7 +345,7 @@
   align-items: center;
   padding: 6px;
   position: relative;
-  transition: border-color .15s, background .15s;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 
 .staff-row-modal:focus-within { border-color: var(--border2); }
@@ -396,7 +403,7 @@
   align-items: center;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: var(--input-bg);
+  background: var(--surface-input);
   min-height: 38px;
 }
 
@@ -423,7 +430,8 @@
   font-weight: 800;
   outline: none;
   font-family: var(--font-mono);
-  transition: color .15s;
+  transition: color var(--dur) var(--ease);
+  font-variant-numeric: tabular-nums;
 }
 
 .sri-time-field input::placeholder { color: var(--border2); font-size: .7rem; font-weight: 400; }
@@ -442,6 +450,7 @@
   border-radius: var(--radius-sm);
   background: var(--surface2);
   min-height: 38px;
+  font-variant-numeric: tabular-nums;
 }
 
 .sri-hrs.filled       { color: var(--gold2); }
@@ -462,11 +471,12 @@
   justify-content: center;
   flex-direction: column;
   gap: 0;
-  transition: all .15s;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 .sri-closer .sc-lbl { font-size: .36rem; letter-spacing: .3px; text-transform: uppercase; }
 .sri-closer.on      { color: var(--accent); background: #1a0608; }
+.sri-closer:active  { transform: scale(.97); }
 
 .sri-del {
   align-items: center;
@@ -487,12 +497,12 @@
   right: 10px;
   text-transform: uppercase;
   top: 10px;
-  transition: color .15s;
+  transition: color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
   z-index: 2;
 }
 
 .staff-row-modal.swiped .sri-del { display: flex; }
-.sri-del:active { color: var(--accent); }
+.sri-del:active { color: var(--accent); transform: scale(.97); }
 
 .add-btn {
   width: 100%;
@@ -509,14 +519,18 @@
   z-index: 4;
   backdrop-filter: blur(6px);
   background: rgba(19, 19, 30, .94);
-  transition: all .15s;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
   font-family: var(--font-mono);
   font-weight: 800;
   letter-spacing: .6px;
   text-transform: uppercase;
 }
 
-.add-btn:active { border-color: var(--green); color: var(--green); }
+.add-btn:active {
+  border-color: var(--green);
+  color: var(--green);
+  transform: scale(.99);
+}
 
 @media (max-width: 390px) {
   .role-defaults-title {

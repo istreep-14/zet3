@@ -10,7 +10,7 @@
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity .22s;
+  transition: opacity .22s var(--ease);
 }
 
 .modal-overlay.open {
@@ -21,7 +21,7 @@
 .modal-sheet {
   background: var(--surface);
   border-top: 1px solid var(--border2);
-  border-radius: 20px 20px 0 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   width: 100%;
   max-width: var(--app-max-w);
   /* Sits above the tab bar; keyboard-open adds extra room automatically
@@ -30,7 +30,8 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   transform: translateY(100%);
-  transition: transform .28s cubic-bezier(.32,1,.42,1);
+  transition: transform var(--dur-sheet) var(--ease-sheet);
+  box-shadow: var(--shadow-sheet);
   /* Push above fixed tab bar */
   padding-bottom: calc(var(--tab-h) + var(--safe-bottom));
 }
@@ -82,9 +83,16 @@ body.keyboard-open .modal-sheet {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all .15s;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), background var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
-.modal-close:hover { border-color: var(--accent); color: var(--accent); }
+.modal-close:hover,
+.modal-close:active {
+  background: var(--surface3);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.modal-close:active { transform: scale(.97); }
 
 .modal-body { padding: 14px 16px; }
