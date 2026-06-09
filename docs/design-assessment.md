@@ -1,6 +1,6 @@
 # TipPool Design System Assessment
 
-Source reviewed: `tippool-design-system/` extracted from `TipPool Design System (3).zip`.
+Source reviewed: `design-system/` extracted from `TipPool Design System (3).zip`.
 
 ## What to keep
 

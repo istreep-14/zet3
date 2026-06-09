@@ -5,7 +5,7 @@ const vm = require('vm');
 
 const ctx = { console };
 vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(path.join(__dirname, 'utils.js'), 'utf8'), ctx);
+vm.runInContext(fs.readFileSync(path.join(__dirname, '../utils.js'), 'utf8'), ctx);
 
 assert.deepStrictEqual(ctx.parseWholeNumberString('').value, 0);
 assert.strictEqual(ctx.parseWholeNumberString('12').valid, true);
