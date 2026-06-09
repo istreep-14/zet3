@@ -11,18 +11,18 @@
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  font-size: .68rem;
+  font-size: .76rem;
 }
 
-.dist-name-col  { width: 38%; }
-.dist-bill-col  { width: 7%; }
+.dist-name-col  { width: 32%; }
+.dist-bill-col  { width: 8%; }
 .dist-total-col { width: 20%; }
 
 .dist-tbl th {
-  padding: 7px 2px;
+  padding: 7px 3px;
   background: var(--surface2);
   color: var(--muted);
-  font-size: .48rem;
+  font-size: .52rem;
   letter-spacing: .9px;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border);
@@ -30,19 +30,29 @@
   text-align: center;
 }
 
-.dist-tbl th:first-child { text-align: left; padding-left: 12px; }
+.dist-tbl th:first-child {
+  text-align: left;
+  padding-left: 10px;
+  border-right: 1px solid rgba(46, 46, 72, .72);
+}
 
 .dist-tbl td {
-  padding: 7px 2px;
-  border-bottom: 1px solid #15151f;
+  padding: 8px 3px;
+  border-bottom: 1px solid rgba(46, 46, 72, .45);
   text-align: center;
   font-family: var(--font-mono);
   color: var(--text2);
 }
 
+.dist-tbl tbody tr:nth-child(even):not(.dist-rem-row) td {
+  background: rgba(255, 255, 255, .018);
+}
+
 .dist-tbl td:first-child {
   text-align: left;
-  padding-left: 8px;
+  padding-left: 9px;
+  padding-right: 6px;
+  border-right: 1px solid rgba(46, 46, 72, .72);
   color: var(--text);
   font-weight: 600;
   font-family: var(--font-sans);
@@ -55,7 +65,7 @@
 .dist-tbl td.has-bills     { color: var(--gold); font-weight: 700; }
 .dist-tbl td.zero          { color: var(--border2); }
 
-.dist-tbl-denom { font-size: .56rem; color: var(--gold); font-weight: 700; font-family: var(--font-mono); }
+.dist-tbl-denom { font-size: .6rem; color: var(--gold); font-weight: 700; font-family: var(--font-mono); }
 
 .dist-totals-row td {
   border-top: 1px solid var(--border2);
@@ -66,7 +76,7 @@
 
 .dist-totals-row td:first-child {
   color: var(--muted);
-  font-size: .62rem;
+  font-size: .68rem;
   letter-spacing: 1px;
   text-transform: uppercase;
 }
