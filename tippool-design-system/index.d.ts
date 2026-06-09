@@ -22,3 +22,12 @@ export type { StatCardProps } from './components/money/StatCard.jsx';
 
 export { PersonCard } from './components/people/PersonCard.jsx';
 export type { PersonCardProps } from './components/people/PersonCard.jsx';
+
+export { StaffInputRow } from './components/people/StaffInputRow.jsx';
+export type {
+  StaffInputRole,
+  StaffInputRowProps,
+} from './components/people/StaffInputRow.jsx';
+
+export { DayPoolCashCard } from './components/shifts/DayPoolCashCard.jsx';
+export type { DayPoolCashCardProps } from './components/shifts/DayPoolCashCard.jsx';

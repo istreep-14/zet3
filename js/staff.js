@@ -205,7 +205,7 @@ function addStaff(focusNew, listId) {
   }
 
   const div = document.createElement('div');
-  div.className = 'staff-row-modal' + (isSupport ? ' sup-row' : '');
+  div.className = 'staff-row-modal staff-row-modal--' + role + (isSupport ? ' sup-row' : '');
   div.id = 'staff' + id;
 
   if (isSupport) {

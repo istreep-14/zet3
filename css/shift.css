@@ -50,22 +50,54 @@
 .dp-pool-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   margin-bottom: 10px;
   overflow: hidden;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.dp-pool-card--open {
+  border-color: var(--border2);
 }
 
 .dp-pool-card-hdr {
+  width: 100%;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   padding: 10px 12px 8px;
-  border-bottom: 1px solid var(--border);
+  border: 0;
+  border-bottom: 1px solid transparent;
   background: var(--surface2);
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
   gap: 8px;
+  text-align: left;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
 
+.dp-pool-card--open .dp-pool-card-hdr { border-bottom-color: var(--border); }
+.dp-pool-card-hdr:active { background: var(--surface3); }
+
 .dp-pool-card-left { flex: 1; min-width: 0; }
+
+.dp-pool-hdr-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.dp-pool-chevron {
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1;
+  transition: transform var(--dur) var(--ease);
+}
+
+.dp-pool-chevron::before { content: '›'; }
+.dp-pool-card--open .dp-pool-chevron { transform: rotate(90deg); }
 
 .dp-pool-card-name {
   font-size: .64rem;
@@ -89,7 +121,8 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 4px;
+  margin: 0;
+  padding: 8px 8px 0;
 }
 
 .dp-window-field {
@@ -125,6 +158,7 @@
   text-align: center;
   min-width: 0;
   width: 40px;
+  font-variant-numeric: tabular-nums;
 }
 
 .dp-window-input::placeholder { color: var(--muted2); font-weight: 400; }
@@ -137,18 +171,22 @@
 }
 
 .dp-remove-party-btn {
-  background: none;
-  border: none;
+  background: transparent;
+  border: 1px solid transparent;
   color: var(--muted);
   cursor: pointer;
   font-size: .72rem;
   padding: 4px 6px;
   border-radius: 4px;
   flex-shrink: 0;
-  transition: color .15s;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
-.dp-remove-party-btn:active { color: var(--accent); }
+.dp-remove-party-btn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(.97);
+}
 
 .dp-pool-total-wrap {
   display: flex;
@@ -205,7 +243,7 @@
 .dp-denom-row {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #15151f;
+  border-bottom: 1px solid var(--border);
   overflow: hidden;
 }
 
@@ -300,6 +338,9 @@
   border-radius: var(--radius-sm);
   padding: 10px;
   font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .6px;
+  text-transform: uppercase;
   cursor: pointer;
   font-family: var(--font-mono);
   transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
