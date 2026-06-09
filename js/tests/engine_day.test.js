@@ -7,11 +7,11 @@ const ctx = { console };
 vm.createContext(ctx);
 vm.runInContext(
   'const DENOMS=[100,50,20,10,5,1];\n'
-    + fs.readFileSync(path.join(__dirname, 'utils.js'), 'utf8')
+    + fs.readFileSync(path.join(__dirname, '../utils.js'), 'utf8')
     + '\n'
-    + fs.readFileSync(path.join(__dirname, 'engine.js'), 'utf8')
+    + fs.readFileSync(path.join(__dirname, '../engine.js'), 'utf8')
     + '\n'
-    + fs.readFileSync(path.join(__dirname, 'engine_day.js'), 'utf8'),
+    + fs.readFileSync(path.join(__dirname, '../engine_day.js'), 'utf8'),
   ctx
 );
 

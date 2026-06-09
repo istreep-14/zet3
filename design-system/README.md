@@ -1,18 +1,10 @@
 # TipPool Design System
 
-This folder contains the extracted TipPool design-system package.
+This folder contains the TipPool React component library and visual-language documentation.
 
-## Static app reference
+## Relationship to the app
 
-The production app in the repository root is framework-free and already matches the files under `reference/`:
-
-- `reference/index.html`
-- `reference/css/*.css`
-- `reference/manifest.json`
-- `assets/brand/icon-192.png`
-- `assets/brand/icon-512.png`
-
-Use those files as the source of truth when checking whether the live static app has drifted from the design.
+The production app in the repository root is framework-free and does not import this package at runtime. Treat this directory as a design artifact: React components document the intended visual language, and `_ds_bundle.js` powers the static preview cards in `guidelines/` and `components/`.
 
 ## React component source
 
@@ -29,7 +21,7 @@ import {
   SegmentedControl,
   StaffInputRow,
   StatCard,
-} from './tippool-design-system/index.js';
+} from './design-system/index.js';
 ```
 
 The aggregate `index.js` and `index.d.ts` files intentionally mirror `_adherence.oxlintrc.json`, which warns against importing component internals directly.
@@ -39,7 +31,7 @@ The aggregate `index.js` and `index.d.ts` files intentionally mirror `_adherence
 Link `styles.css` once to load fonts and tokens:
 
 ```css
-@import url('./tippool-design-system/styles.css');
+@import url('./design-system/styles.css');
 ```
 
 Token files keep the original static-app variable names (`--surface2`, `--gold2`, `--muted2`) and expose canonical aliases (`--surface-2`, `--gold-2`, `--muted-2`) so both the reference app and exported components can share the same palette.

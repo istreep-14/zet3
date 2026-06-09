@@ -1,6 +1,6 @@
 # TipPool — Project Overview & Improvement Guide
 
-This file summarizes every file in the app, what it does (in both technical and plain-language terms), and concrete ways to simplify, improve, and restructure it. It builds on `tippool-audit.md`, which documents the current state in detail — read that for the full function-by-function inventory.
+This file summarizes every file in the app, what it does (in both technical and plain-language terms), and concrete ways to simplify, improve, and restructure it. It builds on `audit.md`, which documents the current state in detail — read that for the full function-by-function inventory.
 
 ---
 
@@ -22,7 +22,6 @@ It supports two modes — a **night shift** (one shared cash pool, bartenders + 
 - **`index.html`** — The single page: tabs for Home, Cash, Staff, Summary, Distribution; modals for person details and session import/export.
   - *Technical:* Static DOM scaffold that JS wires up at runtime; no templating engine.
   - *Plain:* The actual screen layout — every button, input box, and panel users see and tap.
-- **`old/v1_index.html`** — Earlier version of the page, kept for reference/history.
 - **`package.json`** — Defines the `npm test` script that runs the three `*.test.js` files with plain Node (no test framework/bundler).
 
 ### Core logic (pure, no DOM) — the "math" layer
@@ -31,7 +30,7 @@ It supports two modes — a **night shift** (one shared cash pool, bartenders + 
   - *Plain:* The "brain" that decides who gets which bills out of the drawer.
 - **`js/engine_day.js`** — Same idea but for day shift: computes overlapping work windows across multiple pools and splits each pool's cash by hours worked in that window.
 - **`js/utils.js`** — Small pure helper functions: parsing numbers/times, formatting hours/clock times, escaping HTML, computing a pool's dollar value.
-- **`js/engine.test.js`, `js/engine_day.test.js`, `js/utils.test.js`** — Hand-written Node test scripts (no framework) that assert the above logic produces correct results.
+- **`js/tests/engine.test.js`, `js/tests/engine_day.test.js`, `js/tests/utils.test.js`** — Hand-written Node test scripts (no framework) that assert the above logic produces correct results.
 
 ### State
 - **`js/state.js`** — Declares ~25 global variables (e.g. `lastStaff`, `livePool`, `cashMode`, `dayPools`) that every other file reads and writes directly, with no encapsulation.

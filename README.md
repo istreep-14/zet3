@@ -93,6 +93,8 @@ State is saved under the key `tippool_v1` and validated on load — malformed or
 
 ```
 index.html          Entry point — markup, tab panels, modals, script load order
+manifest.json       PWA manifest for the static app
+package.json        Test script metadata
 
 css/
   variables.css     Design tokens: colors, radii, spacing, font families
@@ -114,20 +116,34 @@ js/
   persist.js        localStorage save/load, JSON export/import, session clear
   utils.js          Pure helpers: number/time parsing, HTML escaping, formatting
   engine.js         Distribution algorithm — pure functions, zero DOM access
+  engine_day.js     Day-shift calculation engine
   modals.js         Modal open/close helpers
   tabs.js           Tab switching, content scroll reset, tab indicator updates
   cash.js           Cash input handling, net-total ideal breakdown, mode switching
+  cash_day.js       Day-shift cash-pool input handling
   staff.js          Staff row add/remove/edit, hours display, tab-order management
+  shift.js          Night/day mode switching
   cards.js          Home mini-cards and live dashboard rendering
   summary.js        Summary tab HTML generation
+  summary_day.js    Day-shift summary and distribution rendering
   dist.js           Distribution table HTML generation
+  remainder.js      Remainder and drawer-leftover rendering
   person.js         Person profile modal content and inline edit callback
+  support.js        Support-role controls
   calculator.js     Calculation orchestration: collect inputs → engine → render
   main.js           Bootstrap: restore state, wire visualViewport, initial render
 
-js/
+js/tests/
   engine.test.js    Distribution engine tests (Node.js)
+  engine_day.test.js Day-shift engine tests (Node.js)
   utils.test.js     Utility parsing tests (Node.js)
+
+docs/
+  audit.md          Full codebase audit
+  overview.md       Project overview and improvement guide
+  design-assessment.md Design-system assessment notes
+
+design-system/      Separate React design artifact and preview cards
 ```
 
 Script load order in `index.html` matters: `state.js` first (globals), `main.js` last (bootstrap).
@@ -137,11 +153,10 @@ Script load order in `index.html` matters: `state.js` first (globals), `main.js`
 ## Running tests
 
 ```bash
-node js/engine.test.js
-node js/utils.test.js
+npm test
 ```
 
-Both test files use Node's built-in `assert` and `vm` modules — no test runner required. `engine.test.js` loads `utils.js` and `engine.js` into an isolated VM context and runs six distribution scenarios covering bill proportionality, small-bill spread, and edge cases with unusual denominations.
+The test files use Node's built-in `assert` and `vm` modules — no test runner required. `engine.test.js` loads `utils.js` and `engine.js` into an isolated VM context and runs distribution scenarios covering bill proportionality, small-bill spread, and edge cases with unusual denominations.
 
 ---
 
