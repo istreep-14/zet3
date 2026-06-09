@@ -173,7 +173,7 @@ if (_saved) {
     addStaff(false, 'serverList');
     renderDayPoolCashPanels();
   } else {
-    setCashMode('nettotal');
+    setCashMode('perbill');
   }
 }
 
