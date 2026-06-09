@@ -31,6 +31,8 @@ function snapshotCurrentCashMode() {
 }
 
 function refreshCashTotals(total) {
+  const ptop = $('cash-page-total');
+  if (ptop) { ptop.textContent = '$' + total; ptop.className = 'cash-page-total' + (total ? '' : ' zero'); }
   const pbot = $('cash-total-bottom');
   if (pbot) { pbot.textContent = '$' + total; pbot.className = 'cash-total-val' + (total ? '' : ' zero'); }
 }

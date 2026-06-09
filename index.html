@@ -95,19 +95,19 @@
       <div class="cash-page">
         <div class="input-message" id="cash-error"></div>
 
-        <!-- Net total (default, shown first) -->
-        <div id="cash-net-total">
-          <div class="net-input-row">
-            <span class="net-dollar-sign">$</span>
-            <input type="number" id="net-total-input" class="net-total-input" min="0" step="1" placeholder="0" inputmode="numeric" oninput="onNetTotalChange()">
+        <!-- Per-bill stays first: it keeps the original count-the-drawer workflow. -->
+        <div id="cash-per-bill">
+          <div class="cash-page-hdr">
+            <div class="cash-page-hdr-left">
+              <div class="cash-page-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2"/><circle cx="12" cy="14" r="2"/><path d="M6 14h.01M18 14h.01"/>
+                </svg>
+              </div>
+              <div class="cash-page-title">Cash on Hand</div>
+            </div>
+            <div class="cash-page-total zero" id="cash-page-total">$0</div>
           </div>
-          <div class="net-breakdown" id="net-breakdown">
-            <div class="net-empty-hint">Enter total above to see ideal bill breakdown</div>
-          </div>
-        </div>
-
-        <!-- Per-bill (hidden by default — revealed via toggle) -->
-        <div id="cash-per-bill" style="display:none">
           <div class="cash-denom-list">
             <div class="cash-denom-row"><div class="cash-denom-label">$100</div><input class="cash-denom-input" id="b100" type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="10" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub100">—</div></div>
             <div class="cash-denom-row"><div class="cash-denom-label">$50</div> <input class="cash-denom-input" id="b50"  type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="11" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub50">—</div></div>
@@ -122,14 +122,22 @@
           </div>
         </div>
 
-        <!-- Mode toggle at bottom (secondary) -->
-        <div class="cash-mode-toggle cash-mode-toggle--bottom">
-          <button class="cmt-btn" id="cmb-nettotal" onclick="onCashModeButtonClick('nettotal')">Net Total</button>
-          <button class="cmt-btn" id="cmb-perbill"  onclick="onCashModeButtonClick('perbill')">Bill Counts</button>
+        <!-- Net total remains available as a redesigned shortcut, not the default. -->
+        <div id="cash-net-total" style="display:none">
+          <div class="net-input-row">
+            <span class="net-dollar-sign">$</span>
+            <input type="number" id="net-total-input" class="net-total-input" min="0" step="1" placeholder="0" inputmode="numeric" oninput="onNetTotalChange()">
+          </div>
+          <div class="net-breakdown" id="net-breakdown">
+            <div class="net-empty-hint">Enter total above to see ideal bill breakdown</div>
+          </div>
         </div>
 
-        <!-- Hidden compat span -->
-        <span id="cash-page-total" style="display:none">$0</span>
+        <!-- Mode toggle at bottom (secondary) -->
+        <div class="cash-mode-toggle cash-mode-toggle--bottom">
+          <button class="cmt-btn active" id="cmb-perbill"  onclick="onCashModeButtonClick('perbill')">Bill Counts</button>
+          <button class="cmt-btn" id="cmb-nettotal" onclick="onCashModeButtonClick('nettotal')">Net Total</button>
+        </div>
       </div>
     </div>
 
