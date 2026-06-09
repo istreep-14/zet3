@@ -9,7 +9,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: border-color .15s, background .15s;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -23,13 +23,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,.025) 0%, transparent 60%);
+  background: var(--sheen);
   pointer-events: none;
 }
 
 .mini-card:active {
   background: var(--surface2);
   border-color: var(--border2);
+  transform: scale(.985);
 }
 
 .mini-card.cash  { flex: 1.4; }
@@ -51,6 +52,7 @@
   color: var(--gold);
   font-family: var(--font-mono);
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .mini-card.staff .mini-card-val { color: var(--text); }
@@ -84,6 +86,16 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-status-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--sheen);
+  pointer-events: none;
 }
 
 .home-status-card.ok { border-color: var(--green-border); }
@@ -96,6 +108,8 @@
   font-weight: 800;
   letter-spacing: 1.2px;
   text-transform: uppercase;
+  position: relative;
+  z-index: 1;
 }
 
 .home-status-title {
@@ -103,6 +117,8 @@
   font-size: 1.25rem;
   font-weight: 800;
   margin-top: 5px;
+  position: relative;
+  z-index: 1;
 }
 
 .home-status-sub {
@@ -110,6 +126,8 @@
   font-family: var(--font-mono);
   font-size: .68rem;
   margin-top: 4px;
+  position: relative;
+  z-index: 1;
 }
 
 .home-metric-grid {
@@ -144,6 +162,7 @@
   margin-top: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
 }
 
 .home-action-grid {
@@ -153,20 +172,24 @@
 }
 
 .home-action-grid button {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
   color: var(--text);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono);
   padding: 11px 12px;
   text-align: left;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 .home-action-grid button:active {
-  background: var(--surface2);
-  border-color: var(--border2);
+  background: var(--surface3);
+  border-color: var(--accent);
+  transform: scale(.98);
 }
 
 .home-action-grid span {
@@ -179,4 +202,5 @@
   font-family: var(--font-mono);
   font-size: .62rem;
   font-style: normal;
+  font-variant-numeric: tabular-nums;
 }
