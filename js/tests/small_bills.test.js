@@ -27,7 +27,7 @@ vm.runInContext(
 }
 
 {
-  const req = ctx.getSmallBillRequirementsForAmounts([390, 445, 445], {
+  const req = ctx.getSmallBillRequirementsForAmounts([390, 450, 550], {
     100: 0, 50: 2, 20: 0, 10: 0, 5: 0, 1: 1
   });
   assert.strictEqual(req.fiftyCoverage, 2);
