@@ -22,6 +22,14 @@ python3 -m http.server
 
 No build step, no npm install, no bundler. Everything loads as plain `<script>` tags and CSS `<link>` tags in order.
 
+The React/Vite rebuild work is currently parked as an incremental migration prototype at `prototype.html`.
+The default app remains the legacy static app until individual migrated pieces are proven and moved over one by one.
+
+```bash
+npm run dev
+# opens /prototype.html for prototype work
+```
+
 ---
 
 ## Features

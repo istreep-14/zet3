@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { calculateSession, createDefaultSession } from '../domain/session';
+import { distributeTargets } from '../domain/distribution';
 import { getSmallBillRequirements, parsedKeepTargets, smallBillStatus } from '../domain/smallBills';
-import { blankBills } from '../domain/money';
+import { blankBills, poolValue } from '../domain/money';
 import { parseTimeInput } from '../domain/time';
 
 describe('time parsing', () => {
@@ -55,5 +56,36 @@ describe('night shift session calculation', () => {
     expect(result.staff.find((person) => person.name === 'Sam')?.isCloser).toBe(true);
     expect(result.rawRemainder).toBeGreaterThanOrEqual(result.chump);
     expect(result.chump).toBe(0);
+  });
+});
+
+describe('bill chart distribution', () => {
+  it('allocates every target exactly in a representative high-cash pool', () => {
+    const targets = [439, 487, 475, 390, 488].map((target, index) => ({
+      id: String(index),
+      name: `Person ${index + 1}`,
+      target,
+    }));
+    const result = distributeTargets(targets, { 100: 8, 50: 4, 20: 62, 10: 1, 5: 4, 1: 11 });
+
+    expect(result.ok).toBe(true);
+    expect(result.slots).toHaveLength(targets.length);
+    result.slots.forEach((slot) => {
+      expect(poolValue(slot.bills)).toBe(slot.target);
+    });
+  });
+
+  it('keeps Chump as a pseudo-person in the bill chart', () => {
+    const result = distributeTargets(
+      [
+        { id: 'a', name: 'Alex', target: 9 },
+        { id: 'chump', name: 'Chump', target: 1, isChump: true },
+      ],
+      { ...blankBills(), 5: 1, 1: 5 },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.slots.find((slot) => slot.id === 'chump')?.isChump).toBe(true);
+    expect(poolValue(result.slots.find((slot) => slot.id === 'chump')!.bills)).toBe(1);
   });
 });

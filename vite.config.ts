@@ -11,6 +11,9 @@ export default defineConfig({
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
   },
   build: {
+    rollupOptions: {
+      input: 'prototype.html',
+    },
     sourcemap: true,
   },
 });
