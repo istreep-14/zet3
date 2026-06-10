@@ -2,6 +2,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/prototype.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
