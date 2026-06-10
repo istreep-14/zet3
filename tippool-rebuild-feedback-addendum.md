@@ -58,11 +58,17 @@ Best practical options to evaluate:
 Initial recommendation:
 
 - Use Vite + React.
-- Deploy first to Netlify or Vercel for simplest mobile URL testing.
+- Deploy first to **Vercel** for simplest mobile URL testing.
 - Add PWA manifest and service worker.
 - Test on the actual iPhone early.
 - Avoid `file://` entirely to prevent mobile CORS/loading issues.
 - Keep all assets same-origin or bundled to avoid offline and CORS surprises.
+
+Decision from follow-up:
+
+- Use Vercel as the first deployment target.
+- Offline support can start with app-shell caching plus localStorage persistence.
+- Full guaranteed offline caching for every font/asset is nice, but not a first-pass blocker.
 
 ### 1.3 Day shift scope
 
@@ -225,7 +231,7 @@ Recommended behavior:
 - Store time internally in a clean numeric format, probably integer quarter-hour units from a shift-day anchor.
 - Avoid repeatedly doing math on display strings.
 - Validate against 15-minute increments.
-- If a user types a non-15-minute value, either reject it or warn and offer nearest 15-minute rounding.
+- If a user types a non-15-minute value, treat it as invalid input for MVP. Do not build a separate warning or nearest-rounding flow first.
 
 ### 4.2 Input style
 
@@ -309,7 +315,8 @@ Decisions:
 Decision:
 
 - New typed names should auto-save to roster.
-- If auto-save could surprise users, show a lightweight notice or undo.
+- For MVP, keep this simple: remember names automatically and do not attach remembered start-time assumptions to those names.
+- If auto-save could surprise users, show a lightweight notice or undo later.
 
 ### 5.3 Crew selection
 
@@ -323,7 +330,16 @@ This does not have to be perfect in MVP, but the plan should leave room for it.
 
 ### 5.4 Start-time templates
 
-Do not overfit per-person defaults first. The most useful starting point is day-of-week crew/start templates that create editable placeholders.
+Updated MVP decision:
+
+- Do not implement start-time template logic in the first rebuild.
+- Remembering names is useful now; remembering or generating start times is less likely to be reliable enough yet.
+- Keep all start times user-entered or placeholder-driven for MVP.
+
+Later idea:
+
+- Day-of-week crew/start templates may become useful after the core UI is stable.
+- If added, they should create editable placeholders, not rigid schedules.
 
 Base template knowledge:
 
@@ -958,7 +974,7 @@ Why:
 The revised MVP should be:
 
 1. React/Vite static PWA shell.
-2. Free URL deployment target.
+2. Vercel free URL deployment target.
 3. iPhone home-screen support.
 4. Offline app-shell caching.
 5. Night-shift only active UI.
@@ -973,6 +989,8 @@ The revised MVP should be:
 14. Distribution table available as "Bill chart" or "Full distribution table."
 15. LocalStorage persistence using a fresh schema.
 16. Export/import as failsafe.
+17. Literal `Chump` label in the UI as a test.
+18. Simple 15-minute time validation without a separate warning/rounding flow.
 
 Backburner:
 
@@ -987,27 +1005,55 @@ Backburner:
 
 ## 13. Remaining Questions to Discuss Next
 
-These are now the most important open questions.
+These were the most important open questions. Follow-up answers are now captured inline.
 
 1. Do you want the next implementation branch to start a React/Vite app immediately, or first make a smaller static prototype of the new layout?
 
+   - Current answer: unsure, but the fastest path to the real app is preferred.
+   - Working decision: start the actual React/Vite static-PWA rebuild rather than making a separate throwaway prototype.
+
 2. Which free deploy target do you prefer to try first: Vercel, Netlify, or GitHub Pages?
+
+   - Answer: Vercel.
 
 3. For iPhone offline support, is "loads the app shell offline and keeps last localStorage data" enough, or do you need every asset and font guaranteed offline too?
 
+   - Answer: app-shell offline plus localStorage data is fine for first pass.
+
 4. Should time values that are not 15-minute increments be blocked, rounded, or allowed with a warning?
+
+   - Answer: no separate warning/rounding UX.
+   - Working decision: simple validation for 15-minute increments. Invalid values should be treated as invalid input; do not build a complex warning or auto-rounding flow first.
 
 5. For Chump, should the UI literally label it `Chump`, or should that be configurable text later?
 
+   - Answer: literal `Chump` as a test.
+
 6. Should the MVP roster auto-save every typed name silently, or show "Saved to roster" with undo?
+
+   - Answer: yes to auto-save direction.
+   - Working decision: remember typed names automatically; avoid start-time logic for names in MVP.
 
 7. Should start templates create blank name rows with start-time placeholders, or only suggest start chips after names are selected?
 
+   - Updated answer: for now, no start-time template logic.
+   - Reason: remembered names are likely useful; remembered start times are not likely useful yet.
+   - Working decision: roster remembers names only in MVP. Start-time templates stay out of the first implementation.
+
 8. Should the small-bill display always show cumulative coverage rows, or hide them behind a detail toggle unless there is a shortage/range?
+
+   - Clarification of question: this asks whether the main screen should always show the deeper math rows like `$1 value`, `$1+$5 value`, and `$1+$5+$10 value`, or whether the main screen should mostly show the simple parsed bill targets and only reveal cumulative rows when needed.
+   - Working recommendation: main visuals should show the simple bill language first. Show cumulative coverage more prominently when there is a shortage, range, or confusing substitution case.
 
 9. Should $50 substitution for $10 needs be shown directly in the row, such as `$10s / $50 coverage`, or only in the detail explanation?
 
+   - Answer: show the needed `$10s` as lower in the main visuals when $50s cover that need.
+   - Working decision: main visuals should reflect the reduced `$10` need. A distinct visual cue can show that `$50s` are helping cover the ten-tier requirement, with more detail available in the expanded/detail view.
+
 10. For the first React version, should the current engine be copied as-is into the new app, or imported from its existing location during transition?
+
+   - Answer: implementer's choice.
+   - Working decision: copy or move the current engine into the new `src/domain` or `src/engine` structure early, keep its behavior intact, and keep tests around it. Avoid a long-term import dependency on the old app layout.
 
 ## 14. One-Sentence Updated Product Target
 
