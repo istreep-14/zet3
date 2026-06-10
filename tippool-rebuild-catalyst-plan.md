@@ -3,6 +3,8 @@
 Source spec: `tippool-product-spec.md`  
 Companion context reviewed: `README.md`, `docs/overview.md`, `docs/design-assessment.md`, `docs/audit.md`, `index.html`, and the current `js/` and `css/` layout.
 
+Update note: read `tippool-rebuild-feedback-addendum.md` after this file. The addendum captures follow-up decisions about React/static-PWA direction, iPhone URL deployment, day-shift removal from the first rebuild, Chump terminology, blank out-time behavior, and cumulative small-bill minimum logic.
+
 ## 1. Executive Direction
 
 The next major TipPool rebuild should be a focused night-shift-first redesign, not a math rewrite. The current app already contains working distribution formulas, bill allocation logic, local persistence, import/export, and a useful summary renderer. The rebuild should preserve those proven parts while replacing the user-facing flow and project structure around them.
