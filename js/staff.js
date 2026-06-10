@@ -119,8 +119,9 @@ function _setRoleDefault(role, field, val) {
 
 function _refreshRolePlaceholders(role, field) {
   const listIds = _listIdsForRole(role);
-  const defaultVal = roleDefaults[role][field]
-    || (field === 'in' ? ($('gc-in')?.value.trim() || '') : ($('gc-out')?.value.trim() || ''));
+  const defaultVal = field === 'in'
+    ? (roleDefaults[role].in || $('gc-in')?.value.trim() || '')
+    : getEffectiveOutFallback(role);
 
   listIds.forEach(lid => {
     document.querySelectorAll('#' + lid + ' .staff-row-modal').forEach(r => {
@@ -128,6 +129,7 @@ function _refreshRolePlaceholders(role, field) {
       if (el && !el.value.trim()) {
         el.placeholder = defaultVal || (field === 'in' ? '—' : '—');
         el.classList.toggle('using-default', !!defaultVal);
+        el.classList.toggle('using-close-time', field === 'out' && !!defaultVal);
       }
     });
   });
@@ -157,7 +159,7 @@ function reindexTabOrder() {
     const n = rows.length;
     const role = getRoleForList(listId);
     const defIn  = roleDefaults[role]?.in  || $('gc-in')?.value.trim()  || '';
-    const defOut = roleDefaults[role]?.out || $('gc-out')?.value.trim() || '';
+    const defOut = getEffectiveOutFallback(role);
 
     rows.forEach((r, i) => {
       const nameEl = r.querySelector('[data-field="name"]');
@@ -355,8 +357,12 @@ function _updateStaffMeta(row, hoursText) {
   const ctEl = $('ct' + id);
   const outEl = row.querySelector('[data-field="out"]');
   const closer = (ctEl && ctEl.classList.contains('on')) || !outEl?.value.trim();
+  const usingCloseTime = !outEl?.value.trim();
   const safeHours = hoursText && hoursText !== '–' ? hoursText + ' hrs' : 'Add times to calculate hours';
-  meta.innerHTML = escapeHTML(safeHours) + (closer ? ' <span class="sri-meta-badge">closer</span>' : '');
+  const closeText = usingCloseTime ? ` <span class="sri-meta-badge sri-meta-badge--close">close ${escapeHTML(getEffectiveOutFallback(getRoleForList(_findListForId(id) || 'staffList')))}</span>` : '';
+  meta.innerHTML = escapeHTML(safeHours)
+    + (closer ? ' <span class="sri-meta-badge">closer</span>' : '')
+    + closeText;
 }
 
 function updateSectionCounts() {
@@ -463,7 +469,7 @@ function calcHours(id) {
   const role = getRoleForList(listId);
   const rDef = roleDefaults[role] || {};
   const defIn  = rDef.in  || $('gc-in')?.value.trim()  || '';
-  const defOut = rDef.out || $('gc-out')?.value.trim()  || '';
+  const defOut = getEffectiveOutFallback(role);
 
   const inRaw  = inEl?.value.trim()  || defIn;
   const outRaw = outEl?.value.trim() || defOut;
@@ -471,7 +477,11 @@ function calcHours(id) {
   const uDO = !outEl?.value.trim() && !!defOut;
 
   if (inEl)  { inEl.classList.toggle('using-default',  uDI); inEl.placeholder  = defIn  || '—'; }
-  if (outEl) { outEl.classList.toggle('using-default', uDO); outEl.placeholder = defOut || '—'; }
+  if (outEl) {
+    outEl.classList.toggle('using-default', uDO);
+    outEl.classList.toggle('using-close-time', uDO && !outEl.value.trim());
+    outEl.placeholder = defOut || '—';
+  }
 
   const inParsed  = parseTimeString(inRaw);
   const outParsed = parseTimeString(outRaw);

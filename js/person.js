@@ -31,10 +31,10 @@ function openPersonModal(rowId) {
         </div>
         <div class="profile-edit-row">
           <span class="profile-edit-lbl">In</span>
-          <input class="profile-time-input" id="pi-in-${rowId}" value="${person._autoCloser ? '' : escapeHTML(String(person.i))}" placeholder="${escapeHTML(String(person.i))}" inputmode="decimal" onchange="updatePersonFromModal('${escapeHTML(String(rowId))}')">
+          <input class="profile-time-input" id="pi-in-${rowId}" value="${escapeHTML(String(person.i))}" placeholder="${escapeHTML(String(person.i))}" inputmode="decimal" onchange="updatePersonFromModal('${escapeHTML(String(rowId))}')">
           <span class="profile-edit-sep">–</span>
           <span class="profile-edit-lbl">Out</span>
-          <input class="profile-time-input" id="pi-out-${rowId}" value="${person._autoCloser ? '' : escapeHTML(String(person.o))}" placeholder="${person._autoCloser ? 'closer' : escapeHTML(String(person.o))}" inputmode="decimal" onchange="updatePersonFromModal('${escapeHTML(String(rowId))}')">
+          <input class="profile-time-input" id="pi-out-${rowId}" value="${person._blankOutCloser ? '' : escapeHTML(String(person.o))}" placeholder="${person._blankOutCloser ? 'close ' + escapeHTML(String(person.o)) : escapeHTML(String(person.o))}" inputmode="decimal" onchange="updatePersonFromModal('${escapeHTML(String(rowId))}')">
         </div>
       </div>
       <div class="profile-section">

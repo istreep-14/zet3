@@ -111,7 +111,7 @@ function renderRemainderSidebar() {
   if (!body) return;
 
   if (shiftMode !== 'night' || !lastStaff || !lastStaff.length || !lastTotal) {
-    body.innerHTML = '<div class="rem-empty">Enter night-shift cash and staff to see remainder allocation.</div>';
+    body.innerHTML = '<div class="rem-empty">Enter night-shift cash and staff to see closer bonus / Chump allocation.</div>';
     return;
   }
 
@@ -155,9 +155,9 @@ function renderRemainderSidebar() {
 
   body.innerHTML = `
     <div class="rem-summary">
-      <div><span>Remainder pool</span><strong>$${pool}</strong></div>
+      <div><span>Raw remainder</span><strong>$${pool}</strong></div>
       <div><span>Applied</span><strong>$${allocated}</strong></div>
-      <div><span>Rem</span><strong>$${remaining}</strong></div>
+      <div><span>Chump</span><strong>$${remaining}</strong></div>
     </div>
     <div class="rem-mode-row">
       <span>${manual ? 'Manual add-ons are active.' : 'Auto split is using closer badges.'}</span>
@@ -167,7 +167,7 @@ function renderRemainderSidebar() {
       <span>Person</span><span>Before floor</span><span>Floored</span><span>Add</span><span>Amount</span>
     </div>
     <div class="rem-rows">${rows}</div>
-    <div class="rem-bills-title">Remainder bills in drawer</div>
+    <div class="rem-bills-title">Chump bills in drawer</div>
     ${remBills}
   `;
 }

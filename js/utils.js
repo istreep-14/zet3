@@ -25,6 +25,18 @@ function parseTimeString(raw) {
   };
 }
 
+const DEFAULT_CLOSE_TIME = '2.5';
+
+function getGlobalCloseTimeRaw() {
+  const value = $('gc-out')?.value.trim();
+  return value || DEFAULT_CLOSE_TIME;
+}
+
+function getEffectiveOutFallback(role) {
+  const roleOut = roleDefaults?.[role]?.out || '';
+  return roleOut || getGlobalCloseTimeRaw();
+}
+
 function setInputInvalid(el, invalid) {
   if (el) el.classList.toggle('input-invalid', !!invalid);
 }

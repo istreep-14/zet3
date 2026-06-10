@@ -186,6 +186,22 @@
 
 .cash-total-val.zero { color: var(--muted2); }
 
+/* ── Small-bill guidance in Cash ───────────────────── */
+.cash-small-bills {
+  margin-top: 10px;
+}
+
+.cash-small-bill-empty {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  line-height: 1.4;
+  padding: 9px 10px;
+}
+
 /* ── Net total section ───────────────────────────── */
 .net-input-row {
   display: flex;

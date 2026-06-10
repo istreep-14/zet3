@@ -176,7 +176,7 @@ function _renderCloseTimeTable(times, cols, pool, nowIdx) {
   }).join('');
 
   // Remainder row
-  const remRow = `<tr class="ct-rem-row"><td class="ct-lbl">Rem</td>`
+  const remRow = `<tr class="ct-rem-row"><td class="ct-lbl">Chump</td>`
     + cols.map((col, i) => {
         if (!col || !col.leftover) return `<td class="zero${n(i)}">—</td>`;
         return `<td class="ct-rem${n(i)}">$${col.leftover}</td>`;
@@ -249,9 +249,10 @@ function renderDistTable(swb, poolAfter, distCtx) {
   const tradeDownHTML = renderTradeDownCard(_pendingTradeDown, pool);
   const tradeUpHTML   = _pendingTradeUp ? renderTradeUpCard(_pendingTradeUp, pool) : '';
 
-  const actionBtns = '<div class="dist-action-grid">'
+  const actionBtns = '<div class="dist-action-grid dist-action-grid--three">'
+    + '<button class="ct-open-btn" onclick="openBillChartSheet()">Bill Chart</button>'
     + '<button class="ct-open-btn" onclick="openCloseTimeSidebar()">⏱ Close Time</button>'
-    + '<button class="ct-open-btn rem-open-btn" onclick="openRemainderSidebar()">Remainder</button>'
+    + '<button class="ct-open-btn rem-open-btn" onclick="openRemainderSidebar()">Chump</button>'
     + '</div>';
 
   if (hasErr) {
@@ -286,31 +287,7 @@ function renderDistTable(swb, poolAfter, distCtx) {
 // ── Requirement summary ───────────────────────────────────────────────────────
 
 function renderRequirementSummary(req, pool) {
-  const minFives = Math.max(0, (req.minOneFiveValue - req.minOnes) / 5);
-  const minTens  = Math.max(0, (req.minOneFiveTenValue - req.minOneFiveValue) / 10);
-  const shortFives = Math.max(0, minFives - (pool[5]  || 0));
-  const shortTens  = Math.max(0, minTens  - (pool[10] || 0));
-
-  function reqRow(label, need, have, short) {
-    const ok    = short <= 0;
-    const cls   = ok ? 'req-row--ok' : 'req-row--short';
-    const badge = ok
-      ? '<span class="req-badge req-badge--ok">covered</span>'
-      : `<span class="req-badge req-badge--short">short&nbsp;${short}</span>`;
-    return `<div class="req-row ${cls}">
-      <span class="req-row-lbl">${label}</span>
-      <span class="req-row-need">${Math.ceil(need)}&nbsp;min</span>
-      <span class="req-row-have">${have}&nbsp;have</span>
-      ${badge}
-    </div>`;
-  }
-
-  return `<div class="req-summary">
-    <div class="req-summary-hdr">Minimum small bills</div>
-    ${reqRow('$1s',  req.minOnes, pool[1]  || 0, req.onesShort)}
-    ${reqRow('$5s',  minFives,    pool[5]  || 0, shortFives)}
-    ${reqRow('$10s', minTens,     pool[10] || 0, shortTens)}
-  </div>`;
+  return renderSmallBillRequirementSummary(req, pool, { title: 'Minimum small bills' });
 }
 
 // ── Apply pending trades ──────────────────────────────────────────────────────
@@ -449,7 +426,7 @@ function renderDistTableMarkup(swb, options = {}) {
         ? `<td style="color:var(--muted);font-weight:600;font-size:.74rem">${n}</td>`
         : `<td class="zero">—</td>`;
     }).join('');
-    remRow = `<tr class="dist-rem-row"><td>Rem</td>${rc}<td style="color:var(--muted);font-weight:600;border-left:1px solid var(--border);font-size:.74rem">$${sumRem}</td></tr>`;
+    remRow = `<tr class="dist-rem-row"><td>Chump</td>${rc}<td style="color:var(--muted);font-weight:600;border-left:1px solid var(--border);font-size:.74rem">$${sumRem}</td></tr>`;
   }
 
   const dtCols = DENOMS.map(d => {
@@ -461,4 +438,24 @@ function renderDistTableMarkup(swb, options = {}) {
 
   return previewLabel
     + `<div class="dist-tbl-wrap"><table class="dist-tbl">${renderDistColGroup()}<thead><tr><th>Name</th>${hCols}</tr></thead><tbody>${rows}${remRow}</tbody><tfoot>${totalRow}</tfoot></table></div>`;
+}
+
+function openBillChartSheet() {
+  const body = $('billChartBody');
+  if (!body) return;
+  if (!_lastDistStaff || !_lastDistStaff.length) {
+    body.innerHTML = '<div class="warn-box">Add cash and staff to see the bill chart.</div>';
+  } else if (lastDistributionError) {
+    body.innerHTML = `<div class="warn-box">⚠ ${escapeHTML(lastDistributionError)}</div>`;
+  } else {
+    body.innerHTML = renderDistTableMarkup(_lastDistStaff, {
+      remainderBills: lastRemainderBills,
+      leftover: lastLeftover,
+    });
+  }
+  openModal('billChartSheet');
+}
+
+function closeBillChartSheet() {
+  closeModal('billChartSheet');
 }

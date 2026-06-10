@@ -141,20 +141,10 @@ function getIdealTargetsForTotal(total) {
 
   rawData.forEach(r => {
     r.effIn = r.inStr || r.rDef.in || gcIn;
-    r.effOut = r.outStr || r.rDef.out || gcOut;
+    r.effOut = r.outStr || getEffectiveOutFallback(r.role);
   });
-  let maxEo = 0;
-  rawData.forEach(r => {
-    if (!r.effIn || !r.effOut) return;
-    const inParsed = parseTimeString(r.effIn), outParsed = parseTimeString(r.effOut);
-    if (!inParsed.valid || !outParsed.valid || inParsed.empty || outParsed.empty) return;
-    const i = inParsed.value, o = outParsed.value;
-    const eo = o < i ? o + 12 : o;
-    if (eo > maxEo) maxEo = eo;
-  });
-
   const defaultIn = 5;
-  const defaultOut = maxEo > 0 ? (maxEo > 12 ? maxEo - 12 : maxEo) : 2;
+  const defaultOut = parseTimeString(getGlobalCloseTimeRaw()).value || 2.5;
   const staff = rawData.map(r => {
     const inParsed = parseTimeString(r.effIn);
     const outParsed = parseTimeString(r.effOut);

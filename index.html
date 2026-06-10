@@ -122,6 +122,10 @@
           </div>
         </div>
 
+        <div class="cash-small-bills" id="cash-small-bills">
+          <div class="cash-small-bill-empty">Add named staff and cash to see small-bill guidance.</div>
+        </div>
+
         <!-- Net total remains available as a redesigned shortcut, not the default. -->
         <div id="cash-net-total" style="display:none">
           <div class="net-input-row">
@@ -310,7 +314,7 @@
         <div class="defaults-fields">
           <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="gc-in" placeholder="e.g. 5" inputmode="decimal" oninput="onDefaultTimesChange()"></div>
           <span class="defaults-sep">–</span>
-          <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="gc-out" placeholder="e.g. 2" inputmode="decimal" oninput="onDefaultTimesChange()"></div>
+          <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="gc-out" placeholder="e.g. 2.5" inputmode="decimal" oninput="onDefaultTimesChange()"></div>
         </div>
         <div class="defaults-note">Fills any blank In/Out field across all roles. Role defaults below take priority.</div>
       </div>
@@ -358,8 +362,17 @@
 <div class="modal-overlay" id="remainderSidebar" onclick="if(event.target===this)closeRemainderSidebar()">
   <div class="modal-sheet">
     <div class="modal-drag"></div>
-    <div class="modal-title">Remainder Allocation<button class="modal-close" onclick="closeRemainderSidebar()">✕</button></div>
+    <div class="modal-title">Closer Bonus / Chump<button class="modal-close" onclick="closeRemainderSidebar()">✕</button></div>
     <div id="remainder-body" class="modal-body rem-modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: BILL CHART -->
+<div class="modal-overlay" id="billChartSheet" onclick="if(event.target===this)closeBillChartSheet()">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">Bill Chart<button class="modal-close" onclick="closeBillChartSheet()">✕</button></div>
+    <div id="billChartBody" class="modal-body bill-chart-modal-body"></div>
   </div>
 </div>
 
@@ -385,6 +398,7 @@
 <script src="js/persist.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/engine.js"></script>
+<script src="js/small_bills.js"></script>
 <script src="js/engine_day.js"></script>
 <script src="js/modals.js"></script>
 <script src="js/tabs.js"></script>

@@ -31,6 +31,7 @@ function renderBlockedPlaceholders(reason) {
 function blockCalculation(reason, options = {}) {
   currentInputError = options.inputError ? reason : '';
   updateHomeLive(null);
+  if (typeof renderCashSmallBillStatus === 'function') renderCashSmallBillStatus([], {}, 0, '');
   clearStaleBanners();
   if (lastStaff.length || lastDayResult || options.showPlaceholder) {
     renderBlockedPlaceholders(reason);
@@ -97,25 +98,17 @@ function computeNightShift() {
     return { ok: false, reason: 'Add staff with names.' };
   }
 
-  // Effective in/out: explicit value → role default → global default
+  // Effective in/out: explicit value → role/default in, and blank out uses the
+  // global close-time fallback so rows stay blank but calculate as closers.
   rawData.forEach(r => {
     const role = getRoleForList(_listIdForRowId(r.rowId));
     const rDef = roleDefaults[role] || {};
     r.effIn  = r.inStr  || rDef.in  || gcIn;
-    r.effOut = r.outStr || rDef.out || gcOut;
+    r.effOut = r.outStr || getEffectiveOutFallback(role);
   });
 
-  let maxEo = 0;
-  rawData.forEach(r => {
-    if (r.effIn && r.effOut) {
-      const i  = parseTimeString(r.effIn).value;
-      const o  = parseTimeString(r.effOut).value;
-      const eo = o < i ? o + 12 : o;
-      if (eo > maxEo) maxEo = eo;
-    }
-  });
   const defaultIn  = 5;
-  const defaultOut = maxEo > 0 ? (maxEo > 12 ? maxEo - 12 : maxEo) : 2;
+  const defaultOut = parseTimeString(getGlobalCloseTimeRaw()).value || 2.5;
 
   // First pass: build staff with times, no closer yet
   const staff = rawData.map(r => {
@@ -138,8 +131,11 @@ function computeNightShift() {
   staff.forEach(p => {
     const ctEl = document.getElementById('ct' + p._rowId);
     const manualOn = ctEl ? ctEl.classList.contains('on') : false;
-    const autoClose = peakEo > 0 && p.eo >= peakEo;
+    const source = rawData.find(r => r.rowId === p._rowId);
+    const blankOutCloser = source ? !source.hasOut : false;
+    const autoClose = blankOutCloser || (peakEo > 0 && p.eo >= peakEo);
     p._autoCloser = autoClose;
+    p._blankOutCloser = blankOutCloser;
     p.closer = manualOn || autoClose;
   });
 
@@ -198,6 +194,10 @@ function renderNightShift(computeResult, distResult) {
   renderDist(staffWithBills, poolAfter,
     { remainderBills, distributionError, leftover, pool });
 
+  if (typeof renderCashSmallBillStatus === 'function') {
+    renderCashSmallBillStatus(staffWithBills, pool, leftover, distributionError);
+  }
+
   updateHomeLive(staff, { rate, totH, leftover, distributionError });
 }
 
@@ -230,6 +230,7 @@ function autoCalculate() {
     if (lastStaff.length) {
       renderBlockedPlaceholders(total === 0 ? 'Cash is zero.' : 'No named staff rows remain.');
     }
+    if (typeof renderCashSmallBillStatus === 'function') renderCashSmallBillStatus([], {}, 0, '');
     saveState();
     return;
   }

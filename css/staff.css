@@ -204,6 +204,16 @@
 
 .rdef-input::placeholder { color: var(--muted2); font-weight: 400; font-size: .7rem; }
 
+.staff-row-modal input.using-close-time::placeholder {
+  color: var(--gold);
+  opacity: .75;
+}
+
+.sri-meta-badge--close {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+
 .rdef-sep {
   color: var(--muted2);
   font-family: var(--font-mono);

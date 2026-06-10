@@ -31,7 +31,7 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     const safe        = escapeHTML(p.n);
     const initials    = escapeHTML(p.n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
     const inStr       = fmtTime(p.i, p.i, false);
-    const outStr      = fmtTime(p.o, p.i, p.o < p.i);
+    const outStr      = fmtTime(p.o, p.i, p.o < p.i) + (p._blankOutCloser ? ' close' : '');
     const closerBadge = p.closer ? '<span class="closer-badge">closer</span>' : '';
 
     const bonusLine = p.bonus > 0
@@ -61,12 +61,12 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     </div>`;
   }).join('');
 
-  const remainderCard = leftover > 0
+  const chumpCard = leftover > 0
     ? `<div class="person-card remainder-card">
         <div class="person-card-top">
-          <div class="person-avatar remainder-avatar">R</div>
+          <div class="person-avatar remainder-avatar">C</div>
           <div class="person-main">
-            <div class="person-name-row"><span class="person-name" style="color:var(--muted)">Remainder</span></div>
+            <div class="person-name-row"><span class="person-name" style="color:var(--muted)">Chump</span></div>
           </div>
           <div class="person-hrs-block">
             <div class="person-hrs-val muted" style="font-size:.72rem">stays</div>
@@ -77,15 +77,15 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
       </div>`
     : '';
 
-  const leftoverMeta = leftover > 0
-    ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Remainder</div><div class="summary-meta-val" style="color:var(--muted)">$${leftover}</div></div>`
+  const chumpMeta = leftover > 0
+    ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Chump</div><div class="summary-meta-val" style="color:var(--muted)">$${leftover}</div></div>`
     : '';
 
   const unpaid       = staffWithBills.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
   const remainderPaid = poolValue(remainderBills);
   const remShort     = leftover > 0 && remainderPaid !== leftover;
   const warnMsg      = distributionError
-    || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Remainder cannot be represented by available bills' : '');
+    || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Chump cannot be represented by available bills' : '');
 
   let warnHTML = '';
   if (warnMsg) {
@@ -105,13 +105,13 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
         <div class="summary-meta-item"><div class="summary-meta-lbl">Total Hrs</div><div class="summary-meta-val">${fmtHrs(totH)}</div></div>
         <div class="summary-meta-item"><div class="summary-meta-lbl">Rate</div><div class="summary-meta-val">$${rate.toFixed(2)}/hr</div></div>
         <div class="summary-meta-item"><div class="summary-meta-lbl">Paid Out</div><div class="summary-meta-val">$${sumFinal}</div></div>
-        ${leftoverMeta}
+        ${chumpMeta}
       </div>
     </div>
     <div class="section-hdr">Breakdown</div>
     <div class="summary-breakdown-head"><span></span><span></span><span>Hrs</span><span>Tip</span></div>
     ${personCards}
-    ${remainderCard}
+    ${chumpCard}
     <div class="summary-totals-strip">
       <span class="summary-totals-lbl">Total</span>
       <div class="summary-totals-right">

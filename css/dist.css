@@ -139,6 +139,9 @@
 }
 
 .req-summary-hdr {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
   font-family: var(--font-mono);
   font-size: .5rem;
   font-weight: 700;
@@ -146,6 +149,33 @@
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 5px;
+}
+
+.req-summary-hdr em {
+  color: var(--gold);
+  font-style: normal;
+}
+
+.req-summary--covered .req-summary-hdr em { color: var(--green); }
+
+.req-keep-line {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  padding: 7px 10px;
+}
+
+.req-note {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  line-height: 1.35;
+  margin-top: 5px;
 }
 
 .req-row {
@@ -306,6 +336,10 @@
   margin-top: 10px;
 }
 
+.dist-action-grid--three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .dist-action-grid .ct-open-btn {
   margin-top: 0;
 }
@@ -313,6 +347,14 @@
 .rem-open-btn {
   color: var(--gold);
   border-color: var(--gold-dim);
+}
+
+.bill-chart-modal-body {
+  padding: 0 12px 16px;
+}
+
+.bill-chart-modal-body .dist-tbl-wrap {
+  margin-bottom: 0;
 }
 
 /* ── Close Time Bills modal body & table ──────────── */
@@ -631,6 +673,10 @@
 .rem-empty { color: var(--muted); font-family: var(--font-mono); font-size: .74rem; padding: 12px 4px; }
 
 @media (max-width: 420px) {
+  .dist-action-grid--three {
+    grid-template-columns: 1fr;
+  }
+
   .rem-head {
     display: none;
   }
