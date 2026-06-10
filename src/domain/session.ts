@@ -11,6 +11,7 @@ export function createEmptyCash(): CashState {
     mode: 'billCounts',
     billCounts: { 100: '', 50: '', 20: '', 10: '', 5: '', 1: '' },
     netTotal: '',
+    netKnownBills: { 100: '', 50: '' },
     additions: [],
   };
 }
@@ -83,6 +84,9 @@ export function calculateSession(session: SessionState): CalculationResult {
         errors.push(`${person.name} has an invalid out time.`);
         return;
       }
+      if (!outWasPlaceholder && outValue > closeValue) {
+        warnings.push(`${person.name} out time is later than close time.`);
+      }
       const hours = shiftHours(inValue, outValue);
       if (hours <= 0 || hours > 12) {
         errors.push(`${person.name} has invalid shift hours.`);
@@ -143,7 +147,14 @@ export function calculateSession(session: SessionState): CalculationResult {
     ...staff.map((person) => ({ amount: person.final })),
     ...(chump > 0 ? [{ amount: chump }] : []),
   ];
-  const requirements = getSmallBillRequirements(targets, pool);
+  const guidancePool = session.cash.mode === 'netTotal'
+    ? {
+        ...blankBills(),
+        100: parseWholeNumber(session.cash.netKnownBills[100]).value,
+        50: parseWholeNumber(session.cash.netKnownBills[50]).value,
+      }
+    : pool;
+  const requirements = getSmallBillRequirements(targets, guidancePool, closerCount);
 
   const distribution = session.cash.mode === 'billCounts'
     ? distributeTargets(

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useReducer, useRef, useState, type ChangeEvent } from 'react';
+import { TimeInput } from './components/TimeInput';
 import { calculateSession, createStaffMember } from './domain/session';
 import { DENOMS, type Denomination, type SessionState, type StaffMember, type TipAddition } from './domain/types';
 import { billLabel, formatMoney } from './domain/money';
 import { parsedKeepTargets, smallBillStatus } from './domain/smallBills';
-import { formatClock, formatHours } from './domain/time';
+import { displayPeriod, formatClock, formatHours, formatTimeDisplay, parseTimeInput } from './domain/time';
 import { clearSession, exportSession, importSessionFile, loadRosterNames, loadSession, saveSession } from './persistence/storage';
 
 type Action =
@@ -16,6 +17,7 @@ type Action =
   | { type: 'cash/setMode'; value: SessionState['cash']['mode'] }
   | { type: 'cash/updateBill'; denom: Denomination; value: string }
   | { type: 'cash/setNetTotal'; value: string }
+  | { type: 'cash/updateNetKnown'; denom: 100 | 50; value: string }
   | { type: 'cash/addIncrement' }
   | { type: 'cash/removeIncrement'; id: string }
   | { type: 'cash/updateIncrement'; id: string; field: keyof TipAddition; value: string };
@@ -46,6 +48,14 @@ function reducer(state: SessionState, action: Action): SessionState {
       };
     case 'cash/setNetTotal':
       return { ...state, cash: { ...state.cash, netTotal: cleanWholeInput(action.value) } };
+    case 'cash/updateNetKnown':
+      return {
+        ...state,
+        cash: {
+          ...state.cash,
+          netKnownBills: { ...state.cash.netKnownBills, [action.denom]: cleanWholeInput(action.value) },
+        },
+      };
     case 'cash/addIncrement':
       return {
         ...state,
@@ -154,11 +164,12 @@ export function App() {
         <div className="close-time-row">
           <label>
             Close time
-            <input
+            <TimeInput
+              aria-label="Close time"
               value={session.closeTime}
-              inputMode="decimal"
+              context="close"
               placeholder="2.5"
-              onChange={(event) => dispatch({ type: 'session/setCloseTime', value: event.target.value })}
+              onChange={(value) => dispatch({ type: 'session/setCloseTime', value })}
             />
           </label>
           <span>Blank out times use this value and still display blank in the row.</span>
@@ -214,6 +225,33 @@ export function App() {
                 onChange={(event) => dispatch({ type: 'cash/setNetTotal', value: event.target.value })}
               />
             </label>
+            <p className="micro-copy">Planning estimate until exact bill counts are entered.</p>
+            <div className="net-known-row">
+              <label>
+                Known $100s
+                <input
+                  value={session.cash.netKnownBills[100]}
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="numeric"
+                  placeholder="optional"
+                  onChange={(event) => dispatch({ type: 'cash/updateNetKnown', denom: 100, value: event.target.value })}
+                />
+              </label>
+              <label>
+                Known $50s
+                <input
+                  value={session.cash.netKnownBills[50]}
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputMode="numeric"
+                  placeholder="optional"
+                  onChange={(event) => dispatch({ type: 'cash/updateNetKnown', denom: 50, value: event.target.value })}
+                />
+              </label>
+            </div>
             <div className="addition-list">
               {session.cash.additions.map((item) => (
                 <div key={item.id} className="addition-row">
@@ -291,19 +329,20 @@ function StaffRow(props: { person: StaffMember; closeTime: string; dispatch: Rea
         placeholder="Name"
         onChange={(event) => dispatch({ type: 'staff/update', id: person.id, field: 'name', value: event.target.value })}
       />
-      <input
+      <TimeInput
         aria-label={`${person.name || 'Staff'} in time`}
         value={person.inTime}
-        inputMode="decimal"
+        context="in"
         placeholder="In"
-        onChange={(event) => dispatch({ type: 'staff/update', id: person.id, field: 'inTime', value: event.target.value })}
+        onChange={(value) => dispatch({ type: 'staff/update', id: person.id, field: 'inTime', value })}
       />
-      <input
+      <TimeInput
         aria-label={`${person.name || 'Staff'} out time`}
         value={person.outTime}
-        inputMode="decimal"
-        placeholder={closeTime || 'Out'}
-        onChange={(event) => dispatch({ type: 'staff/update', id: person.id, field: 'outTime', value: event.target.value })}
+        context="out"
+        inValue={parseTimeInput(person.inTime).value ?? undefined}
+        placeholder={closeTime ? formatTimeDisplay(closeTime, 'close') : 'Out'}
+        onChange={(value) => dispatch({ type: 'staff/update', id: person.id, field: 'outTime', value })}
       />
       <select
         aria-label="Closer override"
@@ -321,6 +360,8 @@ function StaffRow(props: { person: StaffMember; closeTime: string; dispatch: Rea
 
 function SmallBillPanel(props: { result: ReturnType<typeof calculateSession> }) {
   const { result } = props;
+  const [detailOpen, setDetailOpen] = useState(false);
+
   if (!result.requirements || !result.staff.length) {
     return <div className="small-bill-card muted-card">Add staff and cash to see small-bill guidance.</div>;
   }
@@ -328,6 +369,7 @@ function SmallBillPanel(props: { result: ReturnType<typeof calculateSession> }) 
   const requirements = result.requirements;
   const parsed = parsedKeepTargets(requirements);
   const status = smallBillStatus(requirements);
+  const showCoverage = status === 'short' || detailOpen;
 
   return (
     <div className={`small-bill-card ${status === 'short' ? 'short' : 'covered'}`}>
@@ -338,14 +380,18 @@ function SmallBillPanel(props: { result: ReturnType<typeof calculateSession> }) 
       <div className="keep-line">
         Keep: {parsed.ones} x $1, {parsed.fives} x $5, {parsed.tens} x $10
       </div>
-      <div className="coverage-grid">
-        <CoverageRow label="$1 value" need={requirements.minOnes} have={requirements.availableOnes} short={requirements.onesShort} />
-        <CoverageRow label="$1+$5 value" need={requirements.minOneFiveValue} have={requirements.availableOneFiveValue} short={requirements.oneFiveShort} />
-        <CoverageRow label="$1+$5+$10 value" need={requirements.minOneFiveTenValue} have={requirements.availableOneFiveTenValue} short={requirements.oneFiveTenShort} />
-      </div>
       {requirements.fiftyCoverage > 0 ? (
         <p className="micro-copy">{requirements.fiftyCoverage} x $50 covering odd-ten needs lowers the visible $10 target.</p>
       ) : null}
+      {showCoverage ? (
+        <div className="coverage-grid">
+          <CoverageRow label="$1 value" need={requirements.minOnes} have={requirements.availableOnes} short={requirements.onesShort} />
+          <CoverageRow label="$1+$5 value" need={requirements.minOneFiveValue} have={requirements.availableOneFiveValue} short={requirements.oneFiveShort} />
+          <CoverageRow label="$1+$5+$10 value" need={requirements.minOneFiveTenValue} have={requirements.availableOneFiveTenValue} short={requirements.oneFiveTenShort} />
+        </div>
+      ) : (
+        <button className="ghost-btn compact" onClick={() => setDetailOpen(true)}>Show coverage detail</button>
+      )}
     </div>
   );
 }
@@ -388,7 +434,9 @@ function Summary(props: { result: ReturnType<typeof calculateSession>; onOpenBil
                 {person.isCloser ? <span className="badge">Closer</span> : null}
               </div>
               <p>
-                {formatClock(person.inValue, 'pm')} - {formatClock(person.outValue, person.outValue <= person.inValue ? 'am' : 'pm')}
+                {formatClock(person.inValue, displayPeriod(person.inValue, 'in'))}
+                {' - '}
+                {formatClock(person.outValue, displayPeriod(person.outValue, 'out', person.inValue))}
                 {person.outWasPlaceholder ? ' (close)' : ''} | {formatHours(person.hours)}h
               </p>
               {person.bills && result.distribution.ok ? <em>{billLabel(person.bills)}</em> : null}

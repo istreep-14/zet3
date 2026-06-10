@@ -1,7 +1,7 @@
 {
   "name": "Tip Pool",
   "short_name": "Tip Pool",
-  "start_url": "/",
+  "start_url": "/prototype.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0a0a0f",

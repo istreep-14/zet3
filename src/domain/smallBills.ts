@@ -4,12 +4,16 @@ interface RequirementTarget {
   amount: number;
 }
 
-export function getSmallBillRequirements(targets: RequirementTarget[], pool: BillCounts): SmallBillRequirements {
+export function getSmallBillRequirements(
+  targets: RequirementTarget[],
+  pool: BillCounts,
+  closerCount = 0,
+): SmallBillRequirements {
   const oddTenTargets = targets.filter((target) => Math.floor(target.amount / 10) % 2 !== 0);
   const fiftyEligibleOddTenCount = oddTenTargets.filter((target) => target.amount >= 50).length;
   const fiftyCoverage = Math.min(pool[50], fiftyEligibleOddTenCount);
 
-  const minOnes = targets.reduce((sum, target) => sum + (target.amount % 5), 0);
+  const minOnes = targets.reduce((sum, target) => sum + (target.amount % 5), 0) + Math.max(0, closerCount - 1);
   const minOneFiveValue = targets.reduce((sum, target) => sum + (target.amount % 10), 0);
   const minOneFiveTenRaw = targets.reduce((sum, target) => sum + (target.amount % 20), 0);
   const minOneFiveTenValue = Math.max(minOneFiveValue, minOneFiveTenRaw - fiftyCoverage * 10);

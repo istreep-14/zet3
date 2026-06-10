@@ -17,6 +17,9 @@ export function loadSession(): SessionState {
     if (!raw) return createDefaultSession();
     const parsed = JSON.parse(raw) as SessionState;
     if (parsed.version !== 2 || !Array.isArray(parsed.staff) || !parsed.cash) return createDefaultSession();
+    if (!parsed.cash.netKnownBills) {
+      parsed.cash.netKnownBills = { 100: '', 50: '' };
+    }
     return parsed;
   } catch {
     return createDefaultSession();

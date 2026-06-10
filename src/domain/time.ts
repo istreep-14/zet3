@@ -33,6 +33,26 @@ export function formatHours(hours: number): string {
   return Number.isInteger(hours) ? String(hours) : hours.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
+export function displayPeriod(value: number, context: 'in' | 'out' | 'close', inValue?: number): 'pm' | 'am' {
+  if (context === 'close') return value <= 6 ? 'am' : 'pm';
+  if (context === 'in') return value >= 3 && value <= 8 ? 'pm' : value < 12 ? 'am' : 'pm';
+  if (context === 'out' && inValue != null) {
+    if (value <= inValue) return 'am';
+    return value < 12 && inValue >= 12 ? 'am' : 'pm';
+  }
+  return value < 12 ? 'am' : 'pm';
+}
+
+export function formatTimeDisplay(
+  raw: string,
+  context: 'in' | 'out' | 'close',
+  inValue?: number,
+): string {
+  const parsed = parseTimeInput(raw);
+  if (!parsed.valid || parsed.empty || parsed.value == null) return '';
+  return formatClock(parsed.value, displayPeriod(parsed.value, context, inValue));
+}
+
 export function formatClock(value: number, period: 'pm' | 'am' = 'pm'): string {
   let hour = Math.floor(value);
   let minutes = Math.round((value - hour) * 60);

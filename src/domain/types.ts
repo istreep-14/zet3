@@ -17,6 +17,8 @@ export interface CashState {
   mode: CashMode;
   billCounts: Record<Denomination, string>;
   netTotal: string;
+  /** Optional known high denominations when using net-total estimate mode. */
+  netKnownBills: { 100: string; 50: string };
   additions: TipAddition[];
 }
 

@@ -19,6 +19,15 @@ describe('time parsing', () => {
 });
 
 describe('small bill requirements', () => {
+  it('adds one extra exact $1 when multiple closers share remainder', () => {
+    const pool = { ...blankBills(), 1: 10, 5: 5, 10: 5 };
+    const targets = [{ amount: 100 }, { amount: 100 }, { amount: 1 }];
+    const singleCloser = getSmallBillRequirements(targets, pool, 1);
+    const twoClosers = getSmallBillRequirements(targets, pool, 2);
+
+    expect(twoClosers.minOnes).toBe(singleCloser.minOnes + 1);
+  });
+
   it('uses cumulative one-plus-five value so extra ones can cover five-dollar needs', () => {
     const pool = { ...blankBills(), 1: 14, 5: 1, 10: 4 };
     const requirements = getSmallBillRequirements([{ amount: 394 }, { amount: 395 }, { amount: 395 }, { amount: 395 }], pool);
