@@ -14,24 +14,13 @@ export function distributeTargets(targets: TargetSlot[], pool: BillCounts): { ok
     return { ok: false, error: `Cash on hand is short $${totalTarget - poolValue(pool)}.`, slots: [] };
   }
 
-  let remainingPool = { ...pool };
-  const allocations = new Map<string, BillCounts>();
-  const largestFirst = [...targets].sort((a, b) => b.target - a.target);
-
-  for (const target of largestFirst) {
-    const bills = findBillsForTarget(target.target, remainingPool);
-    if (!bills) {
-      return {
-        ok: false,
-        error: `Exact bill chart is blocked for ${target.name}. Check small-bill coverage or break larger bills.`,
-        slots: [],
-      };
-    }
-    remainingPool = subtractBills(remainingPool, bills);
-    if (hasNegativeBillCount(remainingPool)) {
-      return { ok: false, error: 'Bill chart used more bills than cash on hand.', slots: [] };
-    }
-    allocations.set(target.id, bills);
+  const allocations = findChartAllocation(targets, pool);
+  if (!allocations) {
+    return {
+      ok: false,
+      error: 'Exact bill chart is blocked. Check small-bill coverage or break larger bills.',
+      slots: [],
+    };
   }
 
   return {
@@ -47,31 +36,75 @@ export function distributeTargets(targets: TargetSlot[], pool: BillCounts): { ok
   };
 }
 
-function findBillsForTarget(target: number, pool: BillCounts): BillCounts | null {
-  const memo = new Map<string, BillCounts | null>();
+function findChartAllocation(targets: TargetSlot[], pool: BillCounts): Map<string, BillCounts> | null {
+  const orderedTargets = [...targets].sort((a, b) => {
+    if (a.target !== b.target) return b.target - a.target;
+    return a.name.localeCompare(b.name);
+  });
+  const failedStates = new Set<string>();
 
-  function search(index: number, remaining: number): BillCounts | null {
-    if (remaining === 0) return blankBills();
-    if (remaining < 0 || index >= DENOMS.length) return null;
+  function search(index: number, remainingPool: BillCounts): Map<string, BillCounts> | null {
+    if (index >= orderedTargets.length) return new Map();
 
-    const denom = DENOMS[index];
-    const key = `${index}:${remaining}`;
-    if (memo.has(key)) return memo.get(key) ?? null;
+    const stateKey = `${index}|${poolSignature(remainingPool)}`;
+    if (failedStates.has(stateKey)) return null;
 
-    const maxCount = Math.min(pool[denom], Math.floor(remaining / denom));
-    for (let count = maxCount; count >= 0; count -= 1) {
-      const rest = search(index + 1, remaining - count * denom);
+    const target = orderedTargets[index];
+    const candidates = findBillCandidatesForTarget(target.target, remainingPool);
+
+    for (const candidate of candidates) {
+      const nextPool = subtractBills(remainingPool, candidate);
+      if (hasNegativeBillCount(nextPool)) continue;
+
+      const rest = search(index + 1, nextPool);
       if (rest) {
-        rest[denom] = count;
-        memo.set(key, rest);
-        return rest;
+        const result = new Map(rest);
+        result.set(target.id, candidate);
+        return result;
       }
     }
 
-    memo.set(key, null);
+    failedStates.add(stateKey);
     return null;
   }
 
-  const result = search(0, target);
-  return result ? { ...blankBills(), ...result } : null;
+  return search(0, { ...pool });
+}
+
+function findBillCandidatesForTarget(target: number, pool: BillCounts): BillCounts[] {
+  const candidates: BillCounts[] = [];
+
+  function materialize(index: number, remaining: number, current: BillCounts): void {
+    if (remaining === 0) {
+      candidates.push({ ...current });
+      return;
+    }
+    if (remaining < 0 || index >= DENOMS.length) return;
+
+    const denom = DENOMS[index];
+    const maxCount = Math.min(pool[denom], Math.floor(remaining / denom));
+    for (let count = maxCount; count >= 0; count -= 1) {
+      current[denom] = count;
+      materialize(index + 1, remaining - count * denom, current);
+      current[denom] = 0;
+    }
+  }
+
+  materialize(0, target, blankBills());
+  return candidates
+    .map((candidate) => ({ ...blankBills(), ...candidate }))
+    .sort((a, b) => scoreCandidate(target, a) - scoreCandidate(target, b));
+}
+
+function scoreCandidate(target: number, bills: BillCounts): number {
+  const billCount = DENOMS.reduce((sum, denom) => sum + bills[denom], 0);
+  const highValue = bills[100] * 100 + bills[50] * 50;
+  const idealHighValue = Math.floor(target / 100) * 100;
+  const smallCount = bills[1] + bills[5] + bills[10];
+
+  return billCount * 8 + Math.abs(highValue - idealHighValue) + smallCount * 2;
+}
+
+function poolSignature(pool: BillCounts): string {
+  return DENOMS.map((denom) => pool[denom]).join(',');
 }
