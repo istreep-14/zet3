@@ -1,18 +1,405 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Tip Pool</title>
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
-    <meta name="theme-color" content="#0a0a0f" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Tip Pool" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tip Pool</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tip Pool">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1a1a1a">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/header.css">
+<link rel="stylesheet" href="css/tabs.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/cash.css">
+<link rel="stylesheet" href="css/staff.css">
+<link rel="stylesheet" href="css/defaults.css">
+<link rel="stylesheet" href="css/summary.css">
+<link rel="stylesheet" href="css/summary_day.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="stylesheet" href="css/person-modal.css">
+<link rel="stylesheet" href="css/dist.css">
+<link rel="stylesheet" href="css/shift.css">
+<link rel="stylesheet" href="css/support.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-title">TIP <span>POOL</span><span class="shift-mode-label" id="shift-mode-label" style="font-size:.52rem;color:var(--muted);margin-left:7px;letter-spacing:.5px;font-weight:600;vertical-align:middle">Night Shift</span></div>
+  <div class="hdr-date"><input type="date" id="tipDate"></div>
+  <div class="hdr-actions">
+    <button class="hdr-action-btn hdr-ct-btn" onclick="openCloseTimeSidebar()" title="Close time bills">
+      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14.5"/></svg>
+    </button>
+    <button class="hdr-action-btn" id="sessionMenuBtn" onclick="toggleSessionMenu()" title="Session options">⋯</button>
+    <div class="session-menu hidden" id="sessionMenu">
+      <button onclick="exportSession()">Export JSON</button>
+      <button onclick="triggerImport()">Import JSON</button>
+      <button onclick="clearSession()" class="danger">New Session</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="importFileInput" accept=".json,application/json" style="display:none" onchange="importSession(this.files[0])">
+
+<!-- CONTENT -->
+<div class="content" id="mainContent">
+
+  <!-- TAB: HOME -->
+  <div class="tab-panel active" id="tab-home">
+    <div class="home-cards-row">
+      <div class="mini-card cash" onclick="switchTab('cash', $('tb-cash'))">
+        <span class="mini-card-arrow">›</span>
+        <div class="mini-card-label">Cash on Hand</div>
+        <div class="mini-card-val" id="sc-total">$0</div>
+        <div class="mini-card-sub" id="sc-billcount">—</div>
+      </div>
+      <div class="mini-card staff" onclick="switchTab('staff', $('tb-staff'))">
+        <span class="mini-card-arrow">›</span>
+        <div class="mini-card-label">Staff</div>
+        <div class="mini-card-val" id="sc-staffcount">0</div>
+        <div class="mini-card-sub">employees</div>
+      </div>
+    </div>
+    <div class="home-live-section" id="home-live-section">
+      <div class="home-live-empty">Add staff to see live tips</div>
+    </div>
+  </div>
+
+  <!-- TAB: CASH -->
+  <div class="tab-panel" id="tab-cash">
+
+    <!-- Shift toggle -->
+    <div class="shift-toggle">
+      <button class="shift-btn night-btn active" id="shift-btn-night" onclick="setShiftMode('night')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/>
+        </svg>
+        Night Shift
+      </button>
+      <button class="shift-btn day-btn" id="shift-btn-day" onclick="setShiftMode('day')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+        Day Shift
+      </button>
+    </div>
+
+    <!-- NIGHT SHIFT CASH -->
+    <div id="night-cash-section">
+      <div class="cash-page">
+        <div class="input-message" id="cash-error"></div>
+
+        <!-- Per-bill stays first: it keeps the original count-the-drawer workflow. -->
+        <div id="cash-per-bill">
+          <div class="cash-page-hdr">
+            <div class="cash-page-hdr-left">
+              <div class="cash-page-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="7" width="20" height="14" rx="2"/><circle cx="12" cy="14" r="2"/><path d="M6 14h.01M18 14h.01"/>
+                </svg>
+              </div>
+              <div class="cash-page-title">Cash on Hand</div>
+            </div>
+            <div class="cash-page-total zero" id="cash-page-total">$0</div>
+          </div>
+          <div class="cash-denom-list">
+            <div class="cash-denom-row"><div class="cash-denom-label">$100</div><input class="cash-denom-input" id="b100" type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="10" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub100">—</div></div>
+            <div class="cash-denom-row"><div class="cash-denom-label">$50</div> <input class="cash-denom-input" id="b50"  type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="11" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub50">—</div></div>
+            <div class="cash-denom-row"><div class="cash-denom-label">$20</div> <input class="cash-denom-input" id="b20"  type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="12" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub20">—</div></div>
+            <div class="cash-denom-row"><div class="cash-denom-label">$10</div> <input class="cash-denom-input" id="b10"  type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="13" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub10">—</div></div>
+            <div class="cash-denom-row"><div class="cash-denom-label">$5</div>  <input class="cash-denom-input" id="b5"   type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="14" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub5">—</div></div>
+            <div class="cash-denom-row"><div class="cash-denom-label">$1</div>  <input class="cash-denom-input" id="b1"   type="number" min="0" step="1" placeholder="0" inputmode="numeric" tabindex="15" oninput="onBillsChange()"><div class="cash-denom-subtotal zero" id="sub1">—</div></div>
+          </div>
+          <div class="cash-total-row">
+            <span class="cash-total-lbl">Total</span>
+            <span class="cash-total-val zero" id="cash-total-bottom">$0</span>
+          </div>
+        </div>
+
+        <!-- Net total remains available as a redesigned shortcut, not the default. -->
+        <div id="cash-net-total" style="display:none">
+          <div class="net-input-row">
+            <span class="net-dollar-sign">$</span>
+            <input type="number" id="net-total-input" class="net-total-input" min="0" step="1" placeholder="0" inputmode="numeric" oninput="onNetTotalChange()">
+          </div>
+          <div class="net-breakdown" id="net-breakdown">
+            <div class="net-empty-hint">Enter total above to see ideal bill breakdown</div>
+          </div>
+        </div>
+
+        <!-- Mode toggle at bottom (secondary) -->
+        <div class="cash-mode-toggle cash-mode-toggle--bottom">
+          <button class="cmt-btn active" id="cmb-perbill"  onclick="onCashModeButtonClick('perbill')">Bill Counts</button>
+          <button class="cmt-btn" id="cmb-nettotal" onclick="onCashModeButtonClick('nettotal')">Net Total</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY SHIFT CASH (multi-pool) -->
+    <div id="day-cash-section" style="display:none">
+      <div id="day-cash-panels">
+        <!-- Rendered by renderDayPoolCashPanels() -->
+      </div>
+    </div>
+
+  </div><!-- end tab-cash -->
+
+  <!-- TAB: STAFF -->
+  <div class="tab-panel staff-page" id="tab-staff">
+
+    <div class="staff-page-hero">
+      <div>
+        <div class="staff-page-eyebrow">Staff</div>
+        <div class="staff-page-title" id="staff-role-title">Bartenders</div>
+        <div class="staff-page-subtitle" id="staff-role-subtitle">Night shift payout team</div>
+      </div>
+      <span class="role-badge role-bartender" id="staff-role-badge">Bartender</span>
+    </div>
+
+    <!-- Role toggle — persists across night/day shift -->
+    <div class="role-toggle">
+      <button class="role-btn role-btn--bar active" id="rb-bartender" onclick="onRoleButtonClick('bartender')">Bartender</button>
+      <button class="role-btn role-btn--srv"        id="rb-server"    onclick="onRoleButtonClick('server')">Server</button>
+      <button class="role-btn role-btn--sup"        id="rb-support"   onclick="onRoleButtonClick('support')">Support</button>
+    </div>
+
+    <!-- Per-role defaults + count row -->
+    <div class="role-view-hdr">
+      <div class="role-view-summary">
+        <span class="role-view-label">Current list</span>
+        <span class="role-view-count" id="role-view-count">0 people</span>
+      </div>
+      <div class="role-defaults-inline">
+        <span class="role-defaults-title">Defaults</span>
+        <span class="rdef-lbl">In</span>
+        <input class="rdef-input" id="rdef-in"  inputmode="decimal" placeholder="—" oninput="onRoleDefaultChange('in')">
+        <span class="rdef-sep">–</span>
+        <span class="rdef-lbl">Out</span>
+        <input class="rdef-input" id="rdef-out" inputmode="decimal" placeholder="—" oninput="onRoleDefaultChange('out')">
+      </div>
+      <button class="defaults-open-btn" onclick="openModal('defaultTimesModal')" title="Global defaults">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </button>
+    </div>
+
+    <!-- NIGHT SHIFT: bartenders in staffList, servers in nightServerList -->
+    <div id="night-staff-section">
+      <div id="night-bar-wrap">
+        <div class="staff-list-modal" id="staffList"></div>
+        <button class="add-btn" onclick="addStaff(true,'staffList')">+ Add Bartender</button>
+      </div>
+      <div id="night-srv-wrap" style="display:none">
+        <div class="staff-list-modal" id="nightServerList"></div>
+        <button class="add-btn" onclick="addStaff(true,'nightServerList')">+ Add Server</button>
+      </div>
+    </div>
+
+    <!-- DAY SHIFT: bartenderList and serverList (role-switched) -->
+    <div id="day-staff-section" style="display:none">
+      <div id="day-bar-wrap">
+        <div class="staff-list-modal" id="bartenderList"></div>
+        <button class="add-btn" onclick="addStaff(true,'bartenderList')">+ Add Bartender</button>
+      </div>
+      <div id="day-srv-wrap" style="display:none">
+        <div class="staff-list-modal" id="serverList"></div>
+        <button class="add-btn" onclick="addStaff(true,'serverList')">+ Add Server</button>
+      </div>
+    </div>
+
+    <!-- SHARED support staff — shown when role='support', both shifts -->
+    <div id="support-staff-section" style="display:none">
+      <div class="support-staff-note" id="support-staff-note">Support staff share a pool of hours but earn no tips. In Day mode, assign each person to one or more cuts to calculate their tip-out.</div>
+      <div class="staff-list-modal" id="supportList"></div>
+      <button class="add-btn" onclick="addStaff(true,'supportList')">+ Add Support</button>
+    </div>
+
+    <!-- Hidden IDs needed by tabs/cards (keep for compat) -->
+    <span id="staffPageCount" style="display:none">0 people</span>
+    <span id="staffPageCount2" style="display:none">0 people</span>
+    <span id="bartender-count" style="display:none">0 people</span>
+    <span id="server-count" style="display:none">0 people</span>
+
+  </div><!-- end tab-staff -->
+
+  <!-- TAB: SUMMARY -->
+  <div class="tab-panel" id="tab-summary">
+    <div class="stale-banner" id="stale-summary">⚠ Bills cleared — results below are outdated.</div>
+    <div id="summary-content">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <div class="empty-title">No data yet</div>
+        Enter cash &amp; staff to calculate
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: DIST -->
+  <div class="tab-panel" id="tab-dist">
+    <div class="stale-banner" id="stale-dist">⚠ Bills cleared — results below are outdated.</div>
+    <div id="dist-content">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <div class="empty-title">No distribution</div>
+        Calculate first to see bill distribution
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .content -->
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('home', this)" id="tb-home">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="tab-label">Home</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('cash', this)" id="tb-cash">
+    <div class="tab-icon-wrap">
+      <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+      <div class="tab-dot empty" id="tab-dot-cash"></div>
+    </div>
+    <span class="tab-label">Cash</span>
+    <span class="tab-sub" id="tab-sub-cash">—</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('staff', this)" id="tb-staff">
+    <div class="tab-icon-wrap">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <div class="tab-dot empty" id="tab-dot-staff"></div>
+    </div>
+    <span class="tab-label">Staff</span>
+    <span class="tab-sub" id="tab-sub-staff">—</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('summary', this)" id="tb-summary">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    <span class="tab-label">Summary</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('dist', this)" id="tb-dist">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+    <span class="tab-label">Dist</span>
+  </button>
+</div>
+
+<!-- MODAL: CLOSE TIME BILLS -->
+<div class="modal-overlay" id="closeTimeSidebar" onclick="if(event.target===this)closeCloseTimeSidebar()">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">Close Time Bills<button class="modal-close" onclick="closeCloseTimeSidebar()">✕</button></div>
+    <div id="close-time-body" class="modal-body ct-modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: DEFAULT TIMES -->
+<div class="modal-overlay" id="defaultTimesModal" onclick="modalBgClose(event,'defaultTimesModal')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">Default Shift Times<button class="modal-close" onclick="closeModal('defaultTimesModal')">✕</button></div>
+    <div class="modal-body">
+
+      <!-- Global fallback -->
+      <div class="defaults-panel">
+        <div class="defaults-panel-hdr">
+          <span class="defaults-panel-title">Global Fallback</span>
+          <span class="defaults-panel-hint">all roles, blank fields</span>
+        </div>
+        <div class="defaults-fields">
+          <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="gc-in" placeholder="e.g. 5" inputmode="decimal" oninput="onDefaultTimesChange()"></div>
+          <span class="defaults-sep">–</span>
+          <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="gc-out" placeholder="e.g. 2" inputmode="decimal" oninput="onDefaultTimesChange()"></div>
+        </div>
+        <div class="defaults-note">Fills any blank In/Out field across all roles. Role defaults below take priority.</div>
+      </div>
+
+      <!-- Per-role defaults -->
+      <div class="defaults-panel" style="margin-top:10px">
+        <div class="defaults-panel-hdr">
+          <span class="defaults-panel-title">Per-Role Defaults</span>
+          <span class="defaults-panel-hint">blank fields only</span>
+        </div>
+        <div class="role-defaults-grid">
+          <div class="rdg-row">
+            <span class="rdg-role-lbl rdg-bar">Bar</span>
+            <div class="rdg-fields">
+              <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="rdef-modal-bar-in"  inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('bartender','in')"></div>
+              <span class="defaults-sep">–</span>
+              <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="rdef-modal-bar-out" inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('bartender','out')"></div>
+            </div>
+          </div>
+          <div class="rdg-row">
+            <span class="rdg-role-lbl rdg-srv">Srv</span>
+            <div class="rdg-fields">
+              <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="rdef-modal-srv-in"  inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('server','in')"></div>
+              <span class="defaults-sep">–</span>
+              <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="rdef-modal-srv-out" inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('server','out')"></div>
+            </div>
+          </div>
+          <div class="rdg-row">
+            <span class="rdg-role-lbl rdg-sup">Sup</span>
+            <div class="rdg-fields">
+              <div class="default-field-wrap"><span class="default-field-lbl">IN</span><input type="text" id="rdef-modal-sup-in"  inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('support','in')"></div>
+              <span class="defaults-sep">–</span>
+              <div class="default-field-wrap"><span class="default-field-lbl">OUT</span><input type="text" id="rdef-modal-sup-out" inputmode="decimal" placeholder="—" oninput="onModalRoleDefaultChange('support','out')"></div>
+            </div>
+          </div>
+        </div>
+        <div class="defaults-note">Role defaults override the global fallback for their role and only fill blank In/Out fields.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REMAINDER ALLOCATION -->
+<div class="modal-overlay" id="remainderSidebar" onclick="if(event.target===this)closeRemainderSidebar()">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title">Remainder Allocation<button class="modal-close" onclick="closeRemainderSidebar()">✕</button></div>
+    <div id="remainder-body" class="modal-body rem-modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: SUPPORT TIP-OUT -->
+<div class="modal-overlay" id="supportTipOutModal" onclick="modalBgClose(event,'supportTipOutModal')">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title"><span id="supportModalTitle">Support Tip-Out</span><button class="modal-close" onclick="closeModal('supportTipOutModal')">✕</button></div>
+    <div id="supportModalBody" class="modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL: PERSON PROFILE -->
+<div class="modal-overlay" id="personModal" onclick="modalBgClose(event,'personModal')">
+  <div class="modal-sheet person-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-title"><span id="personModalLabel">Profile</span><button class="modal-close" onclick="closeModal('personModal')">✕</button></div>
+    <div id="personModalBody"></div>
+  </div>
+</div>
+
+<script src="js/state.js"></script>
+<script src="js/persist.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/engine_day.js"></script>
+<script src="js/modals.js"></script>
+<script src="js/tabs.js"></script>
+<script src="js/cash.js"></script>
+<script src="js/cash_day.js"></script>
+<script src="js/staff.js"></script>
+<script src="js/shift.js"></script>
+<script src="js/cards.js"></script>
+<script src="js/summary.js"></script>
+<script src="js/summary_day.js"></script>
+<script src="js/dist.js"></script>
+<script src="js/remainder.js"></script>
+<script src="js/person.js"></script>
+<script src="js/support.js"></script>
+<script src="js/calculator.js"></script>
+<script src="js/main.js"></script>
+</body>
 </html>
