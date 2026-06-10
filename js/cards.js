@@ -57,13 +57,13 @@ function updateHomeLive(staffArr, metrics) {
       <div class="home-metric-grid">
         <div class="home-metric"><span>Rate</span><strong>${rateText}</strong></div>
         <div class="home-metric"><span>Paid out</span><strong>${paidText}</strong></div>
-        <div class="home-metric"><span>Remainder</span><strong>${remainderText}</strong></div>
+        <div class="home-metric"><span>Chump</span><strong>${remainderText}</strong></div>
       </div>
       <div class="home-action-grid">
         <button onclick="switchTab('cash', $('tb-cash'))"><span>Cash</span><em>${total ? '$' + total : 'missing'}</em></button>
         <button onclick="switchTab('staff', $('tb-staff'))"><span>Staff</span><em>${named || 'missing'}</em></button>
         <button onclick="switchTab('summary', $('tb-summary'))"><span>Summary</span><em>${ready ? 'view payouts' : 'pending'}</em></button>
-        <button onclick="switchTab('dist', $('tb-dist'))"><span>Dist</span><em>${distOk ? 'ready' : 'check bills'}</em></button>
+        <button onclick="switchTab('dist', $('tb-dist'))"><span>Chart</span><em>${distOk ? 'ready' : 'check bills'}</em></button>
       </div>
     </div>`;
 }

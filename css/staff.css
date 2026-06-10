@@ -1,3 +1,68 @@
+.night-rebuild-hidden {
+  display: none !important;
+}
+
+.roster-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.roster-chips.hidden {
+  display: none;
+}
+
+.roster-chip {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--blue);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 700;
+}
+
+.staff-close-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 10px;
+  align-items: center;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.staff-close-label {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.staff-close-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+}
+
+.staff-close-hint {
+  grid-column: 1 / -1;
+  font-size: .68rem;
+  color: var(--muted);
+}
+
 /* ── Staff page shell ────────────────────────────────────────────────────────── */
 .tab-panel.staff-page {
   display: none;
@@ -83,6 +148,71 @@
   background: var(--role-support-bg);
   border-color: var(--role-support-border);
   color: var(--role-support);
+}
+
+.night-rebuild-hidden {
+  display: none !important;
+}
+
+.roster-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.roster-chips.hidden {
+  display: none;
+}
+
+.roster-chip {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--blue);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 700;
+}
+
+.staff-close-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 10px;
+  align-items: center;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.staff-close-label {
+  font-family: var(--font-mono);
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.staff-close-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+}
+
+.staff-close-hint {
+  grid-column: 1 / -1;
+  font-size: .68rem;
+  color: var(--muted);
 }
 
 /* ── Role toggle ─────────────────────────────────────────────────────────────── */

@@ -30,6 +30,8 @@ function renderBlockedPlaceholders(reason) {
 
 function blockCalculation(reason, options = {}) {
   currentInputError = options.inputError ? reason : '';
+  lastSessionWarnings = [];
+  if (typeof renderCashSmallBills === 'function') renderCashSmallBills();
   updateHomeLive(null);
   clearStaleBanners();
   if (lastStaff.length || lastDayResult || options.showPlaceholder) {
@@ -148,6 +150,18 @@ function computeNightShift() {
     return { ok: false, reason: invalidStaff.n + ' has invalid shift hours.', inputError: true };
   }
 
+  const warnings = [];
+  const closeParsed = parseTimeString(gcOut);
+  if (gcOut && closeParsed.valid) {
+    rawData.forEach(r => {
+      if (!r.outStr) return;
+      const outParsed = parseTimeString(r.outStr);
+      if (outParsed.valid && outParsed.value > closeParsed.value) {
+        warnings.push(r.name + ' out time is later than close time.');
+      }
+    });
+  }
+
   const total = getTotal();
   const totH  = staff.reduce((s, p) => s + p.h, 0);
   if (totH <= 0) {
@@ -163,7 +177,7 @@ function computeNightShift() {
   const leftover  = remAlloc.leftover;
   staff.forEach(p => { p.final = p.base + p.bonus; p.rem = p.final; });
 
-  return { ok: true, staff, total, totH, rate, leftover, remainderPool: remainder, pool: getInputPool() };
+  return { ok: true, staff, total, totH, rate, leftover, remainderPool: remainder, pool: getInputPool(), warnings };
 }
 
 // ── Night shift: distribution ─────────────────────────────────────────────────
@@ -198,6 +212,7 @@ function renderNightShift(computeResult, distResult) {
   renderDist(staffWithBills, poolAfter,
     { remainderBills, distributionError, leftover, pool });
 
+  renderCashSmallBills();
   updateHomeLive(staff, { rate, totH, leftover, distributionError });
 }
 
@@ -257,6 +272,7 @@ function calculate(silent) {
   lastRate     = result.rate;
   lastLeftover = result.leftover;
   lastRemainderPool = result.remainderPool;
+  lastSessionWarnings = result.warnings || [];
 
   const distResult = runDistribution(result.staff, result.pool, result.leftover);
 

@@ -35,13 +35,14 @@ function buildDistributionSlots(staffArr, leftoverAmount) {
   return slots;
 }
 
-function getSmallBillRequirementsForSlots(slots, poolIn) {
+function getSmallBillRequirementsForSlots(slots, poolIn, closerCount) {
   const pool = normalizePool(poolIn);
   const targets = slots.map(s => s.orig);
   const oddTenSlots = slots.filter(s => Math.floor(s.orig / 10) % 2 !== 0);
   const fiftyEligibleOddTenSlots = oddTenSlots.filter(s => s.orig >= 50).length;
   const fiftyCoverage = Math.min(pool[50] || 0, fiftyEligibleOddTenSlots);
-  const minOnes = targets.reduce((sum, target) => sum + (target % 5), 0);
+  const closers = closerCount != null ? closerCount : slots.filter(s => !s.isRemainder && s.ref && s.ref.closer).length;
+  const minOnes = targets.reduce((sum, target) => sum + (target % 5), 0) + Math.max(0, closers - 1);
   const minOneFiveValue = targets.reduce((sum, target) => sum + (target % 10), 0);
   const minOneFiveTenRaw = targets.reduce((sum, target) => sum + (target % 20), 0);
   const minOneFiveTenValue = Math.max(minOneFiveValue, minOneFiveTenRaw - fiftyCoverage * 10);
@@ -67,7 +68,8 @@ function getSmallBillRequirementsForSlots(slots, poolIn) {
 }
 
 function getSmallBillRequirements(staffArr, poolIn, leftoverAmount) {
-  return getSmallBillRequirementsForSlots(buildDistributionSlots(staffArr, leftoverAmount || 0), poolIn);
+  const closerCount = staffArr.filter(p => p.closer).length;
+  return getSmallBillRequirementsForSlots(buildDistributionSlots(staffArr, leftoverAmount || 0), poolIn, closerCount);
 }
 
 function previewSmallBillTrades(staffArr, poolIn, leftoverAmount) {

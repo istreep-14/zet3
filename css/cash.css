@@ -1,3 +1,15 @@
+.cash-small-bills {
+  margin-top: 12px;
+}
+
+.cash-small-bills-empty {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: .72rem;
+}
+
 /* ── Mode toggle ─────────────────────────────────── */
 .cash-mode-toggle {
   display: flex;

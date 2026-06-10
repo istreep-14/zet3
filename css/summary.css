@@ -219,12 +219,35 @@
   border-color: var(--border);
 }
 
-.remainder-avatar {
+.remainder-avatar,
+.chump-avatar {
   color: var(--muted);
   border-style: dashed;
   width: 22px;
   height: 22px;
   font-size: .52rem;
+}
+
+.summary-chart-btn {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gold-dim);
+  background: linear-gradient(135deg, #352910, #191521);
+  color: var(--gold-2);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .3px;
+  cursor: pointer;
+}
+
+.warn-box--soft {
+  border-color: var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  margin-bottom: 8px;
 }
 
 /* Totals strip — hours and tip value aligned consistently */

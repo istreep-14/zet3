@@ -319,7 +319,27 @@ function toggleSupportCut(rowId, cutId) {
 
 // ── Event handlers ────────────────────────────────────────────────────────────
 
+function onStaffCloseTimeChange() {
+  const el = $('staff-close-time');
+  const gcOut = $('gc-out');
+  if (!el || !gcOut) return;
+  gcOut.value = el.value;
+  _refreshRolePlaceholders('bartender', 'out');
+  _refreshRolePlaceholders('server', 'out');
+  reindexTabOrder();
+  autoCalculate();
+  saveState();
+}
+
+function syncStaffCloseTimeField() {
+  const el = $('staff-close-time');
+  const gcOut = $('gc-out');
+  if (el && gcOut) el.value = gcOut.value || '';
+}
+
 function onStaffNameInput() {
+  if (typeof rememberRosterNamesFromDOM === 'function') rememberRosterNamesFromDOM();
+  if (typeof renderRosterChips === 'function') renderRosterChips();
   if (shiftMode === 'day') updateDayStockCards(); else updateStockCards();
   updateTabIndicators();
   updateRoleViewCount();
@@ -422,6 +442,7 @@ function updateStaffPageChrome(namedCount) {
 }
 
 function onDefaultTimesChange() {
+  if (typeof syncStaffCloseTimeField === 'function') syncStaffCloseTimeField();
   reindexTabOrder();
   // Refresh role-aware placeholders for all roles (global fallback may have changed)
   ['bartender', 'server', 'support'].forEach(role => {

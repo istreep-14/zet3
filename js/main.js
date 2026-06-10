@@ -179,6 +179,8 @@ if (_saved) {
 
 // Sync the default times modal per-role fields on load
 if (typeof _syncModalRoleFields === 'function') _syncModalRoleFields();
+if (typeof syncStaffCloseTimeField === 'function') syncStaffCloseTimeField();
+if (typeof renderRosterChips === 'function') renderRosterChips();
 
 isRestoringState = false;
 

@@ -62,11 +62,11 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
   }).join('');
 
   const remainderCard = leftover > 0
-    ? `<div class="person-card remainder-card">
+    ? `<div class="person-card remainder-card chump-card">
         <div class="person-card-top">
-          <div class="person-avatar remainder-avatar">R</div>
+          <div class="person-avatar remainder-avatar chump-avatar">C</div>
           <div class="person-main">
-            <div class="person-name-row"><span class="person-name" style="color:var(--muted)">Remainder</span></div>
+            <div class="person-name-row"><span class="person-name" style="color:var(--muted)">Chump</span></div>
           </div>
           <div class="person-hrs-block">
             <div class="person-hrs-val muted" style="font-size:.72rem">stays</div>
@@ -78,16 +78,20 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
     : '';
 
   const leftoverMeta = leftover > 0
-    ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Remainder</div><div class="summary-meta-val" style="color:var(--muted)">$${leftover}</div></div>`
+    ? `<div class="summary-meta-item"><div class="summary-meta-lbl">Chump</div><div class="summary-meta-val" style="color:var(--muted)">$${leftover}</div></div>`
     : '';
 
   const unpaid       = staffWithBills.reduce((s, p) => s + Math.max(0, p.rem || 0), 0);
   const remainderPaid = poolValue(remainderBills);
   const remShort     = leftover > 0 && remainderPaid !== leftover;
   const warnMsg      = distributionError
-    || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Remainder cannot be represented by available bills' : '');
+    || (unpaid > 0 ? 'Distribution short $' + unpaid : remShort ? 'Chump cannot be represented by available bills' : '');
 
-  let warnHTML = '';
+  const sessionWarnHTML = (lastSessionWarnings || []).map(msg =>
+    `<div class="warn-box warn-box--soft">⚠ ${escapeHTML(msg)}</div>`
+  ).join('');
+
+  let warnHTML = sessionWarnHTML;
   if (warnMsg) {
     const req     = getSmallBillRequirements(staffWithBills, pool, leftover);
     const reqHTML = renderRequirementSummary(req, pool);
@@ -119,6 +123,7 @@ function renderSummary(staffWithBills, staffOrig, total, totH, rate, leftover, p
         <span class="summary-totals-val">$${grandTotal}</span>
       </div>
     </div>
+    <button class="summary-chart-btn" onclick="switchTab('dist', $('tb-dist'))">View bill chart</button>
     ${warnHTML}
   `;
 }

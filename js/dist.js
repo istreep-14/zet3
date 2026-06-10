@@ -237,7 +237,7 @@ function renderDistTable(swb, poolAfter, distCtx) {
   const hasRemShort = leftover > 0 && remPV !== leftover;
   const hasErr      = !!distributionError || unpaid > 0 || hasRemShort;
   const errMsg      = distributionError
-    || (unpaid > 0 ? 'Distribution short $' + unpaid : 'Remainder not representable by available bills');
+    || (unpaid > 0 ? 'Distribution short $' + unpaid : 'Chump cannot be represented by available bills');
 
   const req     = getSmallBillRequirements(swb, pool, leftover);
   const reqHTML = renderRequirementSummary(req, pool);
@@ -251,7 +251,7 @@ function renderDistTable(swb, poolAfter, distCtx) {
 
   const actionBtns = '<div class="dist-action-grid">'
     + '<button class="ct-open-btn" onclick="openCloseTimeSidebar()">⏱ Close Time</button>'
-    + '<button class="ct-open-btn rem-open-btn" onclick="openRemainderSidebar()">Remainder</button>'
+    + '<button class="ct-open-btn rem-open-btn" onclick="openRemainderSidebar()">Closer bonus</button>'
     + '</div>';
 
   if (hasErr) {
@@ -285,18 +285,20 @@ function renderDistTable(swb, poolAfter, distCtx) {
 
 // ── Requirement summary ───────────────────────────────────────────────────────
 
-function renderRequirementSummary(req, pool) {
+function renderRequirementSummary(req, pool, options) {
+  const compact = options && options.compact;
   const minFives = Math.max(0, (req.minOneFiveValue - req.minOnes) / 5);
   const minTens  = Math.max(0, (req.minOneFiveTenValue - req.minOneFiveValue) / 10);
-  const shortFives = Math.max(0, minFives - (pool[5]  || 0));
-  const shortTens  = Math.max(0, minTens  - (pool[10] || 0));
+  const hasShort = req.onesShort > 0 || req.oneFiveShort > 0 || req.oneFiveTenShort > 0;
 
-  function reqRow(label, need, have, short) {
-    const ok    = short <= 0;
-    const cls   = ok ? 'req-row--ok' : 'req-row--short';
+  function reqRow(label, need, have, short, dollarShort) {
+    const ok = short <= 0;
+    const cls = ok ? 'req-row--ok' : 'req-row--short';
     const badge = ok
       ? '<span class="req-badge req-badge--ok">covered</span>'
-      : `<span class="req-badge req-badge--short">short&nbsp;${short}</span>`;
+      : (dollarShort
+        ? `<span class="req-badge req-badge--short">short&nbsp;$${short}</span>`
+        : `<span class="req-badge req-badge--short">short&nbsp;${short}</span>`);
     return `<div class="req-row ${cls}">
       <span class="req-row-lbl">${label}</span>
       <span class="req-row-need">${Math.ceil(need)}&nbsp;min</span>
@@ -305,12 +307,25 @@ function renderRequirementSummary(req, pool) {
     </div>`;
   }
 
-  return `<div class="req-summary">
-    <div class="req-summary-hdr">Minimum small bills</div>
-    ${reqRow('$1s',  req.minOnes, pool[1]  || 0, req.onesShort)}
-    ${reqRow('$5s',  minFives,    pool[5]  || 0, shortFives)}
-    ${reqRow('$10s', minTens,     pool[10] || 0, shortTens)}
+  let html = `<div class="req-summary${compact ? ' req-summary--compact' : ''}${hasShort ? ' req-summary--short' : ''}">
+    <div class="req-summary-hdr">Small bills to keep</div>
+    ${reqRow('$1s', req.minOnes, pool[1] || 0, req.onesShort)}
+    ${reqRow('$5s', minFives, pool[5] || 0, req.oneFiveShort, true)}
+    ${reqRow('$10s', minTens, pool[10] || 0, req.oneFiveTenShort, true)}
   </div>`;
+
+  if (!compact && hasShort) {
+    html += `<div class="req-coverage">
+      <div class="req-coverage-row"><span>$1+$5 value</span><b>need $${req.minOneFiveValue}</b><b>have $${req.availableOneFiveValue}</b></div>
+      <div class="req-coverage-row"><span>$1+$5+$10 value</span><b>need $${req.minOneFiveTenValue}</b><b>have $${req.availableOneFiveTenValue}</b></div>
+    </div>`;
+  }
+
+  if (req.fiftyCoverage > 0) {
+    html += `<div class="req-fifty-note">${req.fiftyCoverage} × $50 covering odd-ten needs lowers the visible $10 target.</div>`;
+  }
+
+  return html;
 }
 
 // ── Apply pending trades ──────────────────────────────────────────────────────
@@ -449,7 +464,7 @@ function renderDistTableMarkup(swb, options = {}) {
         ? `<td style="color:var(--muted);font-weight:600;font-size:.74rem">${n}</td>`
         : `<td class="zero">—</td>`;
     }).join('');
-    remRow = `<tr class="dist-rem-row"><td>Rem</td>${rc}<td style="color:var(--muted);font-weight:600;border-left:1px solid var(--border);font-size:.74rem">$${sumRem}</td></tr>`;
+    remRow = `<tr class="dist-rem-row"><td>Chump</td>${rc}<td style="color:var(--muted);font-weight:600;border-left:1px solid var(--border);font-size:.74rem">$${sumRem}</td></tr>`;
   }
 
   const dtCols = DENOMS.map(d => {

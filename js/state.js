@@ -21,6 +21,7 @@ let isRestoringState = false;
 let isUpdatingNetTotal = false;
 let currentInputError = '';
 let remainderOverrides = null; // null = automatic closer split; object = manual rowId -> add-on dollars
+let lastSessionWarnings = [];
 
 // ── Shift mode ────────────────────────────────────────────────────────────────
 // 'night' = current single-pool behaviour

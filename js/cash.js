@@ -345,3 +345,20 @@ function onNetTotalChange() {
   renderNetBreakdown(total, ideal);
   if (!isUpdatingNetTotal) scheduleCalculate();
 }
+
+function renderCashSmallBills() {
+  const el = $('cash-small-bills');
+  if (!el || shiftMode !== 'night' || cashMode !== 'perbill') {
+    if (el) el.innerHTML = '';
+    return;
+  }
+
+  if (!lastStaff || !lastStaff.length || !getTotal()) {
+    el.innerHTML = '<div class="cash-small-bills-empty">Add staff and bill counts to see small-bill guidance.</div>';
+    return;
+  }
+
+  const pool = getInputPool();
+  const req = getSmallBillRequirements(lastStaff, pool, lastLeftover || 0);
+  el.innerHTML = renderRequirementSummary(req, pool, { compact: true });
+}
