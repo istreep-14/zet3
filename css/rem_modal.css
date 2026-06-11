@@ -1,0 +1,272 @@
+/* ── Remainder Split Modal ───────────────────────────────────────────────────── */
+
+/* Space all header action buttons evenly */
+.hdr-actions { gap: 6px; }
+
+/* Keep the session menu absolutely positioned regardless of gap */
+.hdr-rem-btn { flex-shrink: 0; }
+
+/* ── Top strip: pool total + mode badge ──────────────────────────────────────── */
+.rem-top-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 10px;
+}
+
+.rem-pool-label {
+  font-size: .72rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+}
+
+.rem-pool-label strong {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.rem-mode-badge {
+  font-size: .44rem;
+  font-weight: 800;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  border-radius: 4px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+
+.rem-mode-auto {
+  color: var(--green);
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+}
+
+.rem-mode-manual {
+  color: var(--amber);
+  background: rgba(245, 166, 35, .1);
+  border: 1px solid rgba(245, 166, 35, .28);
+}
+
+/* ── Person rows ─────────────────────────────────────────────────────────────── */
+.rem-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.rem-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px 9px;
+}
+
+.rem-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.rem-name {
+  font-size: .86rem;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.rem-closer-badge {
+  font-size: .42rem;
+  font-weight: 700;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  color: var(--accent2);
+  border: 1px solid rgba(233, 69, 96, .4);
+  background: rgba(233, 69, 96, .08);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+/* ── Value row: exact → base  [−] bonus [+]  final ──────────────────────────── */
+.rem-val-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rem-exact {
+  font-size: .7rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.rem-arrow {
+  color: var(--muted2);
+  font-size: .66rem;
+  flex-shrink: 0;
+}
+
+.rem-base {
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--text2);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+/* Push bonus control + final to the right */
+.rem-bonus-ctrl {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rem-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .12s, color .12s, background .12s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.rem-btn:disabled {
+  opacity: .28;
+  cursor: not-allowed;
+}
+
+.rem-btn-sub:not(:disabled):active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(233, 69, 96, .1);
+}
+
+.rem-btn-add:not(:disabled):active {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-bg);
+}
+
+/* Hold-style highlight when add button is the only live action */
+.rem-btn-add:not(:disabled) {
+  border-color: rgba(46, 204, 113, .35);
+  color: var(--green);
+}
+
+.rem-bonus-val {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  width: 38px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.rem-bonus-val.active {
+  color: var(--green);
+}
+
+.rem-final {
+  font-size: .98rem;
+  font-weight: 800;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  width: 48px;
+  text-align: right;
+}
+
+.rem-final.boosted {
+  color: var(--gold2);
+}
+
+/* ── Summary footer ──────────────────────────────────────────────────────────── */
+.rem-summary {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.rem-sum-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: .72rem;
+  font-family: var(--font-mono);
+  color: var(--muted);
+}
+
+.rem-sum-row:last-child { border-bottom: none; }
+
+.rem-sum-row span:last-child {
+  font-weight: 700;
+  color: var(--text2);
+}
+
+.rem-sum-remainder span:last-child {
+  color: var(--amber);
+}
+
+.rem-leftover {
+  color: var(--accent) !important;
+}
+
+/* ── Reset button ────────────────────────────────────────────────────────────── */
+.rem-reset-btn {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+
+.rem-reset-btn:active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Placeholder when no data / wrong mode ───────────────────────────────────── */
+/*
+ * BUG FIX: was `color: var(--muted2)` (#3e3e5e) which is nearly invisible
+ * against the dark surface background (#13131e). Changed to var(--muted)
+ * (#6a6a8a) which is clearly legible.
+ */
+.rem-unavailable {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--muted);
+  font-size: .72rem;
+  font-family: var(--font-mono);
+  line-height: 1.6;
+}

@@ -1,34 +1,38 @@
-// Core calculation engine — pure functions, no DOM access
+// Bill distribution engine — ported from the v3 engine.js pipeline.
+// Pure: value in, value out. Callers' objects are never mutated; results come
+// back as byPerson maps keyed by staff id.
+//
+// Pipeline: preflight → preferred path (proportional $100s/$50s, balanced
+// sweep of lower denoms) → DFS fallback (≤100 paths, graded) → rebalancing.
 
-function blankBills() {
-  return { 100: 0, 50: 0, 20: 0, 10: 0, 5: 0, 1: 0 };
-}
+import { DENOMS, parseWholeNumber, poolValue, blankBills } from './util.js';
 
 function normalizePool(pool) {
   const out = blankBills();
   DENOMS.forEach(d => {
-    const parsed = parseWholeNumberString(pool?.[d] ?? '');
+    const parsed = parseWholeNumber(pool?.[d] ?? '');
     out[d] = parsed.valid ? parsed.value : 0;
   });
   return out;
 }
 
-function buildDistributionSlots(staffArr, leftoverAmount) {
-  const slots = staffArr.map(p => ({
-    ref: p,
+// people: [{ id, final }] — internal slots copy what they need.
+function buildDistributionSlots(people, leftoverAmount) {
+  const slots = people.map(p => ({
+    id: p.id,
     orig: p.final,
     target: p.final,
     bills: blankBills(),
-    isRemainder: false
+    isRemainder: false,
   }));
 
   if (leftoverAmount > 0) {
     slots.push({
-      ref: null,
+      id: null,
       orig: leftoverAmount,
       target: leftoverAmount,
       bills: blankBills(),
-      isRemainder: true
+      isRemainder: true,
     });
   }
 
@@ -62,23 +66,23 @@ function getSmallBillRequirementsForSlots(slots, poolIn) {
     oddTenCount: oddTenSlots.length,
     fiftyEligibleOddTenCount: fiftyEligibleOddTenSlots,
     fiftyCoverage,
-    fiftyCoverageValue: fiftyCoverage * 10
+    fiftyCoverageValue: fiftyCoverage * 10,
   };
 }
 
-function getSmallBillRequirements(staffArr, poolIn, leftoverAmount) {
-  return getSmallBillRequirementsForSlots(buildDistributionSlots(staffArr, leftoverAmount || 0), poolIn);
+export function getSmallBillRequirements(people, poolIn, leftoverAmount) {
+  return getSmallBillRequirementsForSlots(buildDistributionSlots(people, leftoverAmount || 0), poolIn);
 }
 
-function previewSmallBillTrades(staffArr, poolIn, leftoverAmount) {
+export function previewSmallBillTrades(people, poolIn, leftoverAmount) {
   const sourcePool = normalizePool(poolIn);
-  const targetTotal = staffArr.reduce((sum, p) => sum + (p.final || 0), 0) + (leftoverAmount || 0);
+  const targetTotal = people.reduce((sum, p) => sum + (p.final || 0), 0) + (leftoverAmount || 0);
   if (poolValue(sourcePool) !== targetTotal) return null;
 
   const adjustedPool = normalizePool(sourcePool);
   const deltas = blankBills();
   const trades = [];
-  const slots = buildDistributionSlots(staffArr, leftoverAmount || 0);
+  const slots = buildDistributionSlots(people, leftoverAmount || 0);
 
   function describeBundle(bundle) {
     return DENOMS
@@ -133,18 +137,17 @@ function previewSmallBillTrades(staffArr, poolIn, leftoverAmount) {
   }
 
   function trySolve() {
-    const previewStaff = staffArr.map(p => ({ ...p, bills: blankBills(), rem: p.final }));
-    const result = calculateV19Pipeline(previewStaff, adjustedPool, leftoverAmount || 0);
+    const result = runPipeline(people, adjustedPool, leftoverAmount || 0);
     if (!result.success) return null;
     return {
-      staff: previewStaff,
+      byPerson: result.byPerson,
       pool: { ...adjustedPool },
       poolAfter: result.poolAfter,
       remainderBills: result.remainderBills || blankBills(),
       deltas: { ...deltas },
       trades: [...trades],
       requirementsBefore: getSmallBillRequirementsForSlots(slots, sourcePool),
-      requirementsAfter: getSmallBillRequirementsForSlots(slots, adjustedPool)
+      requirementsAfter: getSmallBillRequirementsForSlots(slots, adjustedPool),
     };
   }
 
@@ -172,7 +175,7 @@ function previewSmallBillTrades(staffArr, poolIn, leftoverAmount) {
     { from: 10, bundle: { 5: 2 } },
     { from: 20, bundle: { 10: 2 } },
     { from: 50, bundle: { 10: 5 } },
-    { from: 100, bundle: { 20: 5 } }
+    { from: 100, bundle: { 20: 5 } },
   ];
 
   for (let i = 0; i < 30; i++) {
@@ -185,25 +188,26 @@ function previewSmallBillTrades(staffArr, poolIn, leftoverAmount) {
   return null;
 }
 
-function calculateV19Pipeline(staffArr, poolIn, leftoverAmount) {
+function runPipeline(people, poolIn, leftoverAmount) {
   const pool = normalizePool(poolIn);
-  const slots = buildDistributionSlots(staffArr, leftoverAmount || 0);
+  const slots = buildDistributionSlots(people, leftoverAmount || 0);
 
   const preflight = runPreflight(slots, pool);
-  if (!preflight.ok) return { success: false, msg: preflight.msg, poolAfter: pool, remainderBills: blankBills() };
+  if (!preflight.ok) return { success: false, msg: preflight.msg, poolAfter: pool, remainderBills: blankBills(), byPerson: {} };
 
   const preferred = buildPreferredPath(slots, pool);
   const poolAfterSieve = preferred ? null : runCascadingSieve(slots, pool);
   const paths = preferred ? [preferred] : runDFS(slots, poolAfterSieve);
   if (!paths.length) {
-    return { success: false, msg: 'Exact change impossible with current bills. Adjust bill counts in Cash.', poolAfter: poolAfterSieve, remainderBills: blankBills() };
+    return { success: false, msg: 'Exact change impossible with current bills. Adjust bill counts in Cash.', poolAfter: poolAfterSieve, remainderBills: blankBills(), byPerson: {} };
   }
 
   const best = preferred || gradePaths(paths);
+
+  const byPerson = {};
   best.slots.forEach(s => {
     if (s.isRemainder) return;
-    s.ref.bills = { ...s.bills };
-    s.ref.rem = 0;
+    byPerson[s.id] = { ...s.bills };
   });
 
   const remainderSlot = best.slots.find(s => s.isRemainder);
@@ -211,7 +215,8 @@ function calculateV19Pipeline(staffArr, poolIn, leftoverAmount) {
     success: true,
     msg: '',
     poolAfter: best.leftoverPool,
-    remainderBills: remainderSlot ? { ...remainderSlot.bills } : blankBills()
+    remainderBills: remainderSlot ? { ...remainderSlot.bills } : blankBills(),
+    byPerson,
   };
 }
 
@@ -234,14 +239,7 @@ function runPreflight(slots, pool) {
     return { ok: false, msg: 'Need $' + needs.oneFiveTenShort + ' more in $1s/$5s/$10s after $50s.' };
   }
 
-  return {
-    ok: true,
-    ideals: {
-      1: needs.minOnes,
-      5: Math.max(0, (needs.minOneFiveValue - needs.minOnes) / 5),
-      10: Math.max(0, (needs.minOneFiveTenValue - needs.minOneFiveValue) / 10)
-    }
-  };
+  return { ok: true };
 }
 
 function runCascadingSieve(slots, poolIn) {
@@ -324,11 +322,11 @@ function runCascadingSieve(slots, poolIn) {
 
 function cloneDistributionSlots(slots) {
   return slots.map(s => ({
-    ref: s.ref,
+    id: s.id,
     orig: s.orig,
     target: s.target,
     bills: { ...s.bills },
-    isRemainder: !!s.isRemainder
+    isRemainder: !!s.isRemainder,
   }));
 }
 
@@ -342,7 +340,7 @@ function apportionDenomCounts(slots, denom, available) {
   const totalOrig = slots.reduce((sum, s) => sum + (s.orig || 0), 0) || 1;
   const shares = slots.map((s, i) => ({
     i,
-    raw: (s.orig || 0) / totalOrig * count
+    raw: (s.orig || 0) / totalOrig * count,
   }));
 
   let assigned = 0;
@@ -398,7 +396,7 @@ function buildPreferredPath(slotsIn, poolIn) {
 
   return {
     slots,
-    leftoverPool: pool
+    leftoverPool: pool,
   };
 }
 
@@ -461,88 +459,6 @@ function applyBestFiftyPlan(slots, pool) {
     slots[i].target -= n * 50;
   });
   pool[50] = 0;
-  return true;
-}
-
-function applyBestFlipperPlan(slots, pool) {
-  const plan = [];
-  const best = { score: Infinity, plan: null };
-  let explored = 0;
-  const maxPaths = 100000;
-
-  const choicesBySlot = slots.map(s => {
-    const choices = [];
-    const max50 = Math.min(pool[50] || 0, Math.floor(s.target / 50));
-    for (let n50 = 0; n50 <= max50; n50++) {
-      const max10 = Math.min(pool[10] || 0, Math.floor((s.target - n50 * 50) / 10));
-      for (let n10 = 0; n10 <= max10; n10++) {
-        const rem = s.target - n50 * 50 - n10 * 10;
-        if (rem >= 0 && rem % 20 === 0) choices.push({ n50, n10, rem });
-      }
-    }
-    return choices.sort((a, b) => (b.n50 * 50 + b.n10 * 10) - (a.n50 * 50 + a.n10 * 10));
-  });
-
-  function scorePlan(candidate) {
-    const used50 = candidate.reduce((sum, choice) => sum + choice.n50, 0);
-    const used10 = candidate.reduce((sum, choice) => sum + choice.n10, 0);
-    const needed20 = candidate.reduce((sum, choice) => sum + choice.rem / 20, 0);
-    const unusedValue = (pool[50] - used50) * 50 + (pool[10] - used10) * 10 + (pool[20] - needed20) * 20;
-    const staffSlots = slots.filter(s => !s.isRemainder);
-    const totalOrig = staffSlots.reduce((sum, s) => sum + (s.orig || 0), 0) || 1;
-    const high50 = staffSlots.map(s => {
-      const i = slots.indexOf(s);
-      return (s.bills[100] || 0) * 100 + ((candidate[i]?.n50 || 0) * 50);
-    });
-    const totalHigh50 = high50.reduce((sum, value) => sum + value, 0);
-    let proportionalPenalty = 0;
-
-    staffSlots.forEach((s, i) => {
-      const ideal = (s.orig || 0) / totalOrig * totalHigh50;
-      proportionalPenalty += Math.abs(high50[i] - ideal);
-    });
-
-    return Math.max(0, unusedValue) * 1000 + proportionalPenalty;
-  }
-
-  function search(idx, used50, used10) {
-    if (explored > maxPaths) return;
-    if (idx === slots.length) {
-      explored++;
-      const needed20 = plan.reduce((sum, choice) => sum + choice.rem / 20, 0);
-      if (needed20 > (pool[20] || 0)) return;
-      const score = scorePlan(plan);
-      if (score < best.score) {
-        best.score = score;
-        best.plan = plan.map(choice => ({ ...choice }));
-      }
-      return;
-    }
-
-    for (const choice of choicesBySlot[idx]) {
-      if (used50 + choice.n50 > (pool[50] || 0)) continue;
-      if (used10 + choice.n10 > (pool[10] || 0)) continue;
-      plan[idx] = choice;
-      search(idx + 1, used50 + choice.n50, used10 + choice.n10);
-    }
-  }
-
-  search(0, 0, 0);
-  if (!best.plan) return false;
-
-  best.plan.forEach((choice, i) => {
-    if (choice.n50 > 0) {
-      slots[i].bills[50] += choice.n50;
-      slots[i].target -= choice.n50 * 50;
-      pool[50] -= choice.n50;
-    }
-    if (choice.n10 > 0) {
-      slots[i].bills[10] += choice.n10;
-      slots[i].target -= choice.n10 * 10;
-      pool[10] -= choice.n10;
-    }
-  });
-
   return true;
 }
 
@@ -619,152 +535,6 @@ function assignDenomBalanced(slots, pool, denom) {
   return true;
 }
 
-function smallBillCount(s) {
-  return (s.bills[1] || 0) + (s.bills[5] || 0) + (s.bills[10] || 0);
-}
-
-function smallBillValue(s) {
-  return (s.bills[1] || 0) + (s.bills[5] || 0) * 5 + (s.bills[10] || 0) * 10;
-}
-
-function removeSmallValueWithOrder(s, value, order) {
-  const removed = blankBills();
-  let remaining = value;
-  for (const d of order) {
-    const use = Math.min(s.bills[d] || 0, Math.floor(remaining / d));
-    if (use <= 0) continue;
-    s.bills[d] -= use;
-    removed[d] = use;
-    remaining -= use * d;
-  }
-  if (remaining !== 0) {
-    for (const d of [1, 5, 10]) {
-      s.bills[d] += removed[d];
-    }
-    return null;
-  }
-  return removed;
-}
-
-function removeSmallValue(s, value) {
-  return removeSmallValueWithOrder(s, value, [10, 5, 1]);
-}
-
-function addSmallBundle(s, bundle) {
-  [1, 5, 10].forEach(d => { s.bills[d] += bundle[d] || 0; });
-}
-
-function smallSpreadScore(slots) {
-  const staffSlots = slots.filter(s => !s.isRemainder);
-  const range = values => Math.max(...values) - Math.min(...values);
-  const totalOrig = staffSlots.reduce((sum, s) => sum + (s.orig || 0), 0) || 1;
-  const totalSmallValue = staffSlots.reduce((sum, s) => sum + smallBillValue(s), 0);
-  const valuePenalty = staffSlots.reduce((sum, s) => {
-    const ideal = (s.orig || 0) / totalOrig * totalSmallValue;
-    return sum + Math.abs(smallBillValue(s) - ideal);
-  }, 0);
-
-  return valuePenalty * 10000
-    + range(staffSlots.map(smallBillValue)) * 1000
-    + range(staffSlots.map(smallBillCount)) * 100
-    + range(staffSlots.map(s => s.bills[10] || 0)) * 100
-    + range(staffSlots.map(s => s.bills[5] || 0)) * 100
-    + range(staffSlots.map(s => s.bills[1] || 0));
-}
-
-function rebalanceTwentiesAndSmallBills(slots) {
-  let improved = true;
-  while (improved) {
-    improved = false;
-    const currentScore = smallSpreadScore(slots);
-    let best = null;
-
-    for (const smallHeavy of slots.filter(s => !s.isRemainder && smallBillValue(s) >= 20)) {
-      for (const twentyDonor of slots.filter(s => !s.isRemainder && s !== smallHeavy && (s.bills[20] || 0) > 0)) {
-        const bundle = removeSmallValue(smallHeavy, 20);
-        if (!bundle) continue;
-        smallHeavy.bills[20]++;
-        twentyDonor.bills[20]--;
-        addSmallBundle(twentyDonor, bundle);
-
-        const score = smallSpreadScore(slots);
-        if (score < currentScore && (!best || score < best.score)) {
-          best = { smallHeavy, twentyDonor, bundle: { ...bundle }, score };
-        }
-
-        [1, 5, 10].forEach(d => { twentyDonor.bills[d] -= bundle[d] || 0; });
-        twentyDonor.bills[20]++;
-        smallHeavy.bills[20]--;
-        addSmallBundle(smallHeavy, bundle);
-      }
-    }
-
-    if (best) {
-      const bundle = removeSmallValue(best.smallHeavy, 20);
-      best.smallHeavy.bills[20]++;
-      best.twentyDonor.bills[20]--;
-      addSmallBundle(best.twentyDonor, bundle);
-      improved = true;
-    }
-  }
-  rebalanceSmallDenominationBundles(slots);
-}
-
-function subtractSmallBundle(s, bundle) {
-  [1, 5, 10].forEach(d => { s.bills[d] -= bundle[d] || 0; });
-}
-
-function rebalanceSmallDenominationBundles(slots) {
-  let improved = true;
-  while (improved) {
-    improved = false;
-    const currentScore = smallSpreadScore(slots);
-    let best = null;
-
-    for (const swapValue of [20, 10, 5]) {
-      for (const highBundleSlot of slots.filter(s => !s.isRemainder && smallBillValue(s) >= swapValue)) {
-        for (const lowBundleSlot of slots.filter(s => !s.isRemainder && s !== highBundleSlot && smallBillValue(s) >= swapValue)) {
-          const highBundle = removeSmallValueWithOrder(highBundleSlot, swapValue, [10, 5, 1]);
-          if (!highBundle) continue;
-          const lowBundle = removeSmallValueWithOrder(lowBundleSlot, swapValue, [1, 5, 10]);
-          if (!lowBundle) {
-            addSmallBundle(highBundleSlot, highBundle);
-            continue;
-          }
-
-          addSmallBundle(highBundleSlot, lowBundle);
-          addSmallBundle(lowBundleSlot, highBundle);
-
-          const score = smallSpreadScore(slots);
-          if (score < currentScore && (!best || score < best.score)) {
-            best = {
-              highBundleSlot,
-              lowBundleSlot,
-              highBundle: { ...highBundle },
-              lowBundle: { ...lowBundle },
-              swapValue,
-              score
-            };
-          }
-
-          subtractSmallBundle(lowBundleSlot, highBundle);
-          subtractSmallBundle(highBundleSlot, lowBundle);
-          addSmallBundle(lowBundleSlot, lowBundle);
-          addSmallBundle(highBundleSlot, highBundle);
-        }
-      }
-    }
-
-    if (best) {
-      const highBundle = removeSmallValueWithOrder(best.highBundleSlot, best.swapValue, [10, 5, 1]);
-      const lowBundle = removeSmallValueWithOrder(best.lowBundleSlot, best.swapValue, [1, 5, 10]);
-      addSmallBundle(best.highBundleSlot, lowBundle);
-      addSmallBundle(best.lowBundleSlot, highBundle);
-      improved = true;
-    }
-  }
-}
-
 function runDFS(slots, poolIn) {
   const validPaths = [];
   const bigDenoms = [100, 50, 20, 10];
@@ -776,7 +546,7 @@ function runDFS(slots, poolIn) {
     if (pIdx === slots.length) {
       validPaths.push({
         slots: slots.map(s => ({ ...s, bills: { ...s.bills } })),
-        leftoverPool: { ...pool }
+        leftoverPool: { ...pool },
       });
       return;
     }
@@ -847,21 +617,50 @@ function gradePaths(paths) {
   return bestPath;
 }
 
-function solveDistribution(slots, poolIn) {
-  const fauxStaff = slots.map(s => ({ final: s.rem, bills: blankBills(), rem: s.rem }));
-  const result = calculateV19Pipeline(fauxStaff, poolIn, 0);
-  fauxStaff.forEach((p, i) => {
-    slots[i].bills = { ...p.bills };
-    slots[i].rem = result.success ? 0 : slots[i].rem;
-  });
-  return result.poolAfter;
+// Public entry point. people: [{ id, final }], bills: bill-count pool.
+// Returns { byPerson: {id → bills}, remainderBills, poolAfter, error } — never
+// mutates its inputs.
+export function distribute(people, bills, leftover) {
+  const result = runPipeline(people, bills, leftover || 0);
+  return {
+    byPerson: result.byPerson,
+    poolAfter: result.poolAfter || normalizePool(bills),
+    remainderBills: result.remainderBills || blankBills(),
+    error: result.success ? '' : result.msg,
+  };
 }
 
-function distributeBills(staff, available, leftover) {
-  staff.forEach(p => { p.bills = blankBills(); p.rem = p.final; });
-  const result = calculateV19Pipeline(staff, available, leftover || 0);
-  lastRemainderBills = result.remainderBills || blankBills();
-  lastDistributionError = result.success ? '' : result.msg;
-  lastPoolAfter = result.poolAfter || normalizePool(available);
-  return lastPoolAfter;
+// Trade-up plan: convert excess $1s/$5s/$10s into $20s.
+// Returns { newPool, delta, new20s } or null if no $20s can be gained.
+export function computeTradeUp(pool, req) {
+  const minFives = Math.max(0, (req.minOneFiveValue - req.minOnes) / 5);
+  const minTens = Math.max(0, (req.minOneFiveTenValue - req.minOneFiveValue) / 10);
+
+  const excessOnes = Math.max(0, (pool[1] || 0) - req.minOnes);
+  const excessFives = Math.max(0, (pool[5] || 0) - minFives);
+  const excessTens = Math.max(0, (pool[10] || 0) - minTens);
+  const totalExcess = excessOnes + excessFives * 5 + excessTens * 10;
+
+  const new20s = Math.floor(totalExcess / 20);
+  if (new20s <= 0) return null;
+
+  let rem = totalExcess - new20s * 20;
+  const keepExtra10 = Math.min(excessTens, Math.floor(rem / 10)); rem -= keepExtra10 * 10;
+  const keepExtra5 = Math.min(excessFives, Math.floor(rem / 5)); rem -= keepExtra5 * 5;
+
+  // Remove only the excess that was traded, then add back kept amounts —
+  // prevents phantom bills when pool[d] < min[d].
+  const newPool = {
+    100: pool[100] || 0,
+    50: pool[50] || 0,
+    20: (pool[20] || 0) + new20s,
+    10: (pool[10] || 0) - excessTens + keepExtra10,
+    5: (pool[5] || 0) - excessFives + keepExtra5,
+    1: (pool[1] || 0) - excessOnes + rem,
+  };
+
+  const delta = {};
+  DENOMS.forEach(d => { delta[d] = (newPool[d] || 0) - (pool[d] || 0); });
+
+  return { newPool, delta, new20s };
 }

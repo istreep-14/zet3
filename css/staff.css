@@ -1,3 +1,199 @@
+/* ── Role toggle ─────────────────────────────────────────────────────────────── */
+.role-toggle {
+  display: flex;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.role-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 8px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  transition: all .15s;
+}
+
+.role-btn.active         { background: var(--surface3); color: var(--text); border: 1px solid var(--border2); }
+.role-btn--bar.active    { color: var(--blue2); border-color: #2a3a58; }
+.role-btn--srv.active    { color: var(--gold2); border-color: var(--gold-dim); }
+.role-btn--sup.active    { color: #9d7dca; border-color: #3a2850; }
+
+/* ── Role view header ────────────────────────────────────────────────────────── */
+.role-view-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.role-view-count {
+  font-size: .58rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  min-width: 64px;
+}
+
+.role-defaults-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 4px 8px;
+  flex: 1;
+}
+
+.rdef-lbl {
+  font-size: .44rem;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.rdef-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: .82rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  outline: none;
+  text-align: center;
+  min-width: 0;
+  width: 36px;
+  padding: 2px 0;
+}
+
+.rdef-input::placeholder { color: var(--muted2); font-weight: 400; font-size: .7rem; }
+
+.rdef-sep {
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  flex-shrink: 0;
+}
+
+/* ── Per-role defaults grid in modal ─────────────────────────────────────────── */
+.role-defaults-grid { display: flex; flex-direction: column; gap: 8px; }
+
+.rdg-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rdg-role-lbl {
+  font-size: .56rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.rdg-bar { color: var(--blue2); }
+.rdg-srv { color: var(--gold2); }
+.rdg-sup { color: #9d7dca; }
+
+.rdg-fields {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+/* ── Support staff section ───────────────────────────────────────────────────── */
+.support-staff-note {
+  font-size: .66rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  line-height: 1.5;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+/* ── Support row: cut chips ──────────────────────────────────────────────────── */
+.sup-cuts {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+
+.sup-cuts--hidden { display: none; }
+
+.sup-row.sup-expanded .sup-cuts.sup-cuts--hidden { display: flex; }
+
+.sri-expand {
+  width: 24px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: .8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .15s;
+}
+
+.sri-expand:active,
+.sup-row.sup-expanded .sri-expand { color: #9d7dca; }
+
+.sup-cut-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: .44rem;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all .12s;
+  white-space: nowrap;
+}
+
+.sup-cut-chip.active {
+  background: #1a0d2e;
+  border-color: #3a2850;
+  color: #9d7dca;
+}
+
+.role-badge.role-support {
+  color: #9d7dca;
+  border-color: #3a2850;
+  background: #1a0d2e;
+}
+
 .staff-page { display: flex; flex-direction: column; }
 
 .staff-page-topbar {

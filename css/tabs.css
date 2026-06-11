@@ -97,3 +97,4 @@ body.keyboard-open .tab-bar {
 
 .tab-dot.ok    { background: var(--green); }
 .tab-dot.empty { background: var(--muted2); }
+.tab-dot.warn  { background: var(--accent); }

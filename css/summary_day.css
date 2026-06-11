@@ -239,6 +239,25 @@
   background: #1a1508;
 }
 
+/* ── Support role badge ── */
+.ds-role-badge.ds-role-support {
+  color: #9d7dca;
+  border-color: #3a2850;
+  background: #1a0d2e;
+}
+
+/* ── Support rows ── */
+.ds-support-row td { border-bottom: 1px solid #15151f; }
+.ds-support-val    { color: #9d7dca !important; }
+
+.ds-support-total-row td {
+  border-top: 1px solid #3a2850;
+  border-bottom: none !important;
+  background: #120a1e;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
 /* ── Closer dot inside table ── */
 .ds-closer-dot {
   display: inline-block;
