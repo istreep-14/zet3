@@ -6,7 +6,7 @@ import * as store from './store.js';
 import * as persist from './persist.js';
 import { buildViewModel } from './viewmodel.js';
 import { switchTab, updateTabIndicators } from './render/tabs.js';
-import { renderStaff, invalidateStaffList } from './render/staff.js';
+import { renderStaff, invalidateStaffList, staffTabNav } from './render/staff.js';
 import { renderPools, invalidatePools } from './render/pools.js';
 import { renderSummary } from './render/summary.js';
 import {
@@ -69,6 +69,7 @@ window.App = {
   },
   delStaff: store.removeStaff,
   staffField: store.updateStaff,
+  staffTab: staffTabNav,
   toggleCloser: store.toggleCloserOverride,
   switchRole(role) {
     invalidateStaffList();

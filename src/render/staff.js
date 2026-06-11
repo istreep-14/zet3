@@ -3,7 +3,7 @@
 // updates patch hours cells, placeholders, and validity classes in place.
 
 import { escapeHTML, fmtHrs } from '../util.js';
-import { parseTime, fmtTimeAbs } from '../time.js';
+import { parseTime, fmtTimeAbs, resolveIn, nextAfter } from '../time.js';
 
 const $ = id => document.getElementById(id);
 
@@ -21,16 +21,9 @@ function rowDefaults(state, role) {
 }
 
 // Mirror of the resolver for display purposes only — works for unnamed rows
-// too, so a row shows its hours as soon as times are typed.
-//
-// BUG FIX: Previously used toAbs(out, anchor) - toAbs(in, anchor) for hours,
-// which gave negative results when in < anchor (e.g. in=4, anchor=5 → toAbs=16;
-// out=11 → toAbs=11; h=11-16=-5 → shows '?').
-//
-// Fix: use raw-value wrap logic identical to shiftHours() in src/domain/time.ts:
-//   effOut = outVal <= inVal ? outVal + 12 : outVal
-//   h = effOut - inVal
-// This correctly handles in=4, out=11 → h=7 without needing the anchor.
+// too, so a row shows its hours as soon as times are typed. Uses the same
+// fixed-axis rules as resolve.js: In via resolveIn, Out as the next occurrence
+// after In, so hours never go negative regardless of anchor.
 function rowDisplay(state, person, vm) {
   const defs = rowDefaults(state, person.role);
   const inRaw = person.in.trim() || defs.in;
@@ -55,14 +48,9 @@ function rowDisplay(state, person, vm) {
   }
   if (inParsed.empty || outParsed.empty) return display;
 
-  const inVal  = inParsed.value;
-  const outVal = outParsed.value;
-
-  // Use raw-value wrap: if out <= in, the shift crosses midnight → add 12 to out.
-  // This matches effectiveOutValue / shiftHours in src/domain/time.ts and avoids
-  // the anchor-based toAbs logic which broke inputs where in < anchor.
-  const effOut = outVal <= inVal ? outVal + 12 : outVal;
-  const h = effOut - inVal;
+  const inAbs = resolveIn(inParsed.value);
+  const outAbs = nextAfter(outParsed.value, inAbs);
+  const h = outAbs - inAbs;
 
   if (h <= 0 || h > 12) {
     display.hrsText = '?';
@@ -80,15 +68,16 @@ function rowHTML(person, idx, display) {
     <div class="sri-name">
       <input data-field="name" value="${escapeHTML(person.name)}" placeholder="Employee ${idx + 1}"
         autocomplete="off" autocorrect="off" autocapitalize="words"
+        onkeydown="App.staffTab(event,'name')"
         oninput="App.staffField('${id}','name',this.value)">
     </div>
     <div class="sri-time-field"><span class="sri-tlbl">in</span>
       <input data-field="in" value="${escapeHTML(person.in)}" placeholder="${escapeHTML(display.defIn || '—')}"
-        inputmode="decimal" oninput="App.staffField('${id}','in',this.value)">
+        inputmode="decimal" onkeydown="App.staffTab(event,'in')" oninput="App.staffField('${id}','in',this.value)">
     </div>
     <div class="sri-time-field"><span class="sri-tlbl">out</span>
       <input data-field="out" value="${escapeHTML(person.out)}" placeholder="${escapeHTML(display.defOut || '—')}"
-        inputmode="decimal" oninput="App.staffField('${id}','out',this.value)">
+        inputmode="decimal" onkeydown="App.staffTab(event,'out')" oninput="App.staffField('${id}','out',this.value)">
     </div>
     <div class="${display.hrsClass}" data-hrs>${display.hrsText}</div>
     <button class="sri-closer${person.closerOverride ? ' on' : ''}" onclick="App.toggleCloser('${id}')"
@@ -125,7 +114,7 @@ function sectionSummaryHTML(vm) {
   const parts = [named.length + ' staff'];
 
   const closeAbs = vm.resolved.closeAbs;
-  if (closeAbs !== null) parts.push('close ' + fmtTimeAbs(closeAbs, vm.resolved.anchorRaw));
+  if (closeAbs !== null) parts.push('close ' + fmtTimeAbs(closeAbs));
   if (blankOuts.length) {
     parts.push(blankOuts.length + (blankOuts.length === 1 ? ' blank out' : ' blank outs') + ' using close time');
   }
@@ -198,4 +187,32 @@ export function renderStaff(vm) {
 // Force the next render to rebuild rows (e.g. after restoring state).
 export function invalidateStaffList() {
   lastSignature = '';
+}
+
+// Column-major Tab order: stepping through the list walks DOWN a column (all
+// names, then all ins, then all outs) instead of left→right across each row.
+// We override the native row-major order on Tab / Shift+Tab; at the ends we let
+// the default fire so focus escapes the list (to the add button / role defaults).
+const TAB_COLS = ['name', 'in', 'out'];
+
+export function staffTabNav(e, field) {
+  if (e.key !== 'Tab') return;
+  const rows = [...document.querySelectorAll('#staffList [data-sid]')];
+  const rowEl = e.target.closest('[data-sid]');
+  let r = rows.indexOf(rowEl);
+  let c = TAB_COLS.indexOf(field);
+  if (r < 0 || c < 0) return;
+
+  if (!e.shiftKey) {
+    if (r < rows.length - 1) r++;
+    else if (c < TAB_COLS.length - 1) { c++; r = 0; }
+    else return;                         // last cell → let focus leave the list
+  } else {
+    if (r > 0) r--;
+    else if (c > 0) { c--; r = rows.length - 1; }
+    else return;                         // first cell → let focus leave the list
+  }
+
+  const target = rows[r]?.querySelector(`[data-field="${TAB_COLS[c]}"]`);
+  if (target) { e.preventDefault(); target.focus(); }
 }

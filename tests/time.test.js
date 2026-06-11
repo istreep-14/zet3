@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { parseTime, toAbs, fmtTimeAbs, overlapHours, anchorIsAm } from '../src/time.js';
+import { parseTime, resolveIn, nextAfter, atOrAfter, fmtTimeAbs, overlapHours } from '../src/time.js';
 import { parseWholeNumber } from '../src/util.js';
 
 // parseWholeNumber (carried over from utils.test.js)
@@ -22,33 +22,36 @@ assert.strictEqual(parseTime('13').valid, false);
 assert.strictEqual(parseTime('5abc').valid, false);
 assert.strictEqual(parseTime('-1').valid, false);
 
-// Absolute axis — night anchored at 5 (5p): 5→5, 6→6, 2→14
-assert.strictEqual(toAbs(5, 5), 5);
-assert.strictEqual(toAbs(6, 5), 6);
-assert.strictEqual(toAbs(11, 5), 11);
-assert.strictEqual(toAbs(12, 5), 12);
-assert.strictEqual(toAbs(2, 5), 14);
-assert.strictEqual(toAbs(12.5, 5), 12.5);
+// IN times — fixed rule: 9–11:59 → AM, else PM (noon stays 12)
+assert.strictEqual(resolveIn(9), 9);     // 9a
+assert.strictEqual(resolveIn(11), 11);   // 11a
+assert.strictEqual(resolveIn(11.5), 11.5);
+assert.strictEqual(resolveIn(12), 12);   // 12p (noon)
+assert.strictEqual(resolveIn(12.5), 12.5);
+assert.strictEqual(resolveIn(1), 13);    // 1p
+assert.strictEqual(resolveIn(5), 17);    // 5p
+assert.strictEqual(resolveIn(8), 20);    // 8p
 
-// Day anchored at 10 (10a): 10→10, 12→12, 1→13, 6→18
-assert.strictEqual(toAbs(10, 10), 10);
-assert.strictEqual(toAbs(12, 10), 12);
-assert.strictEqual(toAbs(1, 10), 13);
-assert.strictEqual(toAbs(6, 10), 18);
+// OUT times — next occurrence of the reading after In
+assert.strictEqual(nextAfter(2, 17), 26);   // 5p in, 2 out → 2a next day
+assert.strictEqual(nextAfter(11, 17), 23);  // 5p in, 11 out → 11p
+assert.strictEqual(nextAfter(6, 10), 18);   // 10a in, 6 out → 6p
+assert.strictEqual(nextAfter(12, 17), 24);  // 5p in, 12 out → midnight
 
-// Anchor display heuristic: 8–11:59 opens read as AM
-assert.strictEqual(anchorIsAm(10), true);
-assert.strictEqual(anchorIsAm(5), false);
-assert.strictEqual(anchorIsAm(12), false);
+// Pool bounds — at-or-after the open (≥, so the open itself is allowed)
+assert.strictEqual(atOrAfter(5, 17), 17);   // 5 == open
+assert.strictEqual(atOrAfter(9, 17), 21);   // 9p
+assert.strictEqual(atOrAfter(2, 17), 26);   // 2a
 
-// Formatting on the absolute axis
-assert.strictEqual(fmtTimeAbs(5, 5), '5p');
-assert.strictEqual(fmtTimeAbs(10.5, 5), '10:30p');
-assert.strictEqual(fmtTimeAbs(14, 5), '2a');
-assert.strictEqual(fmtTimeAbs(12, 5), '12p'); // matches old night formatter
-assert.strictEqual(fmtTimeAbs(10, 10), '10a');
-assert.strictEqual(fmtTimeAbs(13, 10), '1p');
-assert.strictEqual(fmtTimeAbs(18, 10), '6p');
+// Formatting on the true 24h+ axis (no anchor)
+assert.strictEqual(fmtTimeAbs(17), '5p');
+assert.strictEqual(fmtTimeAbs(22.5), '10:30p');
+assert.strictEqual(fmtTimeAbs(26), '2a');
+assert.strictEqual(fmtTimeAbs(12), '12p');
+assert.strictEqual(fmtTimeAbs(24), '12a'); // midnight
+assert.strictEqual(fmtTimeAbs(10), '10a');
+assert.strictEqual(fmtTimeAbs(13), '1p');
+assert.strictEqual(fmtTimeAbs(18), '6p');
 
 // Overlap math
 assert.strictEqual(overlapHours(5, 14, 5, 14), 9);

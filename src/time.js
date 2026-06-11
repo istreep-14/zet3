@@ -1,12 +1,15 @@
-// Unified time model — decimal 12-hour entry resolved onto one absolute axis.
+// Unified time model — decimal 12-hour entry resolved onto one true 24h+ axis.
 //
-// Entry stays decimal 12-hour ('5', '10.5', '2'). Internally everything is
-// resolved against the shift anchor (the "open" time):
+// Entry stays decimal 12-hour ('5', '10.5', '2'). Resolution is fixed, NOT
+// anchor-relative:
 //
-//   abs(t) = t >= anchorRaw ? t : t + 12
+//   IN times:  9 ≤ t < 12 → AM (t);  else → PM (t < 12 ? t+12 : t).
+//              So 9–11:59 read as morning; 12 reads as noon; 1–8:59 as 1p–8:59p.
+//   OUT times: the next occurrence of that clock reading after the person's own
+//              In — nextAfter(reading, inAbs). 5p in, 2 out → 2a (next day).
 //
-// Night (open 5p): 5→5, 6→6, 2→14. Day (open 10a): 10→10, 12→12, 1→13, 6→18.
-// One wrap rule; constraint carried over: a session spans < 12h.
+// The axis is real hours past midnight on the open day: 9–11 = 9a–11a, 12 = noon,
+// 13–23 = 1p–11p, 24 = midnight, 25–32 = 1a–8a next day.
 
 export function parseTime(raw) {
   const text = String(raw ?? '').trim();
@@ -21,27 +24,38 @@ export function parseTime(raw) {
   };
 }
 
-export function toAbs(t, anchorRaw) {
-  return t >= anchorRaw ? t : t + 12;
+// Resolve an IN time (decimal 12-hour reading) to the absolute axis.
+// 9:00–11:59 → AM; everything else → PM (noon stays 12, 1–8:59 → 13–20:59).
+export function resolveIn(t) {
+  if (t >= 9 && t < 12) return t;   // 9a–11:59a
+  if (t >= 12) return t;            // 12p–12:59p (noon hour)
+  return t + 12;                    // 1p–8:59p (and <1, an edge)
 }
 
-// Display heuristic only: an anchor (shift open) in [8, 12) reads as a
-// morning open (8a–11:59a); anything else reads as an afternoon/evening open.
-export function anchorIsAm(anchorRaw) {
-  return anchorRaw >= 8 && anchorRaw < 12;
+// First absolute time matching clock reading `t` that is strictly after `afterAbs`.
+// Used for OUT times: the next time that clock reads `t` after the person clocks in.
+export function nextAfter(t, afterAbs) {
+  let v = t;
+  while (v <= afterAbs) v += 12;
+  return v;
 }
 
-// Format an absolute-axis time for display: "5p", "10:30a", "2a".
-// Times that wrapped past 12 sit in the opposite half of the day from the anchor.
-export function fmtTimeAbs(tAbs, anchorRaw) {
-  let t = tAbs;
-  let wrapped = false;
-  if (t > 12) { t -= 12; wrapped = true; }
-  let hr = Math.floor(t), mn = Math.round((t - hr) * 60);
-  if (mn === 60) { hr++; mn = 0; }
+// First absolute time matching reading `t` at or after `fromAbs` (≥, not >).
+// Used for pool window bounds, which may sit exactly on the shift open.
+export function atOrAfter(t, fromAbs) {
+  let v = t;
+  while (v < fromAbs) v += 12;
+  return v;
+}
+
+// Format an absolute-axis time for display: "5p", "10:30a", "2a", "12a" (midnight).
+export function fmtTimeAbs(tAbs) {
+  let h = ((tAbs % 24) + 24) % 24;
+  let hr = Math.floor(h), mn = Math.round((h - hr) * 60);
+  if (mn === 60) { hr = (hr + 1) % 24; mn = 0; }
+  const am = hr < 12;
   let h12 = hr % 12;
   if (h12 === 0) h12 = 12;
-  const am = anchorIsAm(anchorRaw) !== wrapped;
   return h12 + (mn > 0 ? ':' + (mn < 10 ? '0' : '') + mn : '') + (am ? 'a' : 'p');
 }
 

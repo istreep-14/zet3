@@ -30,21 +30,21 @@ function person(over) {
 
   const r = resolveStaff(state);
   assert.deepStrictEqual(r.errors, []);
-  assert.strictEqual(r.anchorRaw, 5);
-  assert.strictEqual(r.closeAbs, 14); // global out 2 → 2a
+  assert.strictEqual(r.anchorAbs, 17);  // global in 5 → 5p
+  assert.strictEqual(r.closeAbs, 26);   // global out 2 → 2a next day
 
   const [a, b, c] = r.staff;
-  assert.strictEqual(a.inAbs, 6);
-  assert.strictEqual(a.outAbs, 13);
+  assert.strictEqual(a.inAbs, 18);  // 6 → 6p
+  assert.strictEqual(a.outAbs, 25); // 1 → next 1a after 6p
   assert.deepStrictEqual(a.usedDefaults, { in: false, out: false });
 
-  assert.strictEqual(b.inAbs, 5);   // global in
-  assert.strictEqual(b.outAbs, 14); // inherits close time
+  assert.strictEqual(b.inAbs, 17);  // global in 5p
+  assert.strictEqual(b.outAbs, 26); // inherits close time
   assert.strictEqual(b.usedCloseTime, true);
   assert.deepStrictEqual(b.usedDefaults, { in: true, out: true });
 
-  assert.strictEqual(c.inAbs, 5.5); // role default
-  assert.strictEqual(c.outAbs, 11); // role default out beats close inherit
+  assert.strictEqual(c.inAbs, 17.5); // role default 5.5 → 5:30p
+  assert.strictEqual(c.outAbs, 23);  // role default out 11 → 11p beats close inherit
 }
 
 // ── Closer rule: hybrid ──
@@ -87,8 +87,8 @@ function person(over) {
   const r1 = resolveStaff(baseState([person({ id: 's1', name: 'A', in: 'abc' })]));
   assert.ok(r1.errors.some(e => e.includes("A's In time")));
 
-  // out before in → invalid hours
-  const r2 = resolveStaff(baseState([person({ id: 's1', name: 'A', in: '8', out: '6' })]));
+  // morning opener (9 → 9a) inheriting a 2a close = 17h → flagged invalid
+  const r2 = resolveStaff(baseState([person({ id: 's1', name: 'A', in: '9' })]));
   assert.ok(r2.errors.some(e => e.includes('invalid shift hours')));
 
   // unnamed rows are ignored
@@ -104,7 +104,7 @@ function person(over) {
   ]);
   state.defaults.global = { in: '10', out: '6' };
   const r = resolveStaff(state);
-  assert.strictEqual(r.anchorRaw, 10);
+  assert.strictEqual(r.anchorAbs, 10);
   assert.strictEqual(r.closeAbs, 18);
   assert.strictEqual(r.staff[0].outAbs, 16); // 4p
   assert.strictEqual(r.staff[1].inAbs, 11.5);
@@ -129,8 +129,8 @@ function person(over) {
   const resolved = resolveStaff(state);
   const { pools, errors } = resolvePools(state, resolved);
   assert.deepStrictEqual(errors, []);
-  assert.strictEqual(pools[0].startAbs, 6);   // blank start = earliest resolved in
-  assert.strictEqual(pools[0].endAbs, 14);    // blank end = close time
+  assert.strictEqual(pools[0].startAbs, 18);  // blank start = earliest resolved in (6 → 6p)
+  assert.strictEqual(pools[0].endAbs, 26);    // blank end = close time (2a)
   assert.strictEqual(pools[0].total, 500);
   assert.strictEqual(pools[0].billCounts, null);
 
@@ -145,8 +145,8 @@ function person(over) {
   );
   const resolved2 = resolveStaff(state2);
   const r2 = resolvePools(state2, resolved2);
-  assert.strictEqual(r2.pools[0].startAbs, 7);
-  assert.strictEqual(r2.pools[0].endAbs, 11);
+  assert.strictEqual(r2.pools[0].startAbs, 19); // 7 → 7p
+  assert.strictEqual(r2.pools[0].endAbs, 23);   // 11 → 11p
   assert.strictEqual(r2.pools[0].total, 303);
   assert.strictEqual(r2.pools[0].billCounts[20], 5);
 

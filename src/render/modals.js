@@ -37,11 +37,10 @@ export function renderPersonModal(vm) {
   if (!person) { closeModal('personModal'); return; }
 
   const raw = vm.state.staff.find(p => p.id === openPersonId);
-  const anchor = vm.resolved.anchorRaw;
   const safe = escapeHTML(person.name);
   const initials = escapeHTML(person.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
-  const inStr = fmtTimeAbs(person.inAbs, anchor);
-  const outStr = fmtTimeAbs(person.outAbs, anchor);
+  const inStr = fmtTimeAbs(person.inAbs);
+  const outStr = fmtTimeAbs(person.outAbs);
   const hrsStr = fmtHrs(person.hours);
   const closerBadge = person.closer ? '<span class="closer-badge" style="margin-left:5px">closer</span>' : '';
 

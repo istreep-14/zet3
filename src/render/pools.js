@@ -14,11 +14,11 @@ function poolTotal(resolvedPools, id) {
   return pool ? pool.total : 0;
 }
 
-function windowSub(pool, vmPool, anchorRaw) {
+function windowSub(pool, vmPool) {
   const start = pool.window.start.trim();
   const end = pool.window.end.trim();
   if (!start && !end) return 'whole shift';
-  const fmt = (raw, abs) => raw ? escapeHTML(raw) : (abs != null ? fmtTimeAbs(abs, anchorRaw) : '?');
+  const fmt = (raw, abs) => raw ? escapeHTML(raw) : (abs != null ? fmtTimeAbs(abs) : '?');
   return fmt(start, vmPool?.startAbs) + ' – ' + fmt(end, vmPool?.endAbs);
 }
 
@@ -64,7 +64,7 @@ function cardHTML(pool, vm, isOpen, removable) {
     <button class="dp-pool-card-hdr" onclick="App.selectPool('${pool.id}')">
       <div class="dp-pool-card-left">
         <span class="dp-pool-card-name" data-pool-name>${escapeHTML(pool.label)}</span>
-        <span class="dp-window-auto" data-window-sub>${windowSub(pool, vmPool, vm.resolved.anchorRaw)}</span>
+        <span class="dp-window-auto" data-window-sub>${windowSub(pool, vmPool)}</span>
       </div>
       <div class="dp-pool-hdr-right">
         <span class="dp-pool-total${total ? '' : ' zero'}" data-pool-total>$${total}</span>
@@ -165,7 +165,7 @@ export function renderPools(vm) {
     const nameEl = card.querySelector('[data-pool-name]');
     if (nameEl && nameEl.textContent !== pool.label) nameEl.textContent = pool.label;
     const subEl = card.querySelector('[data-window-sub]');
-    if (subEl) subEl.innerHTML = windowSub(pool, vmPool, vm.resolved.anchorRaw);
+    if (subEl) subEl.innerHTML = windowSub(pool, vmPool);
 
     if (pool.cash.entryMode === 'perbill') {
       DENOMS.forEach(d => {

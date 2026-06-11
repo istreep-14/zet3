@@ -52,7 +52,6 @@ function warnBoxHTML(vm) {
 
 function singlePoolHTML(vm) {
   const shares = vm.shares;
-  const anchor = vm.resolved.anchorRaw;
   const dateStr = dateLabel(vm.state);
   const sumFinal = shares.perPerson.reduce((s, p) => s + p.final, 0);
   const grandTotal = sumFinal + shares.leftover;
@@ -60,8 +59,8 @@ function singlePoolHTML(vm) {
   const personCards = shares.perPerson.map(p => {
     const safe = escapeHTML(p.name);
     const initials = escapeHTML(p.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2));
-    const inStr = fmtTimeAbs(p.inAbs, anchor);
-    const outStr = fmtTimeAbs(p.outAbs, anchor);
+    const inStr = fmtTimeAbs(p.inAbs);
+    const outStr = fmtTimeAbs(p.outAbs);
     const closerBadge = p.closer ? '<span class="closer-badge">closer</span>' : '';
     const roleBadge = p.role !== 'bartender'
       ? `<span class="role-badge role-${p.role}" style="margin-left:4px">${p.role === 'support' ? 'sup' : 'srv'}</span>`
@@ -145,12 +144,11 @@ function singlePoolHTML(vm) {
 
 function multiPoolHTML(vm) {
   const shares = vm.shares;
-  const anchor = vm.resolved.anchorRaw;
   const dateStr = dateLabel(vm.state);
   const pools = shares.perPool;
   const colCount = pools.length + 2;
 
-  const fmtAbs = t => fmtTimeAbs(t, anchor);
+  const fmtAbs = t => fmtTimeAbs(t);
   const fmtH = h => fmtHrs(h);
 
   const thCols = pools.map(p => `<th class="ds-pool-col">${escapeHTML(p.label)}</th>`).join('')

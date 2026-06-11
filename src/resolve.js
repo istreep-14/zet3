@@ -1,13 +1,15 @@
 // resolveStaff / resolvePools — raw state strings → absolute-axis numbers.
 //
 // Resolution order per person:
-//   in  = explicit || roleDefault.in  || global.in   → abs
-//   out = explicit || roleDefault.out || closeTime   → abs   (blank inherits close)
+//   in  = explicit || roleDefault.in  || global.in   → resolveIn (fixed am/pm)
+//   out = explicit || roleDefault.out || closeTime   → nextAfter(reading, inAbs)
+// In times use the fixed 9–11:59=AM rule; out times are the next occurrence of
+// their reading after that person's own In (so they always fall after In).
 // Closers (hybrid rule): closerOverride || out ≥ peak out across tipped staff.
 // Blank-out people sit at close time, so they're closers via latest-out
 // naturally — someone typed *past* close becomes the closer, ties share.
 
-import { parseTime, toAbs, overlapHours } from './time.js';
+import { parseTime, resolveIn, nextAfter, atOrAfter, overlapHours } from './time.js';
 import { parseWholeNumber, poolValue, DENOMS } from './util.js';
 
 const EPS = 1e-9;
@@ -36,79 +38,80 @@ export function resolveStaff(state, opts = {}) {
     return String(p.in || '').trim() || String(roleDef.in || '').trim() || (globalIn.empty ? '' : String(defaults.global.in));
   });
 
-  // Anchor = resolved global In, else earliest raw In among staff, else 5.
-  let anchorRaw = 5;
+  // Anchor (shift open) on the absolute axis: resolved global In, else earliest
+  // resolved staff In, else 5p.
+  let anchorAbs;
   if (globalIn.valid && !globalIn.empty) {
-    anchorRaw = globalIn.value;
+    anchorAbs = resolveIn(globalIn.value);
   } else {
-    const rawIns = effIns
+    const ins = effIns
       .map(s => parseTime(s))
       .filter(p => p.valid && !p.empty)
-      .map(p => p.value);
-    if (rawIns.length) anchorRaw = Math.min(...rawIns);
+      .map(p => resolveIn(p.value));
+    anchorAbs = ins.length ? Math.min(...ins) : resolveIn(5);
   }
 
-  // Close time = resolved global Out on the absolute axis. Fallback: latest
-  // explicit out across staff (so a session without a Default Out still works).
-  let closeAbs = null;
-  if (globalOut.valid && !globalOut.empty) {
-    closeAbs = toAbs(globalOut.value, anchorRaw);
-  } else {
-    for (const p of named) {
-      const out = parseTime(p.out);
-      if (out.valid && !out.empty) {
-        const abs = toAbs(out.value, anchorRaw);
-        if (closeAbs === null || abs > closeAbs) closeAbs = abs;
-      }
-    }
-  }
-
-  const staff = named.map((p, idx) => {
+  // Pass 1: resolve each person's In (fixed am/pm rule) and any explicit/role
+  // Out (next occurrence of its reading after that person's own In).
+  const partial = named.map((p, idx) => {
     const roleDef = defaults.byRole[p.role] || {};
     const name = p.name.trim();
-
     const explicitIn = String(p.in || '').trim();
     const explicitOut = String(p.out || '').trim();
-    const inRaw = effIns[idx];
     const outRaw = explicitOut || String(roleDef.out || '').trim();
 
-    const inParsed = parseField(inRaw, name + "'s In time", errors);
+    const inParsed = parseField(effIns[idx], name + "'s In time", errors);
     let inAbs = null;
-    if (inParsed.valid && !inParsed.empty) {
-      inAbs = toAbs(inParsed.value, anchorRaw);
-    } else if (inParsed.valid && inParsed.empty) {
-      errors.push(name + ' needs an In time (or set a default).');
-    }
+    if (inParsed.valid && !inParsed.empty) inAbs = resolveIn(inParsed.value);
+    else if (inParsed.valid && inParsed.empty) errors.push(name + ' needs an In time (or set a default).');
 
     let outAbs = null;
-    let usedCloseTime = false;
     if (outRaw) {
       const outParsed = parseField(outRaw, name + "'s Out time", errors);
-      if (outParsed.valid && !outParsed.empty) outAbs = toAbs(outParsed.value, anchorRaw);
-    } else if (closeAbs !== null) {
-      outAbs = closeAbs;
-      usedCloseTime = true;
-    } else {
-      errors.push(name + ' needs an Out time (or set a close time).');
+      if (outParsed.valid && !outParsed.empty) {
+        outAbs = inAbs !== null ? nextAfter(outParsed.value, inAbs) : resolveIn(outParsed.value);
+      }
+    }
+    return { p, name, role: p.role, explicitIn, explicitOut, hasOut: !!outRaw, inAbs, outAbs };
+  });
+
+  // Close time = resolved global Out (next occurrence after the anchor). Fallback:
+  // latest explicit out across staff, so a session without a Default Out works.
+  let closeAbs = null;
+  if (globalOut.valid && !globalOut.empty) {
+    closeAbs = nextAfter(globalOut.value, anchorAbs);
+  } else {
+    for (const r of partial) {
+      if (r.hasOut && r.outAbs !== null && (closeAbs === null || r.outAbs > closeAbs)) closeAbs = r.outAbs;
+    }
+  }
+
+  // Pass 2: blank-out people inherit the close time; finalize hours.
+  const staff = partial.map(r => {
+    let outAbs = r.outAbs;
+    let usedCloseTime = false;
+    if (!r.hasOut) {
+      if (closeAbs !== null) { outAbs = closeAbs; usedCloseTime = true; }
+      else errors.push(r.name + ' needs an Out time (or set a close time).');
     }
 
     let hours = 0;
-    if (inAbs !== null && outAbs !== null) {
-      hours = outAbs - inAbs;
+    if (r.inAbs !== null && outAbs !== null) {
+      hours = outAbs - r.inAbs;
       if (hours <= 0 || hours > 12) {
-        errors.push(name + ' has invalid shift hours (' + parseFloat(hours.toFixed(2)) + 'h). Check In/Out times.');
+        errors.push(r.name + ' has invalid shift hours (' + parseFloat(hours.toFixed(2)) + 'h). Check In/Out times.');
       }
     }
 
     return {
-      id: p.id,
-      name,
-      role: p.role,
-      inAbs,
+      id: r.p.id,
+      name: r.name,
+      role: r.role,
+      inAbs: r.inAbs,
       outAbs,
       hours,
-      closerOverride: !!p.closerOverride,
-      usedDefaults: { in: !explicitIn, out: !explicitOut },
+      closerOverride: !!r.p.closerOverride,
+      usedDefaults: { in: !r.explicitIn, out: !r.explicitOut },
       usedCloseTime,
       closer: false,
     };
@@ -123,18 +126,18 @@ export function resolveStaff(state, opts = {}) {
     p.closer = p.closerOverride || auto;
   });
 
-  return { staff, anchorRaw, closeAbs, errors };
+  return { staff, anchorAbs, closeAbs, errors };
 }
 
-// Pool windows resolve like staff times: blank start = earliest resolved in,
-// blank end = close time, explicit values → abs.
+// Pool windows resolve onto the same axis: blank start = earliest resolved in,
+// blank end = close time, explicit values = next occurrence at/after the open.
 export function resolvePools(state, resolved) {
-  const { staff, anchorRaw, closeAbs } = resolved;
+  const { staff, anchorAbs, closeAbs } = resolved;
   const errors = [];
 
   const earliestIn = staff.length
     ? Math.min(...staff.filter(p => p.inAbs !== null).map(p => p.inAbs))
-    : anchorRaw;
+    : anchorAbs;
 
   const pools = state.pools.map(pool => {
     const label = pool.label || 'Pool';
@@ -143,14 +146,14 @@ export function resolvePools(state, resolved) {
     const startStr = String(pool.window.start || '').trim();
     if (startStr) {
       const p = parseField(startStr, label + ' window start', errors);
-      if (p.valid && !p.empty) startAbs = toAbs(p.value, anchorRaw);
+      if (p.valid && !p.empty) startAbs = atOrAfter(p.value, anchorAbs);
     }
 
     let endAbs = closeAbs !== null ? closeAbs : earliestIn;
     const endStr = String(pool.window.end || '').trim();
     if (endStr) {
       const p = parseField(endStr, label + ' window end', errors);
-      if (p.valid && !p.empty) endAbs = toAbs(p.value, anchorRaw);
+      if (p.valid && !p.empty) endAbs = atOrAfter(p.value, anchorAbs);
     }
 
     if (endAbs <= startAbs) {
